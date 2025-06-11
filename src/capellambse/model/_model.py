@@ -411,10 +411,11 @@ class MelodyModel:
         The following calls are functionally identical, and will all
         return a list of every Logical Component in the model:
 
-        >>> model.search("LogicalComponent")
-        >>> model.search("org.polarsys.capella.core.data.la:LogicalComponent")
-        >>> model.search( (capellambse.metamodel.la.NS, "LogicalComponent") )
-        >>> model.search( ("org.polarsys.capella.core.data.la", "LogicalComponent") )
+        >>> a = model.search("LogicalComponent")
+        >>> b = model.search("org.polarsys.capella.core.data.la:LogicalComponent")
+        >>> c = model.search( (capellambse.metamodel.la.NS, "LogicalComponent") )
+        >>> d = model.search( ("org.polarsys.capella.core.data.la", "LogicalComponent") )
+        >>> assert a == b == c == d
         """
         classes: set[type[_obj.ModelObject]] = set()
         for clsname in clsnames:
@@ -667,18 +668,18 @@ class MelodyModel:
         Passing a bare filename looks up the executable in the PATH,
         after replacing a possible '{VERSION}' field:
 
-        >>> model.update_diagram_cache("capella", "png")
-        >>> model.update_diagram_cache("capella{VERSION}", "png")
+        >>> model.update_diagram_cache("capella", "png")                        # doctest: +SKIP
+        >>> model.update_diagram_cache("capella{VERSION}", "png")               # doctest: +SKIP
 
         Passing an absolute path to a local installation of Capella that
         contains the Capella version will use that executable:
 
-        >>> model.update_diagram_cache("/opt/capella{VERSION}/capella", "png")
+        >>> model.update_diagram_cache("/opt/capella{VERSION}/capella", "png")  # doctest: +SKIP
 
         Passing a docker image name will launch a docker container, using the
         Capella binary at the image's ENTRYPOINT:
 
-        >>> model.update_diagram_cache(
+        >>> model.update_diagram_cache(                                         # doctest: +SKIP
         ...     "ghcr.io/dbinfrago/capella-dockerimages/capella/base:{VERSION}-selected-dropins-main",
         ...     "png",
         ... )
