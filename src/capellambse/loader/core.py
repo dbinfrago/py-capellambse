@@ -459,7 +459,7 @@ class ModelFile:
         exs.write(
             self.root,
             file,
-            **args,
+            **args,  # type: ignore[arg-type]
             line_length=line_length,
             siblings=True,
         )
