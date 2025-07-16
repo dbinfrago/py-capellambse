@@ -34,7 +34,7 @@ rebuild: #: Rebuild native Rust module
 .PHONY: clean
 clean: docs-clean #: Clean all build artifacts
 	find . -type d \( -name __pycache__ -o -name target \) -execdir rm -rf {} \; 2>/dev/null || true
-	find src -type f -name '*.so' -o -name '*.pyd' -delete || true
+	find src \( -type f -name '*.so' -o -name '*.pyd' \) -delete || true
 	rm -rf .*cache .coverage .venv build dist htmlcov src/*.egg-info
 
 # Testing {{{1
