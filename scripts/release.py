@@ -33,6 +33,7 @@ CONCOM = re.compile(
 MAILUSER = re.compile(
     r"^(?:\d+\+)?(?P<user>[^@]+)@users\.noreply\.github\.com$"
 )
+RELEASE_COMMIT_MESSAGE = "chore: Release v{version}"
 
 logger = logging.getLogger(__name__)
 
@@ -112,11 +113,17 @@ def _validate_version_tag(
         "based on the '--prev' tag and '--head' commit."
     ),
 )
+@click.option(
+    "--update-pyproject/--no-update-pyproject",
+    default=True,
+    help="Commit the new version number to pyproject.toml before tagging.",
+)
 def _main(
     *,
     prev: awesomeversion.AwesomeVersion | None,
     head: str | None,
     version: awesomeversion.AwesomeVersion | None,
+    update_pyproject: bool,
 ) -> None:
     logging.basicConfig()
 
@@ -146,6 +153,9 @@ def _main(
             bump = VersionBump.PATCH
         version = _bump_version(prev, bump)
         logger.info("%s version bump from %s to %s", bump.name, prev, version)
+
+    if update_pyproject:
+        head = _update_pyproject(head, version, jj=jj)
 
     changelog = _format_changelog(commit_log)
     _create_git_tag(head, version, changelog)
@@ -364,6 +374,33 @@ def _copy_to_clipboard(text: str) -> None:
             stream.write(escape)
         logger.info("Changelog copied to clipboard")
         return
+
+
+def _update_pyproject(
+    head: str,
+    version: awesomeversion.AwesomeVersion,
+    *,
+    jj: bool,
+) -> str:
+    msg = RELEASE_COMMIT_MESSAGE.format(version=version)
+
+    if jj:
+        _exec("jj", "new", "-m", msg, head)
+        _exec("uv", "version", version)
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
+        return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
+
+    try:
+        _exec("git", "diff", "--quiet")
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Worktree is dirty, commit or stash all changes and try again"
+        ) from None
+    _exec("git", "switch", "-d", head)
+    _exec("uv", "version", version)
+    _exec("git", "add", "pyproject.toml")
+    _exec("git", "commit", "-m", msg)
+    return _exec("git", "rev-parse", "HEAD")
 
 
 def _exec(exe: str, /, *args: str, **kw: t.Any) -> str:

@@ -20,6 +20,7 @@ help: #: Show this help
 dev: .venv  #: Set up development environment
 .venv: pyproject.toml
 	uv sync --inexact
+	uv run --no-sync python -m maturin_import_hook site install
 	touch -c .venv
 
 .PHONY: install-hooks
