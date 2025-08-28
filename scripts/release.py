@@ -164,6 +164,7 @@ def _latest_commit() -> str:
             "-Tif(empty && parents.len() < 2, 'empty')",
         )
     ):
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
         return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
     return _exec("git", "log", "-1", "--format=%H")
 
