@@ -2,23 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [build-system]
-requires = [
-  "setuptools>=77",
-  "setuptools-rust",
-  "setuptools-scm[toml]>=3.4",
-  "wheel",
-]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
 
 [project]
-dynamic = ["version"]
-
 name = "capellambse"
+version = "0.7.12"
 description = "Provides access to Capella MBSE projects in Python"
 readme = "README.md"
 requires-python = ">=3.10, <3.15"
 license = "Apache-2.0 AND OFL-1.1"
-license-files = ["LICENSES/*.txt"]
 authors = [{ name = "DB InfraGO AG" }]
 keywords = ["arcadia", "capella", "mbse", "model-based systems engineering"]
 classifiers = [
@@ -32,6 +25,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: Free Threading :: 2 - Beta",
   "Topic :: Other/Nonlisted Topic",
   "Topic :: Scientific/Engineering",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -138,6 +132,8 @@ dev = [
   "docformatter[tomli]==1.7.7",
   "jupyterlab==4.5.2",
   "mypy==1.19.1",
+  "maturin>=1.9.6",
+  "maturin-import-hook>=0.3.0",
   "pandas>=2.3.0",
   "pre-commit==4.5.1",
   "pylsp-mypy==0.7.0",
@@ -223,6 +219,10 @@ py_limited_api = "cp310"
 [tool.docformatter]
 wrap-descriptions = 72
 wrap-summaries = 79
+
+[tool.maturin]
+module-name = "capellambse._compiled"
+include = ["capellambse/known_models/*.json"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -370,24 +370,6 @@ extend-immutable-calls = ["capellambse.diagram.Vector2D"]
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 ignore-decorators = ["typing.overload"]
-
-[tool.setuptools]
-platforms = ["any"]
-zip-safe = false
-
-[tool.setuptools.package-data]
-"*" = ["py.typed"]
-"capellambse" = ["OpenSans-Regular.ttf"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[[tool.setuptools-rust.ext-modules]]
-target = "capellambse._compiled"
-optional = true
-
-[tool.setuptools_scm]
-# This section must exist for setuptools_scm to work
 
 [tool.uv]
 default-groups = ["dev", "test", "typecheck"]
