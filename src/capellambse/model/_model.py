@@ -253,7 +253,7 @@ class MelodyModel:
             format. Example:
 
             - Diagram ID: ``_7FWu4KrxEeqOgqWuHJrXFA``
-            - Render call: ``diag_obj.as_svg`` or ``diag_obj.render("svg")``
+            - Render call: ``diag_obj.render("svg")``
             - Cache file name: ``_7FWu4KrxEeqOgqWuHJrXFA.svg``
 
             *This argument is **not** passed to the file handler.*
