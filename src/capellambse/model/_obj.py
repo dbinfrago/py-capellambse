@@ -671,9 +671,7 @@ class ModelElement(metaclass=_ModelElementMeta):
         """
         import capellambse.metamodel as mm  # noqa: PLC0415
 
-        obj: ModelElement | None = self
-        assert obj is not None
-        while obj := getattr(obj, "parent", None):
+        for obj in self.iter_ancestors():
             if isinstance(obj, mm.cs.BlockArchitecture):
                 return obj
         raise AttributeError(
@@ -1054,6 +1052,17 @@ class ModelElement(metaclass=_ModelElementMeta):
                 acc = acc.wrapped
 
             yield (attr, acc)
+
+    def iter_ancestors(self) -> cabc.Iterator[ModelElement]:
+        """Iterate over the ancestors of this element.
+
+        The iteration starts with the direct parent, and continues up
+        the containment hierarchy until there are no more parents.
+        """
+        obj: ModelElement | None = self
+        assert obj is not None
+        while obj := getattr(obj, "parent", None):
+            yield obj
 
     if t.TYPE_CHECKING:
 
