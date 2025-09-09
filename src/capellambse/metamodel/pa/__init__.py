@@ -221,7 +221,7 @@ class PhysicalComponent(
         self,
     ) -> m.ElementList[PhysicalComponent]:
         return (
-            self.parts.map("deployment_links")
+            self.representing_parts.map("deployment_links")
             .map("deployed_element")
             .map("type")
         )
