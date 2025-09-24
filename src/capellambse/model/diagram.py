@@ -37,6 +37,7 @@ import os
 import traceback
 import typing as t
 import uuid
+import warnings
 
 import markupsafe
 from lxml import etree
@@ -248,15 +249,19 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
     def __init__(self, model: capellambse.MelodyModel) -> None:
         self._model = model
 
-    def __dir__(self) -> list[str]:
-        return dir(type(self)) + [
-            f"as_{ep.name}"
-            for ep in imm.entry_points(group="capellambse.diagram.formats")
-        ]
-
     def __getattr__(self, attr: str) -> t.Any:
         if attr.startswith("as_"):
             fmt = attr[len("as_") :]
+            warnings.warn(
+                (
+                    "The `diagram.as_<format>` properties are deprecated,"
+                    ' use `diagram.render("<format>")` instead'
+                    f' (i.e. `diagram.render("{fmt}")`)'
+                ),
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
             try:
                 return self.render(fmt)
             except UnknownOutputFormat:

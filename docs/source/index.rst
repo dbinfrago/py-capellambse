@@ -51,7 +51,7 @@ using Polarsys' Capella_ with Python. Common usage for this API:
 * parsing .aird files
 * easy access to model elements and objects
 * property-value access and manipulation
-* diagram access and export as SVG
+* diagram access and rendering to SVG or PNG format
 
 Additionally and as a core idea it provides an interface for the underlying
 database of the Capella model.
@@ -74,6 +74,7 @@ If you want a quickstart at how to use this package, head right into the
    start/intro-to-api
    start/declarative
    start/migrating-0.6
+   start/migrating-0.8
 
 .. toctree::
    :caption: Tutorials

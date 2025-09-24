@@ -61,3 +61,16 @@ Extension packages
   Requirements within Capella model.
 * :mod:`capellambse.extensions.pvmt` - provides means for working with object
   attributes created with PVMT package.
+
+Working with diagrams
+======================
+
+Diagram objects provide access to the visual representations in your Capella
+model. To render diagrams to different formats, use the ``render()`` method:
+
+.. code-block:: python
+
+   diagram = model.diagrams.by_name("[SDFB] System Context")
+
+   svg_data = diagram.render("svg")
+   png_data = diagram.render("png")

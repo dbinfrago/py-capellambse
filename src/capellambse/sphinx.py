@@ -146,7 +146,7 @@ class DiagramDirective(sphinx.util.docutils.SphinxDirective):
                 f"Cannot find diagram {name!r} in the configured model"
             ) from error
 
-        uri = diagram.as_datauri_svg
+        uri = diagram.render("datauri_svg")
         return [
             nodes.image(rawsource=self.block_text, uri=uri, **self.options)
         ]
