@@ -345,6 +345,22 @@ def _is_pep440(version: str) -> bool:
     return pep440_ptrn.fullmatch(version) is not None
 
 
+def _operate_promise_id(
+    promises: dict[Promise, capellambse.ModelObject],
+    parent: capellambse.ModelObject,
+    pid: t.Any,
+) -> cabc.Generator[_OperatorResult, t.Any, None]:
+    del promises
+    if isinstance(pid, str):
+        promise = Promise(pid)
+    elif isinstance(pid, Promise):
+        promise = pid
+    else:
+        raise TypeError("promise_id must be a string or !promise")
+
+    yield (promise, parent)
+
+
 def _operate_create(
     promises: dict[Promise, capellambse.ModelObject],
     parent: capellambse.ModelObject,
@@ -599,6 +615,7 @@ class _NoObjectFoundError(ValueError):
 
 _OPERATIONS = collections.OrderedDict(
     (
+        ("promise_id", _operate_promise_id),
         ("create", _operate_create),
         ("extend", _operate_extend),
         ("set", _operate_set),
