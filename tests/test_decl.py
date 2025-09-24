@@ -460,7 +460,10 @@ class TestApplyPromises:
                   - !promise pass-test
             """
 
-        with pytest.raises(decl.UnfulfilledPromisesError, match="^pass-test$"):
+        with pytest.raises(
+            decl.UnfulfilledPromisesError,
+            match=r"^pass-test$",
+        ):
             decl.apply(model, io.StringIO(yml))
 
     @staticmethod
@@ -894,7 +897,7 @@ class TestStrictMetadata:
             """
         )
 
-        with pytest.raises(ValueError, match="^No metadata found"):
+        with pytest.raises(ValueError, match=r"^No metadata found"):
             decl.apply(model, io.StringIO(yml), strict=True)
 
     @staticmethod
