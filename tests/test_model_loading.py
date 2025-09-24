@@ -54,7 +54,7 @@ def test_model_loading_via_LocalFileHandler(path: str | pathlib.Path):
 def test_model_loading_with_invalid_entrypoint_fails(pattern: str):
     (file,) = Models.test7_0.glob(pattern)
 
-    with pytest.raises(ValueError, match="(?i)invalid entrypoint"):
+    with pytest.raises(ValueError, match=r"(?i)invalid entrypoint"):
         capellambse.MelodyModel(file)
 
 

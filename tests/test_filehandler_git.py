@@ -65,7 +65,7 @@ def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
     caplog.set_level(logging.DEBUG)
     caplog.clear()
 
-    with pytest.raises(FileNotFoundError, match="--mocked end of test--$"):
+    with pytest.raises(FileNotFoundError, match=r"--mocked end of test--$"):
         capellambse.get_filehandler(
             "git+https://domain.invalid/demo.git", revision="somebranch"
         )

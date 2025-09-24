@@ -97,20 +97,11 @@ repos:
         types_or: [python, pyi, jupyter]
         require_serial: true
       - id: ruff
-        name: Lint with ruff (main Python code)
+        name: Lint with ruff
         language: system
-        entry: uv run --dev ruff check
+        entry: uv run --dev ruff check --output-format=concise
         types_or: [python, pyi, jupyter]
-        exclude: 'docs/.*\.ipynb$'
         args: [--extend-ignore=FIX, --fix]
-        require_serial: true
-      - id: ruff
-        name: Lint with ruff (demo notebooks)
-        language: system
-        entry: uv run --dev ruff check
-        types_or: [jupyter]
-        files: 'docs/.*\.ipynb$'
-        args: [--extend-ignore=FIX, --extend-ignore=ERA001]
         require_serial: true
   - repo: local # mypy
     hooks:

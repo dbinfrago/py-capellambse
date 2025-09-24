@@ -135,14 +135,14 @@ test = [
 dev = [
   "capellambse-context-diagrams>=0.7.12",
   "docformatter[tomli]==1.7.7",
-  "jupyterlab==4.4.4",
+  "jupyterlab==4.4.7",
   "mypy==1.15.0",
   "pandas>=2.3.0",
-  "pre-commit==4.2.0",
+  "pre-commit==4.3.0",
   "pylsp-mypy==0.7.0",
-  "python-lsp-server[rope]==1.12.2",
-  "reuse==5.0.2",
-  "ruff==0.12.1",
+  "python-lsp-server[rope]==1.13.1",
+  "reuse==5.1.1",
+  "ruff==0.13.1",
   "xlsxwriter>=3.2.5",
 ]
 
@@ -171,13 +171,13 @@ typecheck = [
 ]
 
 docs = [
-  "furo==2024.8.6",
+  "furo==2025.7.19",
   "ipython==8.37.0",
   "jinja2==3.1.6",
   "nbsphinx==0.9.7",
   "sphinx==8.1.3",
   "sphinx-autodoc-typehints==3.0.1",
-  "sphinx-click==6.0.0",
+  "sphinx-click==6.1.0",
   "tomli==2.2.1 ; python_full_version < '3.11'",
 ]
 
@@ -331,6 +331,12 @@ extend-ignore = [
 "tests/test_*.py" = [
   "F811",    # Redefinition of unused `_` from line _
   "PLR2004", # Magic value used in comparison, consider replacing `_` with a constant variable
+]
+
+# Jupyter notebooks
+"*.ipynb" = [
+  "ERA001", # commented-out code # used to showcase alternatives to the executed code
+  "FIX",    # flake8-fixme
 ]
 
 [tool.ruff.lint.flake8-bugbear]
