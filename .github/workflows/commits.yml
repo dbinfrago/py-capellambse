@@ -34,7 +34,7 @@ jobs:
           echo "$delim" >> "$GITHUB_OUTPUT"
           exit $r
       - name: Find conventional commit comment on PR
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         if: always() && steps.conventional-commits.outcome == 'failure'
         id: fc
         with:
@@ -42,7 +42,7 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: conventional commit
       - name: Post comment if validation failed
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         if: always() && steps.conventional-commits.outcome == 'failure'
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
