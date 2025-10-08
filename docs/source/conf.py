@@ -62,6 +62,8 @@ nitpick_ignore = [
     ("py:class", "capellambse.metamodel.fa._AbstractExchange"),
     ("py:class", "capellambse.metamodel.interaction._CapabilityRelation"),
     ("py:class", "capellambse.metamodel.interaction._EventOperation"),
+    # Typing stuff that gets resolved improperly
+    ("py:data", "typing.Union"),
 ]
 nitpick_ignore_regex = [
     ("py:.*", r"^(?:awesomeversion|yaml)\..*"),
