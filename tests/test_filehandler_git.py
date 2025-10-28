@@ -37,6 +37,12 @@ def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
     def mock_run(cmd, *args, encoding="", **kw):
         del args, kw
         nonlocal did_ls_files
+
+        assert len(cmd) >= 1
+        assert cmd[0] == "git"
+        while len(cmd) >= 2 and cmd[1] == "-c":
+            cmd = [cmd[0], *cmd[3:]]
+
         if len(cmd) >= 2 and cmd[1] == "ls-remote":
             assert not did_ls_files
             did_ls_files = True
@@ -50,14 +56,13 @@ def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
         assert did_ls_files
         raise FileNotFoundError(errno.ENOENT, "--mocked end of test--")
 
-    did_flock = False
+    flocked_files: set[str] = set()
 
     @contextlib.contextmanager
     def mock_flock(file):
-        del file
-        nonlocal did_flock
-        assert not did_flock
-        did_flock = True
+        nonlocal flocked_files
+        assert not flocked_files
+        flocked_files.add(str(file))
         yield
 
     monkeypatch.setattr(subprocess, "run", mock_run)
@@ -71,4 +76,4 @@ def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
         )
 
     assert did_ls_files
-    assert did_flock
+    assert len(flocked_files) == 1
