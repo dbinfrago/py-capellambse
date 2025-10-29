@@ -45,7 +45,7 @@ jobs:
         run: |-
           uv build --sdist --out-dir wheelhouse/
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sdist
           path: wheelhouse/
@@ -109,7 +109,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.1
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheel-${{runner.os}}-${{matrix.arch}}${{ matrix.manylinux && '-' || '' }}${{ matrix.manylinux || '' }}
           path: wheelhouse/
@@ -154,7 +154,7 @@ jobs:
 
           coverage run
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: wheel-${{runner.os}}-pure
           path: wheelhouse/
@@ -172,12 +172,12 @@ jobs:
       id-token: write
     steps:
       - name: Download sdist
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: dist/
           name: sdist
       - name: Download built wheels
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: dist/
           pattern: wheel-*
@@ -258,7 +258,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           repository: ${{matrix.repo}}
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           path: wheelhouse/
           name: wheel-Linux-x86_64-manylinux
