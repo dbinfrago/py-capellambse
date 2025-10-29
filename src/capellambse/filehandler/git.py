@@ -14,6 +14,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import textwrap
 import typing as t
@@ -31,6 +32,9 @@ WTBASE = pathlib.Path(capellambse.dirs.user_cache_dir, "worktrees")
 _git_object_name = re.compile("(^|/)([0-9a-fA-F]{4,}|(.+_)?HEAD)$")
 
 _NOT_SPECIFIED = object()
+
+_CRED_SCRIPT = pathlib.Path(__file__).parent.joinpath("git_credhelper.py")
+_CREDHELPER = "!" + shlex.join((sys.executable, str(_CRED_SCRIPT.resolve())))
 
 
 class _TreeEntry(t.NamedTuple):
@@ -568,20 +572,6 @@ class GitFileHandler(abc.FileHandler):
         git_env = os.environ.copy()
         git_cmd = ["git"]
 
-        if not os.environ.get("GIT_ASKPASS"):
-            path_to_askpass = (
-                pathlib.Path(__file__).parent / "git_askpass.py"
-            ).absolute()
-
-            git_env["GIT_ASKPASS"] = str(path_to_askpass)
-
-            try:
-                os.chmod(path_to_askpass, 0o755)
-            except OSError:
-                LOGGER.info(
-                    "Setting permission 755 for GIT_ASKPASS file failed"
-                )
-
         if self.username and self.password:
             git_env["GIT_USERNAME"] = self.username
             git_env["GIT_PASSWORD"] = self.password
@@ -596,12 +586,8 @@ class GitFileHandler(abc.FileHandler):
             git_env["GIT_SSH_COMMAND"] = shlex.join(ssh_command)
 
         if "GIT_USERNAME" in git_env or "GIT_PASSWORD" in git_env:
-            git_cmd += [
-                "-c",
-                "credential.helper=",
-                "-c",
-                "credential.interactive=true",
-            ]
+            LOGGER.debug("Using credential helper: %r", _CREDHELPER)
+            git_cmd += ["-c", f"credential.helper={_CREDHELPER}"]
 
         return git_env, git_cmd
 
