@@ -53,7 +53,7 @@ jobs:
           if-no-files-found: error
 
   build: # {{{1
-    name: Build wheel for ${{matrix.os}} / ${{matrix.arch}}${{ matrix.manylinux && ' / ' || '' }}${{ matrix.manylinux || '' }}
+    name: Build wheel for ${{matrix.os}} / ${{matrix.arch}}${{ matrix.manylinux && ' / ' || '' }}${{ matrix.manylinux || '' }}${{ matrix.freethreaded }}
     runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
@@ -66,6 +66,14 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: aarch64
             manylinux: manylinux
+          - os: ubuntu-latest
+            arch: x86_64
+            manylinux: manylinux
+            freethreaded: -ft
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+            manylinux: manylinux
+            freethreaded: -ft
           # }}}
           # Linux musllinux {{{
           - os: ubuntu-latest
@@ -74,18 +82,38 @@ jobs:
           - os: ubuntu-24.04-arm
             arch: aarch64
             manylinux: musllinux
+          - os: ubuntu-latest
+            arch: x86_64
+            manylinux: musllinux
+            freethreaded: -ft
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+            manylinux: musllinux
+            freethreaded: -ft
           # }}}
           # macOS {{{
           - os: macos-13
             arch: x86_64
           - os: macos-14
             arch: arm64
+          - os: macos-13
+            arch: x86_64
+            freethreaded: -ft
+          - os: macos-14
+            arch: arm64
+            freethreaded: -ft
           # }}}
           # Windows {{{
           - os: windows-latest
             arch: x86
           - os: windows-latest
             arch: AMD64
+          - os: windows-latest
+            arch: x86
+            freethreaded: -ft
+          - os: windows-latest
+            arch: AMD64
+            freethreaded: -ft
           # }}}
     env:
       CIBW_ARCHS: ${{matrix.arch}}
@@ -99,10 +127,12 @@ jobs:
       - name: Determine which Python versions to test against
         shell: bash
         env:
-          ENV_TAG: ${{runner.os}}-${{matrix.arch}}-${{matrix.manylinux}}
+          ENV_TAG: ${{runner.os}}-${{matrix.arch}}-${{matrix.manylinux}}${{matrix.freethreaded}}
           MANYLINUX: ${{matrix.manylinux}}
         run: |-
-          if [[ "$ENV_TAG" == "Linux-x86_64-manylinux" || "$ENV_TAG" == "macOS-arm64-" ]]; then
+          if [[ "$ENV_TAG" = *"-ft" ]]; then
+            echo "CIBW_BUILD=cp*t-$MANYLINUX*" >> $GITHUB_ENV
+          elif [[ "$ENV_TAG" = "Linux-x86_64-manylinux" || "$ENV_TAG" = "macOS-arm64-" ]]; then
             echo "CIBW_BUILD=cp*-$MANYLINUX*" >> $GITHUB_ENV
             echo "CIBW_SKIP=cp*t-*" >> $GITHUB_ENV
           else
@@ -113,7 +143,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: wheel-${{runner.os}}-${{matrix.arch}}${{ matrix.manylinux && '-' || '' }}${{ matrix.manylinux || '' }}
+          name: wheel-${{runner.os}}-${{matrix.arch}}${{ matrix.manylinux && '-' || '' }}${{ matrix.manylinux || '' }}${{ matrix.freethreaded }}
           path: wheelhouse/
           if-no-files-found: error
 
