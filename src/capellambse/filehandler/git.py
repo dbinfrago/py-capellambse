@@ -586,8 +586,6 @@ class GitFileHandler(abc.FileHandler):
             git_env["GIT_USERNAME"] = self.username
             git_env["GIT_PASSWORD"] = self.password
 
-            git_cmd += ["-c", "credential.helper="]
-
         if self.identity_file and self.known_hosts_file:
             ssh_command = [
                 "ssh",
@@ -597,7 +595,13 @@ class GitFileHandler(abc.FileHandler):
             ]
             git_env["GIT_SSH_COMMAND"] = shlex.join(ssh_command)
 
-            git_cmd += ["-c", "credential.helper="]
+        if "GIT_USERNAME" in git_env or "GIT_PASSWORD" in git_env:
+            git_cmd += [
+                "-c",
+                "credential.helper=",
+                "-c",
+                "credential.interactive=true",
+            ]
 
         return git_env, git_cmd
 
