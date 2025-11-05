@@ -103,10 +103,10 @@ jobs:
           MANYLINUX: ${{matrix.manylinux}}
         run: |-
           if [[ "$ENV_TAG" == "Linux-x86_64-manylinux" || "$ENV_TAG" == "macOS-arm64-" ]]; then
-            echo "CIBW_BUILD=cp*-$MANYLINUX*" >> $GITHUB_ENV
-            echo "CIBW_SKIP=cp*t-*" >> $GITHUB_ENV
+            echo "CIBW_BUILD=cp*-$MANYLINUX*" >> "$GITHUB_ENV"
+            echo "CIBW_SKIP=cp*t-*" >> "$GITHUB_ENV"
           else
-            echo "CIBW_BUILD=cp310-$MANYLINUX* cp314-$MANYLINUX*" >> $GITHUB_ENV
+            echo "CIBW_BUILD=cp310-$MANYLINUX* cp314-$MANYLINUX*" >> "$GITHUB_ENV"
           fi
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.3.0
@@ -131,10 +131,11 @@ jobs:
           python-version: "3.13"
       - name: Build the wheel
         run: |-
-          export SETUPTOOLS_SCM_PRETEND_VERSION="$(
+          SETUPTOOLS_SCM_PRETEND_VERSION="$(
             uvx --with setuptools_scm python -c \
               "import setuptools_scm as scm; print(scm.get_version())"
           )"
+          export SETUPTOOLS_SCM_PRETEND_VERSION
 
           uvx --with tomli_w python <<EOF
           import tomllib, tomli_w
