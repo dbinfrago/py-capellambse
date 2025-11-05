@@ -3,9 +3,9 @@
 
 [build-system]
 requires = [
-  "setuptools>=77",
+  "setuptools>=80.9.0",
   "setuptools-rust",
-  "setuptools-scm[toml]>=3.4",
+  "setuptools-scm[toml]>=9.2.2",
   "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -40,7 +40,7 @@ classifiers = [
 dependencies = [
   "awesomeversion>=25.5.0",
   "diskcache>=5.6.3",
-  "lxml>=6.0.0,<7",
+  "lxml>=6.0.0",
   "markupsafe>=3.0.2,<4.0",
   "pillow>=11.2.1",
   "platformdirs>=4.3.7",
@@ -215,9 +215,6 @@ exclude_also = [
   '@t\.overload',
 ]
 skip_covered = true
-
-[tool.distutils.bdist_wheel]
-py_limited_api = "cp310"
 
 [tool.docformatter]
 wrap-descriptions = 72
