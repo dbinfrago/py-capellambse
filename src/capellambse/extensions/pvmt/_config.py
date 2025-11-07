@@ -54,7 +54,7 @@ _RULES_RE = re.compile(
 )
 
 NS = m.Namespace(
-    m.VIRTUAL_NAMESPACE_PREFIX + "pvmt",
+    m.VIRTUAL_NAMESPACE_PREFIX + "capellambse/virtual/pvmt",
     "capellambse.virtual.pvmt",
 )
 
@@ -71,7 +71,11 @@ class ScopeError(m.InvalidModificationError):
         return self.args[1]
 
     def __str__(self) -> str:
-        groupname = f"{self.group.parent.name}.{self.group.name}"
+        domain = self.group.parent
+        assert isinstance(domain, mm.capellacore.PropertyValuePkg), (
+            "PVMT group's parent is not a domain?"
+        )
+        groupname = f"{domain.name}.{self.group.name}"
         objrepr = getattr(self.obj, "_short_repr_", lambda: repr(self.obj))()
         return f"PVMT group {groupname!r} does not apply to {objrepr}"
 
@@ -82,9 +86,12 @@ def _matchprops(
 ) -> bool:
     for prop, op, wanted in props:
         group, prop = prop.rsplit(".", 1)
+        pvgs = getattr(obj, "property_value_groups", None)
+        if pvgs is None:
+            return False
         try:
-            actual = obj.property_value_groups[group][prop]  # type: ignore
-        except (AttributeError, KeyError):
+            actual = pvgs[group][prop]
+        except KeyError:
             return False
 
         cmp = _PROP_OPS[op]
@@ -209,6 +216,9 @@ class ManagedGroup(mm.capellacore.PropertyValueGroup):
 
     @property
     def fullname(self) -> str:
+        assert isinstance(self.parent, mm.capellacore.PropertyValuePkg), (
+            "PVMT group's parent is not a domain?"
+        )
         return f"{self.parent.name}.{self.name}"
 
     def applies_to(self, obj: m.ModelObject) -> bool:
@@ -254,6 +264,9 @@ class ManagedGroup(mm.capellacore.PropertyValueGroup):
         if not hasattr(obj, "applied_property_value_groups"):
             raise TypeError(f"Cannot apply PV groups to {objrepr()}")
 
+        assert isinstance(self.parent, mm.capellacore.PropertyValuePkg), (
+            "PVMT group's parent is not a domain?"
+        )
         groupname = f"{self.parent.name}.{self.name}"
         try:
             return obj.property_value_groups.by_name(groupname, single=True)
@@ -323,15 +336,17 @@ class ManagedDomain(mm.capellacore.PropertyValuePkg):
     ) -> te.Self:
         self = m.wrap_xml(model, element, cls)
         try:
-            version = self.property_values.by_name("version").value
-        except Exception:
-            self.property_values.create(
+            version_pv = self.property_values.by_name("version")
+        except m.MultipleMatchesError:
+            raise
+        except KeyError:
+            version_pv = self.property_values.create(
                 name="version", value=PVMT_SCHEMA_VERSION
             )
         else:
-            if version != PVMT_SCHEMA_VERSION:
+            if version_pv.version != PVMT_SCHEMA_VERSION:
                 raise RuntimeError(
-                    f"Unsupported schema version {version!r}"
+                    f"Unsupported schema version {version_pv.version!r}"
                     f" on PVMT element {self._short_repr_()}"
                 )
         return self

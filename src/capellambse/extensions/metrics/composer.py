@@ -59,7 +59,7 @@ def draw_text(
     )
 
 
-def draw_legend(x: float, y: float):
+def draw_legend(x: float, y: float) -> str:
     """Construct plot legend (SVG string)."""
     return draw_group(
         [
@@ -117,7 +117,7 @@ def draw_bar(
     )
 
 
-def draw_diagrams_icon(x: float | int, y: float | int):
+def draw_diagrams_icon(x: float, y: float) -> str:
     """Create simple diagram icon (SVG string)."""
     return (
         '<g stroke="#555" stroke-width=".2">'
@@ -128,7 +128,7 @@ def draw_diagrams_icon(x: float | int, y: float | int):
     )
 
 
-def draw_objects_icon(x: float | int, y: float | int):
+def draw_objects_icon(x: float, y: float) -> str:
     """Create simple objects icon (SVG string)."""
     return (
         '<g stroke="#555" stroke-width=".3">'

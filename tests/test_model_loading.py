@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import typing as t
 from importlib import metadata
 
 import pytest
@@ -33,7 +34,7 @@ DUMMY_PNG = base64.standard_b64decode(DUMMY_PNG_B64)
 
 
 @pytest.fixture(autouse=True)
-def _glart_clear_env(monkeypatch):
+def _glart_clear_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for i in list(os.environ):
         if i.startswith("CI_"):
             monkeypatch.delenv(i)
@@ -46,19 +47,19 @@ def _glart_clear_env(monkeypatch):
         pytest.param(Models.test7_0, id="path"),
     ],
 )
-def test_model_loading_via_LocalFileHandler(path: str | pathlib.Path):
+def test_model_loading_via_LocalFileHandler(path: str | pathlib.Path) -> None:
     capellambse.MelodyModel(path)
 
 
 @pytest.mark.parametrize("pattern", ["*.afm", "*.capella"])
-def test_model_loading_with_invalid_entrypoint_fails(pattern: str):
+def test_model_loading_with_invalid_entrypoint_fails(pattern: str) -> None:
     (file,) = Models.test7_0.glob(pattern)
 
     with pytest.raises(ValueError, match=r"(?i)invalid entrypoint"):
         capellambse.MelodyModel(file)
 
 
-def test_model_loading_via_GitFileHandler():
+def test_model_loading_via_GitFileHandler() -> None:
     path = "git+" + pathlib.Path.cwd().as_uri()
     (filename,) = Models.test7_0.glob("*.aird")
     entrypoint = pathlib.Path("tests", "data", filename.relative_to(TEST_DATA))
@@ -69,7 +70,7 @@ def test_model_loading_via_GitFileHandler():
     assert not lockfile.exists()
 
 
-def test_model_loading_via_GitFileHandler_invalid_uri():
+def test_model_loading_via_GitFileHandler_invalid_uri() -> None:
     path = "git+not-a-valid-uri"
     with pytest.raises(subprocess.CalledProcessError):
         capellambse.MelodyModel(
@@ -79,13 +80,13 @@ def test_model_loading_via_GitFileHandler_invalid_uri():
     assert path
 
 
-def test_model_loading_from_bad_path_raises_FileNotFoundError():
+def test_model_loading_from_bad_path_raises_FileNotFoundError() -> None:
     badpath = TEST_DATA / "Missing.aird"
     with pytest.raises(FileNotFoundError):
         capellambse.MelodyModel(badpath)
 
 
-def test_split_protocol_returns_path_objects_unchanged():
+def test_split_protocol_returns_path_objects_unchanged() -> None:
     expected = pathlib.Path.cwd()
 
     handler, actual = capellambse.filehandler.split_protocol(expected)
@@ -114,7 +115,9 @@ def test_split_protocol_returns_path_objects_unchanged():
         ]
     ),
 )
-def test_split_protocol_converts_file_urls_to_paths(url, expected):
+def test_split_protocol_converts_file_urls_to_paths(
+    url: str, expected: pathlib.Path
+) -> None:
     handler, actual = capellambse.filehandler.split_protocol(url)
 
     assert handler == "file"
@@ -131,7 +134,7 @@ def test_split_protocol_converts_file_urls_to_paths(url, expected):
         "git@host:/path/to/repo",
     ],
 )
-def test_split_protocol_recognizes_scp_style_uris_as_git(url: str):
+def test_split_protocol_recognizes_scp_style_uris_as_git(url: str) -> None:
     handler, actual = capellambse.filehandler.split_protocol(url)
 
     assert handler == "git"
@@ -149,7 +152,7 @@ def test_split_protocol_recognizes_scp_style_uris_as_git(url: str):
         pytest.param("ssh://domain.invalid/path", id="ssh"),
     ],
 )
-def test_split_protocol_does_not_change_simple_urls(url: str):
+def test_split_protocol_does_not_change_simple_urls(url: str) -> None:
     handler, actual = capellambse.filehandler.split_protocol(url)
 
     assert handler == url.split(":", 1)[0]
@@ -162,19 +165,19 @@ class FakeEntrypoint:
         self._expected_url = expected_url
 
     @property
-    def name(self):
+    def name(self) -> t.Any:
         class AlwaysEqual:
             __hash__ = None  # type: ignore[assignment]
 
-            def __eq__(_, name):
+            def __eq__(_, name: object) -> bool:
                 nonlocal self
                 assert name == self._expected_name
                 return True
 
         return AlwaysEqual()
 
-    def load(self):
-        def filehandler(url: str | pathlib.Path):
+    def load(self) -> t.Any:
+        def filehandler(url: str | pathlib.Path) -> None:
             if isinstance(url, pathlib.Path):
                 assert url == pathlib.Path(self._expected_url)
             else:
@@ -183,8 +186,13 @@ class FakeEntrypoint:
         return filehandler
 
     @classmethod
-    def patch(cls, monkeypatch, expected_name, expected_url) -> None:
-        def entry_points(group, name):
+    def patch(
+        cls,
+        monkeypatch: pytest.MonkeyPatch,
+        expected_name: str,
+        expected_url: str,
+    ) -> None:
+        def entry_points(group: str, name: str) -> tuple[FakeEntrypoint]:
             assert group == "capellambse.filehandler"
             assert name == expected_name
             return (cls(expected_name, expected_url),)
@@ -193,14 +201,16 @@ class FakeEntrypoint:
 
 
 def test_a_single_protocol_is_not_swallowed_by_get_filehandler(
-    monkeypatch,
-):
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     FakeEntrypoint.patch(monkeypatch, "testproto", "testproto://url")
 
     capellambse.get_filehandler("testproto://url")
 
 
-def test_a_wrapping_protocol_separated_by_plus_is_stripped(monkeypatch):
+def test_a_wrapping_protocol_separated_by_plus_is_stripped(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     FakeEntrypoint.patch(monkeypatch, "realproto", "wrappedproto://url")
 
     capellambse.get_filehandler("realproto+wrappedproto://url")
@@ -221,7 +231,9 @@ def test_a_wrapping_protocol_separated_by_plus_is_stripped(monkeypatch):
         ]
     ),
 )
-def test_plain_file_paths_are_recognized_as_file_protocol(monkeypatch, path):
+def test_plain_file_paths_are_recognized_as_file_protocol(
+    monkeypatch: pytest.MonkeyPatch, path: str
+) -> None:
     FakeEntrypoint.patch(monkeypatch, "file", path)
 
     capellambse.get_filehandler(path)
@@ -237,7 +249,9 @@ def test_plain_file_paths_are_recognized_as_file_protocol(monkeypatch, path):
         "git@host:/path/to/repo",
     ],
 )
-def test_the_scp_short_form_is_recognized_as_git_protocol(monkeypatch, url):
+def test_the_scp_short_form_is_recognized_as_git_protocol(
+    monkeypatch: pytest.MonkeyPatch, url: str
+) -> None:
     FakeEntrypoint.patch(monkeypatch, "git", url)
 
     capellambse.get_filehandler(url)
@@ -253,7 +267,7 @@ def test_the_scp_short_form_is_recognized_as_git_protocol(monkeypatch, url):
         "MelodyModel%20Test.aird#00000000-0000-4000-0000-000000000000",
     ],
 )
-def test_MelodyLoader_follow_link_finds_target(link: str):
+def test_MelodyLoader_follow_link_finds_target(link: str) -> None:
     loader = capellambse.loader.MelodyLoader(Models.test7_0)
 
     with pytest.raises(KeyError):
@@ -308,7 +322,7 @@ def test_http_file_handler_replaces_percent_escapes(
     file_handler = capellambse.get_filehandler(path, subdir=subdir)
     file_handler.open("demo/my model.aird", "rb").close()
 
-    assert endpoint.called_once
+    assert endpoint.call_count == 1
 
 
 def test_http_file_handler_hands_auth_to_server(
@@ -330,7 +344,7 @@ def test_http_file_handler_hands_auth_to_server(
     )
     file_handler.open("test.svg", "rb").close()
 
-    assert endpoint.called_once
+    assert endpoint.call_count == 1
 
 
 def test_http_file_handlers_passed_through_custom_headers(
@@ -347,7 +361,7 @@ def test_http_file_handlers_passed_through_custom_headers(
     )
     file_handler.open("test.svg", "rb").close()
 
-    assert endpoint.called_once
+    assert endpoint.call_count == 1
 
 
 def test_gitlab_artifacts_handler_uses_public_gitlab_when_no_hostname_given(
@@ -631,7 +645,7 @@ def test_model_info_contains_viewpoints_and_capella_version() -> None:
 )
 def test_model_loads_diagrams_from_cache_by_uuid(
     tmp_path: pathlib.Path, format: str, content: bytes
-):
+) -> None:
     model = capellambse.MelodyModel(Models.test7_0, diagram_cache=tmp_path)
     dg = model.diagrams[0]
     tmp_path.joinpath(f"{dg.uuid}.{format}").write_bytes(content)
@@ -645,7 +659,7 @@ def test_model_loads_diagrams_from_cache_by_uuid(
 
 def test_model_will_refuse_to_render_diagrams_if_diagram_cache_was_given(
     tmp_path: pathlib.Path,
-):
+) -> None:
     model = capellambse.MelodyModel(Models.test7_0, diagram_cache=tmp_path)
 
     with pytest.raises(RuntimeError, match="not in cache"):
@@ -654,7 +668,7 @@ def test_model_will_refuse_to_render_diagrams_if_diagram_cache_was_given(
 
 def test_model_will_fall_back_to_rendering_internally_despite_the_cache_if_told_to(
     tmp_path: pathlib.Path,
-):
+) -> None:
     model = capellambse.MelodyModel(
         Models.test7_0,
         diagram_cache=tmp_path,
@@ -666,7 +680,7 @@ def test_model_will_fall_back_to_rendering_internally_despite_the_cache_if_told_
 
 def test_model_diagram_visible_nodes_can_be_accessed_when_a_cache_was_specified(
     tmp_path: pathlib.Path,
-):
+) -> None:
     model = capellambse.MelodyModel(Models.test7_0, diagram_cache=tmp_path)
 
     assert model.diagrams[0].nodes
@@ -674,7 +688,7 @@ def test_model_diagram_visible_nodes_can_be_accessed_when_a_cache_was_specified(
 
 def test_updated_namespaces_use_rounded_versions(
     tmp_model: pathlib.Path,
-):
+) -> None:
     (afm,) = tmp_model.glob("*.afm")
     data = etree.parse(afm)
     for child in data.getroot().iterchildren("viewpointReferences"):
@@ -692,7 +706,7 @@ def test_updated_namespaces_use_rounded_versions(
     assert nsver == "7.0.0"
 
 
-def test_embed_images_finds_images_in_primary_resource():
+def test_embed_images_finds_images_in_primary_resource() -> None:
     hdl = memory.MemoryFileHandler()
     hdl.write_file("images/test.png", DUMMY_PNG)
     resources = {"\x00": hdl}
@@ -708,7 +722,7 @@ def test_embed_images_finds_images_in_primary_resource():
     assert actual == expected
 
 
-def test_unembed_images_writes_data_uris_to_provided_paths():
+def test_unembed_images_writes_data_uris_to_provided_paths() -> None:
     hdl = memory.MemoryFileHandler()
     resources = {"\x00": hdl}
 
@@ -726,7 +740,9 @@ def test_unembed_images_writes_data_uris_to_provided_paths():
 
 
 @helpers.deterministic_ids()
-def test_unembed_images_writes_data_uris_without_path_to_random_filename():
+def test_unembed_images_writes_data_uris_without_path_to_random_filename() -> (
+    None
+):
     hdl = memory.MemoryFileHandler()
     dotproject = E.projectDescription(
         E.name("mymodel"),

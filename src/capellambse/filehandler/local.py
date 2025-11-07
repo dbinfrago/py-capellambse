@@ -115,11 +115,11 @@ def _tmpname(filename: pathlib.PurePosixPath) -> pathlib.PurePosixPath:
 
 class LocalFilePath(abc.FilePath[LocalFileHandler]):
     def is_dir(self) -> bool:
-        base = t.cast(pathlib.Path, self._parent.path)
+        base = t.cast("pathlib.Path", self._parent.path)
         path = base.joinpath(self._path).resolve()
         return path.is_dir()
 
     def is_file(self) -> bool:
-        base = t.cast(pathlib.Path, self._parent.path)
+        base = t.cast("pathlib.Path", self._parent.path)
         path = base.joinpath(self._path).resolve()
         return path.is_file()

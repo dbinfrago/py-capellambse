@@ -159,8 +159,7 @@ def _main() -> None:
     if len(sys.argv) < 2:
         args = ["--help"]
     elif sys.argv[1] != "derive":
-        print(f"Unsupported command: {sys.argv[1]}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(f"Unsupported command: {sys.argv[1]}")
     else:
         args = sys.argv[2:]
 

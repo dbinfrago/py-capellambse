@@ -54,7 +54,12 @@ try:
 
         name = "CAPELLA_MODEL"
 
-        def convert(self, value: t.Any, param, ctx) -> capellambse.MelodyModel:
+        def convert(
+            self,
+            value: t.Any,
+            param: click.Parameter | None,
+            ctx: click.Context | None,
+        ) -> capellambse.MelodyModel:
             """Convert the value to the target type."""
             if isinstance(value, capellambse.MelodyModel):
                 return value
@@ -89,7 +94,12 @@ try:
 
         name = "CAPELLA_MODEL"
 
-        def convert(self, value: t.Any, param, ctx) -> dict[str, t.Any]:
+        def convert(
+            self,
+            value: t.Any,
+            param: click.Parameter | None,
+            ctx: click.Context | None,
+        ) -> dict[str, t.Any]:
             """Convert the value to the target type."""
             if isinstance(value, dict):
                 return value

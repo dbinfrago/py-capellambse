@@ -176,10 +176,10 @@ class FileHandler(metaclass=abc.ABCMeta):
         """
 
         class EmptyTransaction:
-            def __enter__(self):
+            def __enter__(self) -> dict[str, t.Any]:
                 return kw
 
-            def __exit__(self, *_):
+            def __exit__(self, *_: object) -> None:
                 pass
 
         return EmptyTransaction()
@@ -211,7 +211,7 @@ class FileHandler(metaclass=abc.ABCMeta):
             f"{type(self).__name__} does not support listing files"
         )
 
-    def is_dir(self, path: str | pathlib.PurePosixPath, /):
+    def is_dir(self, path: str | pathlib.PurePosixPath, /) -> bool:
         try:
             fpath = self.rootdir.joinpath(path)
         except TypeError:
@@ -221,7 +221,7 @@ class FileHandler(metaclass=abc.ABCMeta):
 
         return fpath.is_dir()
 
-    def is_file(self, path: str | pathlib.PurePosixPath, /):
+    def is_file(self, path: str | pathlib.PurePosixPath, /) -> bool:
         try:
             fpath = self.rootdir.joinpath(path)
         except TypeError:

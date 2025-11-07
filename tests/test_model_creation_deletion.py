@@ -13,13 +13,13 @@ XPATH_UUID = "//*[@id={!r}]"
 
 
 @pytest.fixture
-def writemodel():
+def writemodel() -> m.MelodyModel:
     return m.MelodyModel(Models.writemodel)
 
 
 def test_created_elements_can_be_accessed_in_model(
     writemodel: m.MelodyModel,
-):
+) -> None:
     parent = writemodel.by_uuid("df30d27f-0efb-4896-b6b6-0757145c7ad5")
     assert isinstance(parent, mm.capellacommon.Region)
     assert isinstance(type(parent).states, m.Containment)
@@ -33,7 +33,7 @@ def test_created_elements_can_be_accessed_in_model(
 
 def test_created_elements_show_up_in_xml_after_adding_them(
     writemodel: m.MelodyModel,
-):
+) -> None:
     newobj = writemodel.la.root_component.components.create(
         name="TestComponent"
     )
@@ -55,8 +55,8 @@ def test_created_elements_show_up_in_xml_after_adding_them(
     [0, slice(None, 1)],
 )
 def test_deleted_elements_are_removed(
-    writemodel: m.MelodyModel, deletion_target
-):
+    writemodel: m.MelodyModel, deletion_target: int | slice
+) -> None:
     comps = writemodel.la.root_component.components
     assert len(comps) == 2, "Precondition not met: Bad list length"
 
@@ -73,7 +73,9 @@ def test_deleted_elements_are_removed(
     )
 
 
-def test_delete_all_deletes_matching_objects(writemodel: m.MelodyModel):
+def test_delete_all_deletes_matching_objects(
+    writemodel: m.MelodyModel,
+) -> None:
     comps = writemodel.la.root_component.components
     assert len(comps) == 2
 
@@ -115,7 +117,7 @@ def test_adding_a_namespace_preserves_the_capella_version_comment(
 
 
 def test_deleting_an_object_purges_references_from_Association(
-    writemodel: m.MelodyModel, caplog
+    writemodel: m.MelodyModel, caplog: pytest.LogCaptureFixture
 ) -> None:
     part = writemodel.by_uuid("1bd59e23-3d45-4e39-88b4-33a11c56d4e3")
     assert isinstance(part, mm.cs.Part)
@@ -134,7 +136,7 @@ def test_deleting_an_object_purges_references_from_Association(
 
 
 def test_deleting_an_object_purges_references_from_LinkAccessor(
-    model: m.MelodyModel, caplog
+    model: m.MelodyModel, caplog: pytest.LogCaptureFixture
 ) -> None:
     entity = model.by_uuid("e37510b9-3166-4f80-a919-dfaac9b696c7")
     assert isinstance(entity, mm.oa.Entity)
@@ -149,7 +151,7 @@ def test_deleting_an_object_purges_references_from_LinkAccessor(
 
 
 def test_deleting_an_entire_list_purges_references_to_all_list_members(
-    model: m.MelodyModel, caplog
+    model: m.MelodyModel, caplog: pytest.LogCaptureFixture
 ) -> None:
     component = model.by_uuid("ff7b8672-84db-4b93-9fea-22a410907fb1")
     assert isinstance(component, mm.la.LogicalComponent)
@@ -168,7 +170,7 @@ def test_deleting_an_entire_list_purges_references_to_all_list_members(
 
 
 def test_deleting_an_object_purges_references_to_children(
-    model: m.MelodyModel, caplog
+    model: m.MelodyModel, caplog: pytest.LogCaptureFixture
 ) -> None:
     component = model.by_uuid("a8c46457-a702-41c4-a971-c815c4c5a674")
     port = model.by_uuid("e0dcf8c2-2283-4456-98a2-146e78ba5f26")

@@ -54,6 +54,8 @@ nitpick_ignore = [
     ("py:exc", "capellambse.UnsupportedPluginError"),
     ("py:exc", "capellambse.UnsupportedPluginVersionError"),
     ("any", "capellambse.aird.GLOBAL_FILTERS"),
+    # I don't even know what Sphinx is doing at this point
+    ("py:class", "T_co | _obj.ElementList[T_co] | None"),
     # Private type hinting helpers
     ("py:class", "_MapFunction"),
     ("py:class", "_NotSpecifiedType"),

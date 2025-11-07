@@ -5,6 +5,7 @@ import pathlib
 import zipfile
 
 import pytest
+import requests_mock
 
 from capellambse.filehandler import zip as zipfh
 
@@ -12,7 +13,9 @@ PPP = pathlib.PurePosixPath
 
 
 @pytest.mark.parametrize("proto", ["file:", "zip:"])
-def test_zipfilehandler_can_read_local_files(tmp_path, proto):
+def test_zipfilehandler_can_read_local_files(
+    tmp_path: pathlib.Path, proto: str
+) -> None:
     with zipfile.ZipFile(tmp_path / "test.zip", "w") as z:
         z.writestr("test.txt", b"Hello, World!")
     zip_path = tmp_path.joinpath("test.zip").as_uri().replace("file:", proto)
@@ -22,7 +25,9 @@ def test_zipfilehandler_can_read_local_files(tmp_path, proto):
     assert fh.read_file("test.txt") == b"Hello, World!"
 
 
-def test_zipfilehandler_uses_zip_root_directory_as_subdir(tmp_path):
+def test_zipfilehandler_uses_zip_root_directory_as_subdir(
+    tmp_path: pathlib.Path,
+) -> None:
     with zipfile.ZipFile(tmp_path / "test.zip", "w") as z:
         z.writestr("mydir/test.txt", b"Hello, World!")
     zip_path = tmp_path.joinpath("test.zip").as_uri()
@@ -34,8 +39,8 @@ def test_zipfilehandler_uses_zip_root_directory_as_subdir(tmp_path):
 
 
 def test_zipfilehandler_doesnt_use_zip_root_directory_if_explicitly_overridden(
-    tmp_path,
-):
+    tmp_path: pathlib.Path,
+) -> None:
     with zipfile.ZipFile(tmp_path / "test.zip", "w") as z:
         z.writestr("mydir/test.txt", b"Hello, World!")
     zip_path = tmp_path.joinpath("test.zip").as_uri()
@@ -55,7 +60,9 @@ def test_zipfilehandler_doesnt_use_zip_root_directory_if_explicitly_overridden(
         "http://example.com/%s?v=1!test.zip",
     ],
 )
-def test_zipfilehandler_can_load_files_from_other_handlers(requests_mock, url):
+def test_zipfilehandler_can_load_files_from_other_handlers(
+    requests_mock: requests_mock.Mocker, url: str
+) -> None:
     zipio = io.BytesIO()
     with zipfile.ZipFile(zipio, "w") as z:
         z.writestr("test.txt", b"Hello, World!")

@@ -49,6 +49,9 @@ class ObjectPVMT:
        2000
     """
 
+    __capella_abstract__: t.ClassVar = True
+    __capella_namespace__: t.ClassVar = NS
+
     _model: capellambse.MelodyModel
     _element: etree._Element
     _constructed: bool

@@ -63,7 +63,7 @@ def attr_equal(attr: str) -> cabc.Callable[[type[T]], type[T]]:
         orig_eq = cls.__eq__
 
         @functools.wraps(orig_eq)
-        def new_eq(self, other: object) -> bool:
+        def new_eq(self: object, other: object) -> bool:
             try:
                 cmpkey = getattr(self, attr)
             except AttributeError:
@@ -78,36 +78,36 @@ def attr_equal(attr: str) -> cabc.Callable[[type[T]], type[T]]:
             return orig_eq(self, other)
 
         cls.__eq__ = new_eq  # type: ignore[method-assign]
-        cls.__hash__ = None  # type: ignore
+        cls.__hash__ = None  # type: ignore[assignment, method-assign]
 
         return cls
 
     return add_wrapped_eq
 
 
-def stringy_enum(et: type[enum.Enum]) -> type[enum.Enum]:
+def stringy_enum(et: type[E]) -> type[E]:
     """Make an Enum stringy.
 
     This decorator makes an Enum's members compare equal to their
     respective ``name``.
     """
 
-    def __eq__(self, other):
+    def __eq__(self: E, other: object) -> bool:
         if isinstance(other, type(self)):
             return self is other
         if isinstance(other, str):
             return self.name == other
         return NotImplemented
 
-    def __str__(self):
+    def __str__(self: E) -> str:
         return str(self.name)
 
-    def __hash__(self):
+    def __hash__(self: E) -> int:
         return hash(self.name)
 
-    et.__eq__ = __eq__  # type: ignore[method-assign]
-    et.__str__ = __str__  # type: ignore[method-assign]
-    et.__hash__ = __hash__  # type: ignore[method-assign]
+    et.__eq__ = __eq__  # type: ignore[assignment, method-assign]
+    et.__str__ = __str__  # type: ignore[assignment, method-assign]
+    et.__hash__ = __hash__  # type: ignore[assignment, method-assign]
     return et
 
 
