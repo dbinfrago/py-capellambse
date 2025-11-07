@@ -131,7 +131,7 @@ def _encode_label(o: diagram.Box | str) -> object:
     }
 
 
-def _intround(val: float | int) -> int:
+def _intround(val: float) -> int:
     return int(val + 0.5)
 
 

@@ -134,6 +134,7 @@ def main(
         logger.info("No diagrams found in the model, nothing to export")
         raise SystemExit(0)
 
+    force: t.Literal["docker", "exe"] | None
     if docker:
         capella = docker
         force = "docker"
@@ -146,7 +147,7 @@ def main(
         model_,
         format=format,
         index=index,
-        force=force,  # type: ignore
+        force=force,
         background=background,
         refresh=refresh,
     )

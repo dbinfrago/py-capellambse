@@ -111,7 +111,7 @@ def virtual_type(
     real_type: str | type[_T_co],
 ) -> cabc.Callable[[cabc.Callable[[_T_co], bool]], VirtualType[_T_co]]:
     if isinstance(real_type, str):
-        (cls,) = t.cast(tuple[type[_T_co], ...], m.find_wrapper(real_type))
+        (cls,) = t.cast("tuple[type[_T_co], ...]", m.find_wrapper(real_type))
     else:
         cls = real_type
 
@@ -124,8 +124,7 @@ def virtual_type(
 
 
 @virtual_type(mm.oa.OperationalActivity)
-def OperationalActivity(obj):
-    assert isinstance(obj, mm.oa.OperationalActivity)
+def OperationalActivity(obj: mm.oa.OperationalActivity) -> bool:
     assert hasattr(obj._model, "oa"), "Model doesn't have an OA layer?"
     pkg = obj._model.oa.activity_pkg
     assert pkg is not None
@@ -133,19 +132,19 @@ def OperationalActivity(obj):
 
 
 @virtual_type(mm.sa.SystemFunction)
-def SystemFunction(obj):
+def SystemFunction(obj: mm.sa.SystemFunction) -> bool:
     assert hasattr(obj._model, "sa"), "Model doesn't have an SA layer?"
     return obj != obj._model.sa.root_function
 
 
 @virtual_type(mm.la.LogicalFunction)
-def LogicalFunction(obj):
+def LogicalFunction(obj: mm.la.LogicalFunction) -> bool:
     assert hasattr(obj._model, "sa"), "Model doesn't have an LA layer?"
     return obj != obj._model.la.root_function
 
 
 @virtual_type(mm.pa.PhysicalFunction)
-def PhysicalFunction(obj):
+def PhysicalFunction(obj: mm.pa.PhysicalFunction) -> bool:
     assert hasattr(obj._model, "sa"), "Model doesn't have a PA layer?"
     return obj != obj._model.pa.root_function
 
@@ -431,15 +430,11 @@ class ModelValidation:
 
     def validate(self) -> Results:
         """Execute all registered validation rules and store results."""
-        all_results = []
-        for rule_ in _VALIDATION_RULES.values():
-            for obj in rule_.find_objects(self._model):
-                all_results.append(
-                    (
-                        (rule_, obj.uuid),
-                        Result(rule_, obj, rule_.validate(obj)),
-                    )
-                )
+        all_results = [
+            ((rule_, obj.uuid), Result(rule_, obj, rule_.validate(obj)))
+            for rule_ in _VALIDATION_RULES.values()
+            for obj in rule_.find_objects(self._model)
+        ]
         return Results(all_results)
 
     def search(self, /, *typenames: str) -> m.ElementList[t.Any]:
@@ -523,15 +518,11 @@ class ElementValidation(ObjectValidation):
     def validate(self) -> Results:
         """Validate this element against the rules that apply to it."""
         obj = self.parent
-        all_results = []
-        for rule_ in _VALIDATION_RULES.values():
-            if rule_.applies_to(obj):
-                all_results.append(
-                    (
-                        (rule_, obj.uuid),
-                        Result(rule_, obj, rule_.validate(obj)),
-                    )
-                )
+        all_results = [
+            ((rule_, obj.uuid), Result(rule_, obj, rule_.validate(obj)))
+            for rule_ in _VALIDATION_RULES.values()
+            if rule_.applies_to(obj)
+        ]
         return Results(all_results)
 
 

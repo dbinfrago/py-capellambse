@@ -158,7 +158,7 @@ def load_with_metadata(
         The instruction stream.
     """
     if hasattr(file, "read"):
-        file = t.cast(t.IO[str], file)
+        file = t.cast("t.IO[str]", file)
         ctx: t.ContextManager[t.IO[str]] = contextlib.nullcontext(file)
     else:
         assert not isinstance(file, t.IO)
@@ -168,7 +168,7 @@ def load_with_metadata(
         contents = list(yaml.load_all(opened_file, Loader=YDMLoader))
 
     if len(contents) == 2:
-        return (t.cast(Metadata, contents[0]) or {}, contents[1] or [])
+        return (t.cast("Metadata", contents[0]) or {}, contents[1] or [])
     if len(contents) == 1:
         return ({}, contents[0] or [])
     if len(contents) == 0:
@@ -295,7 +295,10 @@ def _verify_metadata(
             ensure_strategy=av.AwesomeVersionStrategy.PEP440,
         )
         version_matches = current >= written_version
-    except Exception as err:
+    except (
+        av.AwesomeVersionCompareException,
+        av.AwesomeVersionStrategyException,
+    ) as err:
         raise ValueError(
             "Cannot verify required capellambse version:"
             f" {type(err).__name__}: {err}"
@@ -578,7 +581,7 @@ def _resolve_findby(
             (expected_values,) = attrs.values()
         getter = operator.attrgetter(*attrs)
 
-        def do_filter(obj):
+        def do_filter(obj: t.Any) -> bool:
             try:
                 real_values = getter(obj)
             except AttributeError:
@@ -816,13 +819,13 @@ class YDMLoader(yaml.SafeLoader):
             _type = data.pop("_type")
         except KeyError:
             raise ValueError("!new_object requires a _type key") from None
-        return NewObject(_type, **t.cast(t.Any, data))
+        return NewObject(_type, **t.cast("t.Any", data))
 
     def construct_findby(self, node: yaml.Node) -> FindBy:
         if not isinstance(node, yaml.MappingNode):
             raise TypeError("!find only accepts mapping nodes")
         data = self.construct_mapping(node)
-        return FindBy(t.cast(t.Any, data))
+        return FindBy(t.cast("t.Any", data))
 
     def construct_markup(self, node: yaml.Node) -> markupsafe.Markup:
         if not isinstance(node, yaml.ScalarNode):

@@ -7,7 +7,9 @@ from capellambse.metamodel import cs
 HOGWARTS_UUID = "0d2edb8f-fa34-4e73-89ec-fb9a63001440"
 
 
-def test_PhysicalPath_has_ordered_list_of_involved_items(model: MelodyModel):
+def test_PhysicalPath_has_ordered_list_of_involved_items(
+    model: MelodyModel,
+) -> None:
     expected = [
         "544549d6-2aa4-44c2-b2ae-a86302f48e62",
         "42ee9e89-d445-45a2-8280-028d4fb1038d",
@@ -23,7 +25,9 @@ def test_PhysicalPath_has_ordered_list_of_involved_items(model: MelodyModel):
     assert actual == expected
 
 
-def test_PhysicalPath_has_ordered_list_of_involved_links(model: MelodyModel):
+def test_PhysicalPath_has_ordered_list_of_involved_links(
+    model: MelodyModel,
+) -> None:
     expected = [
         "42ee9e89-d445-45a2-8280-028d4fb1038d",
         "3078ec08-956a-4c61-87ed-0143d1d66715",
@@ -36,26 +40,26 @@ def test_PhysicalPath_has_ordered_list_of_involved_links(model: MelodyModel):
     assert actual == expected
 
 
-def test_PhysicalPath_has_exchanges(model: MelodyModel):
+def test_PhysicalPath_has_exchanges(model: MelodyModel) -> None:
     exchange = model.pa.all_component_exchanges.by_name("C 6")
     path: cs.PhysicalPath
     path = model.pa.all_physical_paths.by_name("card1 - card2 connection")
     assert path.allocated_component_exchanges == [exchange]
 
 
-def test_PhysicalLink_has_physical_paths(model: MelodyModel):
+def test_PhysicalLink_has_physical_paths(model: MelodyModel) -> None:
     link = model.pa.all_physical_links.by_name("Eth Cable 2")
     path = model.pa.all_physical_paths.by_name("card1 - card2 connection")
     assert link.physical_paths == [path]
 
 
-def test_PhysicalLink_has_exchanges(model: MelodyModel):
+def test_PhysicalLink_has_exchanges(model: MelodyModel) -> None:
     link = model.pa.all_physical_links.by_name("Eth Cable 2")
     exchange = model.pa.all_component_exchanges.by_name("C 3")
     assert link.allocated_component_exchanges == [exchange]
 
 
-def test_PhysicalLink_setting_ends(model: MelodyModel):
+def test_PhysicalLink_setting_ends(model: MelodyModel) -> None:
     link = model.pa.all_physical_links.by_name("Eth Cable 2")
     assert isinstance(link, cs.PhysicalLink)
     source_pp = model.by_uuid("76d9c301-c0ad-4615-9f02-b804b018decf")
@@ -69,7 +73,7 @@ def test_PhysicalLink_setting_ends(model: MelodyModel):
     assert target_pp == link.target
 
 
-def test_PhysicalLink_setting_source_and_target(model: MelodyModel):
+def test_PhysicalLink_setting_source_and_target(model: MelodyModel) -> None:
     link = model.pa.all_physical_links.by_name("Eth Cable 2")
     assert isinstance(link, cs.PhysicalLink)
     source_pp = model.by_uuid("76d9c301-c0ad-4615-9f02-b804b018decf")
@@ -84,7 +88,7 @@ def test_PhysicalLink_setting_source_and_target(model: MelodyModel):
     assert target_pp == link.target
 
 
-def test_creating_a_component_also_creates_a_part(model: MelodyModel):
+def test_creating_a_component_also_creates_a_part(model: MelodyModel) -> None:
     name = "Component and part creation test"
     obj = model.by_uuid(HOGWARTS_UUID)
     assert name not in obj.owned_parts.by_name

@@ -69,7 +69,7 @@ class TestDumpLoad:
         assert actual == expected
 
     @staticmethod
-    def test_loading_with_metadata():
+    def test_loading_with_metadata() -> None:
         yml = textwrap.dedent(
             """\
             written_by:
@@ -125,7 +125,7 @@ class TestApplyExtend:
         ],
     )
     def test_decl_finds_parent_to_act_on(
-        model: m.MelodyModel, parent_str
+        model: m.MelodyModel, parent_str: str
     ) -> None:
         parent = model.by_uuid(TEACH_POTIONS_FUNC)
         funcname = "pass the unit test"
@@ -400,7 +400,7 @@ class TestApplyPromises:
         ],
     )
     def test_promises_on_simple_attributes_can_reference_objects(
-        model: m.MelodyModel, order
+        model: m.MelodyModel, order: tuple[int, int]
     ) -> None:
         root_func = model.by_uuid(ROOT_FUNCTION)
         snippets = (
@@ -888,7 +888,9 @@ class TestApplySync:
 
 class TestStrictMetadata:
     @staticmethod
-    def test_strict_apply_requires_nonempty_metadata(model: m.MelodyModel):
+    def test_strict_apply_requires_nonempty_metadata(
+        model: m.MelodyModel,
+    ) -> None:
         yml = textwrap.dedent(
             """\
             {}
@@ -901,7 +903,9 @@ class TestStrictMetadata:
             decl.apply(model, io.StringIO(yml), strict=True)
 
     @staticmethod
-    def test_capellambse_version_outdated(model: m.MelodyModel, monkeypatch):
+    def test_capellambse_version_outdated(
+        model: m.MelodyModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         modelinfo = m.ModelInfo(
             url="git+https://decl-yaml.invalid/ignored-anyway.git",
             title="Testmodel",
@@ -938,8 +942,8 @@ class TestStrictMetadata:
 
     @staticmethod
     def test_declared_capellambse_version_malformed(
-        model: m.MelodyModel, monkeypatch
-    ):
+        model: m.MelodyModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         modelinfo = m.ModelInfo(
             url="git+https://decl-yaml.invalid/ignored-anyway.git",
             title="Testmodel",
@@ -975,7 +979,9 @@ class TestStrictMetadata:
             decl.apply(model, io.StringIO(yml), strict=True)
 
     @staticmethod
-    def test_url_mismatch(model: m.MelodyModel, monkeypatch):
+    def test_url_mismatch(
+        model: m.MelodyModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         modelinfo = m.ModelInfo(
             url="git+https://decl-yaml.invalid/ignored-anyway.git",
             title="Testmodel",
@@ -1011,7 +1017,9 @@ class TestStrictMetadata:
             decl.apply(model, io.StringIO(yml), strict=True)
 
     @staticmethod
-    def test_entrypoint_mismatch(model: m.MelodyModel, monkeypatch):
+    def test_entrypoint_mismatch(
+        model: m.MelodyModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         modelinfo = m.ModelInfo(
             url="git+https://decl-yaml.invalid/ignored-anyway.git",
             title="Testmodel",
@@ -1047,7 +1055,9 @@ class TestStrictMetadata:
             decl.apply(model, io.StringIO(yml), strict=True)
 
     @staticmethod
-    def test_model_revision_doesnt_match(model: m.MelodyModel, monkeypatch):
+    def test_model_revision_doesnt_match(
+        model: m.MelodyModel, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         modelinfo = m.ModelInfo(
             url="git+https://decl-yaml.invalid/ignored-anyway.git",
             title="Testmodel",
@@ -1084,11 +1094,13 @@ class TestStrictMetadata:
 
 
 @pytest.mark.parametrize("filename", ["coffee-machine.yml"])
-def test_full_example(model: m.MelodyModel, filename: str):
+def test_full_example(model: m.MelodyModel, filename: str) -> None:
     decl.apply(model, DATAPATH / filename)
 
 
-def test_cli_applies_a_yaml_and_saves_the_model_back(tmp_path: pathlib.Path):
+def test_cli_applies_a_yaml_and_saves_the_model_back(
+    tmp_path: pathlib.Path,
+) -> None:
     shutil.copytree(Models.test7_0, tmp_path / "model")
     model = next(tmp_path.joinpath("model").glob("*.aird"))
     semmodel = model.with_suffix(".capella")

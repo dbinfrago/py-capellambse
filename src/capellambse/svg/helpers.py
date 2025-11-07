@@ -14,9 +14,9 @@ AlignmentLiteral = t.Literal["center", "left", "right"]
 
 def check_for_horizontal_overflow(
     text: str,
-    width: int | float,
-    icon_padding: int | float,
-    icon_size: int | float,
+    width: float,
+    icon_padding: float,
+    icon_size: float,
     alignment: AlignmentLiteral = "center",
 ) -> tuple[cabc.Sequence[str], float, float]:
     max_text_width = width - icon_size - icon_padding
@@ -35,8 +35,8 @@ def check_for_horizontal_overflow(
 
 def check_for_vertical_overflow(
     lines: cabc.Sequence[str],
-    height: float | int,
-    max_text_width: float | int,
+    height: float,
+    max_text_width: float,
 ) -> list[str]:
     overflow = ""
     lines_to_render = []

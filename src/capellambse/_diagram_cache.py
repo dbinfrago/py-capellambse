@@ -103,7 +103,7 @@ def export(
     *,
     format: str,
     index: bool,
-    force: t.Literal["exe", "docker", None],
+    force: t.Literal["exe", "docker"] | None,
     background: bool,
     refresh: bool = False,
 ) -> list[IndexEntry]:
@@ -161,7 +161,7 @@ def export(
 def _find_executor(
     model: capellambse.MelodyModel,
     capella: str,
-    force: t.Literal["exe", "docker", None],
+    force: t.Literal["exe", "docker"] | None,
 ) -> dict[str, str]:
     assert model.info.capella_version
     capella = capella.replace("{VERSION}", model.info.capella_version)
@@ -385,7 +385,7 @@ def _calculate_svg_viewbox(root: etree._Element) -> ViewBox:
     return ViewBox(x_min, y_min, x_max - x_min, y_max - y_min)
 
 
-def _crop_svg_viewbox(src: pathlib.Path, root: etree._Element):
+def _crop_svg_viewbox(src: pathlib.Path, root: etree._Element) -> None:
     try:
         min_x, min_y, new_width, new_height = _calculate_svg_viewbox(root)
     except _NoBoundingBoxFound:
@@ -489,7 +489,7 @@ def _write_index(
         body := E.body(E.h1(title), E.p({"class": "small"}, "Created: ", now)),
     )
 
-    def sortkey(entry: IndexEntry):
+    def sortkey(entry: IndexEntry) -> tuple[int, str, str]:
         try:
             vp_index = VIEWPOINT_ORDER.index(entry["viewpoint"])
         except ValueError:
@@ -520,7 +520,7 @@ def _write_index(
 class IndexEncoder(json.JSONEncoder):
     """A JSON encoder for the index file."""
 
-    def default(self, o):
+    def default(self, o: object) -> object:
         if isinstance(o, m.DiagramType):
             return o.name
         return super().default(o)

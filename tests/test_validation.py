@@ -22,33 +22,37 @@ TEST_RULE_PARAMS = {
 
 
 @pytest.fixture
-def fake_registry(monkeypatch):
+def fake_registry(monkeypatch: pytest.MonkeyPatch) -> validation.Rules:
     registry = validation.Rules()
     monkeypatch.setattr(validation._validate, "_VALIDATION_RULES", registry)
     return registry
 
 
-def test_decorated_rules_are_added_to_global_registry(fake_registry):
+def test_decorated_rules_are_added_to_global_registry(
+    fake_registry: validation.Rules,
+) -> None:
     @validation.rule(
         TEST_RULE_ID,
         validation.Category.REQUIRED,
         types=[mm.la.LogicalFunction],
         **TEST_RULE_PARAMS,
     )
-    def testrule(_):
+    def testrule(_: m.ModelElement) -> bool:
         return True
 
     assert list(fake_registry.items()) == [(testrule.id, testrule)]
 
 
-def test_rules_can_be_filtered_by_object_type(fake_registry):
+def test_rules_can_be_filtered_by_object_type(
+    fake_registry: validation.Rules,
+) -> None:
     @validation.rule(
         TEST_RULE_ID,
         validation.Category.REQUIRED,
         types=[mm.la.LogicalComponent, mm.la.LogicalFunction],
         **TEST_RULE_PARAMS,
     )
-    def testrule(_):
+    def testrule(_: m.ModelElement) -> bool:
         return True
 
     assert list(fake_registry.items()) == [(testrule.id, testrule)]
@@ -65,7 +69,7 @@ def test_model_gives_access_to_the_full_set_of_rules(
 
 def test_model_object_gives_access_to_rules_that_apply_to_it(
     model: m.MelodyModel,
-):
+) -> None:
     obj = model.by_uuid(TEST_UUID)
     assert isinstance(obj.validation, validation.ElementValidation)
 
@@ -127,7 +131,7 @@ def test_validation_results_filtering(model: m.MelodyModel) -> None:
     )
 
 
-def test_MelodyModel_validation(model: m.MelodyModel):
+def test_MelodyModel_validation(model: m.MelodyModel) -> None:
     assert isinstance(model.validation, validation.ModelValidation)
     assert model.validation.rules
 
@@ -136,7 +140,7 @@ def test_MelodyModel_validation(model: m.MelodyModel):
     assert results
 
 
-def test_ModelObject_validation(model: m.MelodyModel):
+def test_ModelObject_validation(model: m.MelodyModel) -> None:
     obj = model.by_uuid(TEST_UUID)
     assert isinstance(obj.validation, validation.ElementValidation)
     assert obj.validation.rules
@@ -146,7 +150,7 @@ def test_ModelObject_validation(model: m.MelodyModel):
     assert results
 
 
-def test_cli_creates_a_validation_report(tmp_path: pathlib.Path):
+def test_cli_creates_a_validation_report(tmp_path: pathlib.Path) -> None:
     output_file = tmp_path / "report.html"
     runner = clitest.CliRunner()
 

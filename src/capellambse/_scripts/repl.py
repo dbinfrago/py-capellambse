@@ -15,6 +15,7 @@ import os.path
 import pathlib
 import shutil
 import subprocess
+import sys
 import textwrap
 import typing as t
 
@@ -72,7 +73,7 @@ try:
 except ImportError:
 
     @contextlib.contextmanager
-    def _readline_history(_histfile, /) -> cabc.Iterator[None]:
+    def _readline_history(_histfile: pathlib.Path, /) -> cabc.Iterator[None]:
         yield
 
 
@@ -337,7 +338,7 @@ def fzf(
     >>> obj = fzf(model.search("ComponentExchange"), "target.parent.name")
     """
 
-    def repr(obj):
+    def repr(obj: object) -> str:
         return getattr(obj, "_short_repr_", obj.__repr__)()
 
     binary = shutil.which("fzf")
@@ -363,7 +364,10 @@ def fzf(
             text=True,
             stdout=subprocess.PIPE,
         )
-    except (Exception, KeyboardInterrupt):
+    except KeyboardInterrupt:
+        return None
+    except subprocess.CalledProcessError as err:
+        print(f"fzf failed with exit code {err.returncode}", file=sys.stderr)
         return None
     else:
         selected = elements[int(proc.stdout.strip().split(" ", 1)[0])]

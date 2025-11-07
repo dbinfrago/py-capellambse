@@ -28,7 +28,7 @@ def test_generalizations(
     name: str,
     super_name: str,
     expected_type: type[m.ModelElement],
-):
+) -> None:
     objects_of_type = model.search(expected_type)
     obj = objects_of_type.by_name(name)
     super_obj = objects_of_type.by_name(super_name)
@@ -61,8 +61,8 @@ def test_generalizations(
     ],
 )
 def test_object_visibility(
-    model: m.MelodyModel, uuid: str, expected_visibility
-):
+    model: m.MelodyModel, uuid: str, expected_visibility: str
+) -> None:
     obj = model.by_uuid(uuid)
     assert obj.visibility == expected_visibility
 
@@ -92,14 +92,14 @@ def test_object_visibility(
 )
 def test_object_has_type(
     model: m.MelodyModel, typed_object_uuid: str, expected_type_uuid: str
-):
+) -> None:
     obj = model.by_uuid(typed_object_uuid)
     expected_type = model.by_uuid(expected_type_uuid)
     assert obj.type == expected_type
 
 
 class TestClasses:
-    def test_class_owns_stm(self, model: m.MelodyModel):
+    def test_class_owns_stm(self, model: m.MelodyModel) -> None:
         elm = model.by_uuid("959b5222-7717-4ee9-bd3a-f8a209899464")
         assert isinstance(elm, information.Class)
 
@@ -136,7 +136,7 @@ class TestClasses:
         uuid: str,
         attr_name: str,
         expected_value: bool,
-    ):
+    ) -> None:
         obj = model.by_uuid(uuid)
         value = getattr(obj, attr_name)
         assert value == expected_value
@@ -169,7 +169,7 @@ class TestClasses:
     )
     def test_class_has_properties(
         self, model: m.MelodyModel, uuid: str, num_of_properties: int
-    ):
+    ) -> None:
         obj = model.by_uuid(uuid)
         assert len(obj.properties) == num_of_properties
 
@@ -188,8 +188,8 @@ class TestClassProperty:
         ],
     )
     def test_property_has_bool_attributes(
-        self, model: m.MelodyModel, attr_name
-    ):
+        self, model: m.MelodyModel, attr_name: str
+    ) -> None:
         prop_all_false = model.by_uuid(TEMP_PROPERTY_UUID)  # temperature prop
         prop_all_true = model.by_uuid(
             "3b4915eb-22fc-421d-bf89-07a14d0a2772"
@@ -214,7 +214,7 @@ class TestClassProperty:
     )
     def test_property_has_role_tag_value(
         self, model: m.MelodyModel, value_attr: str, expected_val_uuid: str
-    ):
+    ) -> None:
         obj = model.by_uuid(TEMP_PROPERTY_UUID)
         assert isinstance(obj, information.Property)
 
@@ -223,12 +223,12 @@ class TestClassProperty:
 
         assert actual_val_uuid == expected_val_uuid
 
-    def test_property_has_no_value(self, model: m.MelodyModel):
+    def test_property_has_no_value(self, model: m.MelodyModel) -> None:
         obj = model.by_uuid(CLASS_TYPED_PROP_UUID)
         assert obj.min_value is None
 
 
-def test_complex_value(model: m.MelodyModel):
+def test_complex_value(model: m.MelodyModel) -> None:
     cv = model.by_uuid("3a467d68-f53c-4d66-9d32-fe032a8cb2c5")
     value_parts = {i.referenced_property.name: i.value.value for i in cv.parts}
     assert value_parts == {
@@ -264,7 +264,7 @@ def test_literal_value_has_value(
     assert type(obj) is expected_type
 
 
-def test_literal_value_has_unit(model: m.MelodyModel):
+def test_literal_value_has_unit(model: m.MelodyModel) -> None:
     obj = model.by_uuid("d543018f-5f44-4c03-8e2e-875457c8967e")
     expected_unit = model.by_uuid("695386d5-6364-4e85-a1c3-a2c489bf0eb2")
     assert obj.unit == expected_unit

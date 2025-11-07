@@ -16,23 +16,27 @@ class TestAIRDBasicFunctionality:
     test_diagram = "[LAB] Logical System"
 
     @pytest.fixture
-    def model(self):
+    def model(self) -> loader.MelodyLoader:
         return loader.MelodyLoader(self.test_model)
 
     @pytest.fixture
-    def diagram_under_test(self, model):
+    def diagram_under_test(
+        self, model: loader.MelodyLoader
+    ) -> diagram.Diagram:
         descriptor = next(aird.enumerate_descriptors(model), None)
         assert descriptor is not None
         return aird.parse_diagram(model, descriptor)
 
     def test_parsing_all_diagrams_does_not_raise_exceptions(
-        self, model, caplog
-    ):
+        self, model: loader.MelodyLoader, caplog: pytest.LogCaptureFixture
+    ) -> None:
         del caplog
         num = sum(1 for _ in aird.parse_diagrams(model))
         assert num == 1
 
-    def test_enumerate_descriptors_doesnt_crash_if_there_are_no_diagrams(self):
+    def test_enumerate_descriptors_doesnt_crash_if_there_are_no_diagrams(
+        self,
+    ) -> None:
         model = loader.MelodyLoader(Models.empty)
         for _ in aird.enumerate_descriptors(model):
             pass
@@ -40,7 +44,7 @@ class TestAIRDBasicFunctionality:
 
 def test_airdparser_msm_produces_valid_json_without_error(
     model: capellambse.MelodyModel,
-):
+) -> None:
     dg = model.diagrams.by_name("[MSM] States of Functional Human Being")
     parsed = aird.parse_diagram(model._loader, dg._element)
 
@@ -86,7 +90,9 @@ def test_airdparser_msm_produces_valid_json_without_error(
         ("_NfMDoAATEeykFulkDFvkrg", 8),
     ],
 )
-def test_iter_visible(model, diag_uid, num_nodes):
+def test_iter_visible(
+    model: capellambse.MelodyModel, diag_uid: str, num_nodes: int
+) -> None:
     diag = model.diagrams.by_uuid(diag_uid)
     diagram_elements = sum(
         1 for _ in aird.iter_visible(model._loader, diag._element)

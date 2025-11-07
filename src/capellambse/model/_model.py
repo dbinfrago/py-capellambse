@@ -521,7 +521,7 @@ class MelodyModel:
 
                 try:
                     value = getattr(obj, attr)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     continue
 
                 if isinstance(value, _obj.ModelElement) and value == target:

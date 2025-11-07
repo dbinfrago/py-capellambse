@@ -58,15 +58,13 @@ from __future__ import annotations
 import pathlib
 import typing as t
 
+import sphinx.application
+import sphinx.environment
 import sphinx.util.docutils
 from docutils import nodes
 from docutils.parsers import rst
 
 import capellambse
-
-if t.TYPE_CHECKING:
-    import sphinx.application
-    import sphinx.environment
 
 
 def setup(app: sphinx.application.Sphinx) -> dict[str, t.Any]:
