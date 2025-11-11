@@ -11,21 +11,21 @@ installed:
 
 .. code:: bash
 
-   pip install '.[docs]'
+   make install
 
 The following command builds the documentation:
 
 .. code:: bash
 
-   make -C docs html
+   make docs
 
 The resulting documentation build will be available in ``docs/build/html``.
 
-Instead, you can also use ``make -C docs serve`` to (re-)build the docs and start a
-local server, which can be accessed on http://localhost:8000.
+Instead, you can also use ``make docs-serve`` to (re-)build the docs and start
+a local server, which can be accessed on http://localhost:8000.
 
 The following command deletes previously built documentation:
 
 .. code:: bash
 
-   make -C docs clean
+   make docs-clean

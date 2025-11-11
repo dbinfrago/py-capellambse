@@ -28,7 +28,7 @@ jobs:
           cache-dependency-glob: "**/pyproject.toml"
           python-version: "3.12"
       - name: Run Pre-Commit
-        run: uv run pre-commit run --all-files
+        run: make lint
 
   sdist: # {{{1
     name: Build source distribution
@@ -43,13 +43,12 @@ jobs:
           cache-dependency-glob: "**/pyproject.toml"
           python-version: "3.13"
       - name: Package the sources
-        run: |-
-          uv build --sdist --out-dir wheelhouse/
+        run: make sdist
       - name: Upload artifacts
         uses: actions/upload-artifact@v5
         with:
           name: sdist
-          path: wheelhouse/
+          path: dist/
           if-no-files-found: error
 
   build: # {{{1
@@ -146,13 +145,13 @@ jobs:
             tomli_w.dump(metadata, f)
           EOF
 
-          uv build --wheel --out-dir wheelhouse/
+          make wheel
       - name: Run unittests
         run: |-
           echo "::group::Prepare test environment"
           uv sync --group test --no-install-project
           . .venv/bin/activate
-          uv pip install wheelhouse/*.whl
+          uv pip install dist/*.whl
           echo "::endgroup::"
 
           coverage run
@@ -160,7 +159,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: wheel-${{runner.os}}-pure
-          path: wheelhouse/
+          path: dist/
           if-no-files-found: error
 
   publish: # {{{1
@@ -209,7 +208,7 @@ jobs:
           cache-dependency-glob: "**/pyproject.toml"
           python-version: "3.12"
       - name: Run example notebooks
-        run: make -C docs verify-examples
+        run: make verify-examples
 
   docs: # {{{1
     name: Build documentation
@@ -229,11 +228,11 @@ jobs:
       - name: Install system-level dependencies
         run: sudo apt-get install -y pandoc
       - name: Auto-generate APIDOC sources
-        run: make -C docs apidoc
+        run: make docs-apidoc
       - name: Create docs
         env:
           SPHINXOPTS: ""
-        run: make -C docs html
+        run: make docs
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -263,7 +262,7 @@ jobs:
           repository: ${{matrix.repo}}
       - uses: actions/download-artifact@v6
         with:
-          path: wheelhouse/
+          path: dist/
           name: wheel-Linux-x86_64-manylinux
       - uses: astral-sh/setup-uv@v7
         with:
@@ -280,5 +279,5 @@ jobs:
             uvx --with setuptools_scm python -c \
               "import setuptools_scm as scm; print(scm.get_version())"
           )" >> "$GITHUB_ENV"
-      - run: uv add --dev ./wheelhouse/*.whl pytest pytest-xdist && uv sync
+      - run: uv add --dev ./dist/*.whl pytest pytest-xdist && uv sync
       - run: uv run pytest -n auto

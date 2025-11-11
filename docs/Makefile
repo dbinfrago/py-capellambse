@@ -39,11 +39,9 @@ clean-apidoc:
 
 .PHONY: apidoc clean-apidoc
 clean: clean-apidoc
+	rm -rfv $(BUILDDIR)
 
 .PHONY: serve
 html: apidoc
 serve: html
 	cd $(BUILDDIR)/html && exec python -m http.server --bind 127.0.0.1
-
-verify-examples:
-	../scripts/verify-examples.sh
