@@ -69,13 +69,13 @@ impl<'py> Serializer<'py> {
         let etree_element = etree
             .getattr("_Element")
             .expect("lxml.etree does not have _Element")
-            .downcast::<PyType>()
+            .cast::<PyType>()
             .expect("lxml.etree._Element is not a type")
             .clone();
         let etree_comment = etree
             .getattr("_Comment")
             .expect("lxml.etree does not have _Comment")
-            .downcast::<PyType>()
+            .cast::<PyType>()
             .expect("lxml.etree._Comment is not a type")
             .clone();
 
@@ -189,7 +189,7 @@ impl<'py> Serializer<'py> {
             .getattr(intern!(py, "text"))
             .expect("comment has no text");
         let text = text
-            .downcast::<PyString>()
+            .cast::<PyString>()
             .expect("comment text is not a string or none")
             .to_cow()
             .expect("comment text is not valid UTF-8");
@@ -213,13 +213,13 @@ impl<'py> Serializer<'py> {
         let mut nsmap_alias2uri = e
             .getattr("nsmap")
             .expect("element has no nsmap")
-            .downcast::<PyDict>()
+            .cast::<PyDict>()
             .expect("nsmap is not a dict")
             .iter()
             .map(|(k, v)| {
                 (
-                    k.downcast().expect("nsmap alias is not a string").clone(),
-                    v.downcast().expect("nsmap uri is not a string").clone(),
+                    k.cast().expect("nsmap alias is not a string").clone(),
+                    v.cast().expect("nsmap uri is not a string").clone(),
                 )
             })
             .collect::<Vec<(Bound<PyString>, Bound<PyString>)>>();
@@ -254,7 +254,7 @@ impl<'py> Serializer<'py> {
                 .expect("cannot pop from attrib dict");
             if !value.is_none() {
                 let value = value
-                    .downcast::<PyString>()
+                    .cast::<PyString>()
                     .expect("attrib value is not a string");
                 let (ns, ln) = self.unresolve_namespace(attr, &nsmap_uri2alias);
                 if self.pos > self.line_length {
@@ -316,7 +316,7 @@ impl<'py> Serializer<'py> {
 
         let mut trailing_text = if !text.is_none() {
             let text = text
-                .downcast::<PyString>()
+                .cast::<PyString>()
                 .expect("element text is not a string");
             self.digest_multiline_text(
                 &text.to_cow().expect("element text is not valid UTF-8"),
@@ -352,7 +352,7 @@ impl<'py> Serializer<'py> {
                 .expect("element has no tail attribute");
             trailing_text = if !tail.is_none() {
                 let tail = tail
-                    .downcast::<PyString>()
+                    .cast::<PyString>()
                     .expect("element tail is not a string");
                 self.digest_multiline_text(
                     &tail.to_cow().expect("element tail is not valid UTF-8"),
@@ -383,12 +383,12 @@ impl<'py> Serializer<'py> {
         nsmap: &'n HashMap<Cow<'n, str>, Cow<'n, str>>,
     ) -> (Option<Cow<'n, str>>, String) {
         let py = e.py();
-        let tag = if let Ok(tag) = e.downcast::<PyString>() {
+        let tag = if let Ok(tag) = e.cast::<PyString>() {
             tag.clone()
         } else if e.is_instance(&self.etree_element).unwrap_or(false) {
             e.getattr(intern!(py, "tag"))
                 .expect("element has no tag")
-                .downcast::<PyString>()
+                .cast::<PyString>()
                 .expect("tag is not a string")
                 .clone()
         } else {
