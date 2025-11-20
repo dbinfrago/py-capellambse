@@ -273,7 +273,7 @@ jobs:
         uses: denoland/setup-deno@v2
         if: matrix.repo == 'dbinfrago/capellambse-context-diagrams'
         with:
-          deno-version: "2.3.6"
+          deno-version: "2.5.x"
       - run: |-
           echo SETUPTOOLS_SCM_PRETEND_VERSION="$(
             uvx --with setuptools_scm python -c \
