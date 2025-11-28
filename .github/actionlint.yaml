@@ -1,6 +1,0 @@
-# SPDX-FileCopyrightText: Copyright DB InfraGO AG
-# SPDX-License-Identifier: CC0-1.0
-
-self-hosted-runner:
-  labels:
-    - ubuntu-24.04-arm # Github-provided, but beta and not in actionlint yet
