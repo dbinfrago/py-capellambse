@@ -31,53 +31,62 @@ repos:
     rev: v1.5.5
     hooks:
       - id: insert-license
-        name: Insert license headers (shell-style comments)
+        name: Insert Apache license headers (shell-style comments)
         files: '(?:^|/)(?:.*\.(?:pyi?|sh|toml|ya?ml)|Dockerfile|Makefile)$'
         exclude: '(?:^|/)\..+|^docs/Makefile$'
         args:
           - --detect-license-in-X-top-lines=15
           - --license-filepath
-          - LICENSES/.license_header.txt
+          - LICENSES/.license_header_apache.txt
           - --comment-style
           - "#"
       - id: insert-license
-        name: Insert license headers (XML-style comments)
+        name: Insert CC0 license headers (shell-style comments)
+        files: '(?:^|/)(?:codeql-analysis.yml|dependabot.yml|\.(?:pre-commit-config.yaml|(?:git|helm|docker)ignore))$'
+        args:
+          - --detect-license-in-X-top-lines=15
+          - --license-filepath
+          - LICENSES/.license_header_cc0.txt
+          - --comment-style
+          - "#"
+      - id: insert-license
+        name: Insert Apache license headers (XML-style comments)
         files: '\.(?:html|md|xml)$'
         exclude: '(?:^|/)\..+'
         args:
           - --detect-license-in-X-top-lines=15
           - --license-filepath
-          - LICENSES/.license_header.txt
+          - LICENSES/.license_header_apache.txt
           - --comment-style
           - "<!--| ~| -->"
       - id: insert-license
-        name: Insert license headers (C-style comments)
-        files: '\.(?:css|js|ts)$'
+        name: Insert Apache license headers (C-style comments)
+        files: '\.(?:s?css|js|ts)$'
         exclude: '(?:^|/)\..+'
         args:
           - --detect-license-in-X-top-lines=15
           - --license-filepath
-          - LICENSES/.license_header.txt
+          - LICENSES/.license_header_apache.txt
           - --comment-style
           - "/*| *| */"
       - id: insert-license
-        name: Insert license headers (Rust-style comments)
+        name: Insert Apache license headers (Rust-style comments)
         files: '\.rs$'
         exclude: '(?:^|/)\..+'
         args:
           - --detect-license-in-X-top-lines=15
           - --license-filepath
-          - LICENSES/.license_header.txt
+          - LICENSES/.license_header_apache.txt
           - --comment-style
           - "//"
       - id: insert-license
-        name: Insert license headers (reST comments)
+        name: Insert Apache license headers (reST comments)
         files: '\.rst$'
         exclude: '(?:^|/)\..+'
         args:
           - --detect-license-in-X-top-lines=15
           - --license-filepath
-          - LICENSES/.license_header.txt
+          - LICENSES/.license_header_apache.txt
           - --comment-style
           - "..|  |"
   - repo: local # docformatter
@@ -96,13 +105,17 @@ repos:
         entry: uv run --dev ruff format
         types_or: [python, pyi, jupyter]
         require_serial: true
-      - id: ruff
+      - id: ruff-check
         name: Lint with ruff
         language: system
         entry: uv run --dev ruff check --output-format=concise
         types_or: [python, pyi, jupyter]
         args: [--extend-ignore=FIX, --fix]
         require_serial: true
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.2
+    hooks:
+      - id: actionlint-docker
   - repo: local # mypy
     hooks:
       - id: mypy

@@ -28,14 +28,16 @@ Additionally, a Rust compiler is required to build the native module.
 ```bash
 git clone https://github.com/dbinfrago/py-capellambse
 cd py-capellambse
-uv sync
-uv run pre-commit install
+make dev
+make install-hooks
 
 # You may need to explicitly activate the project venv
 # to make code completion and tools available:
 source .venv/bin/activate.sh  # for Linux / Mac
 .venv\Scripts\activate  # for Windows
 ```
+
+Run `make help` to see all available make targets.
 
 ### Updating the metamodel
 
@@ -70,12 +72,16 @@ with an older ecore file.
 
 ### Testing
 
-You can use `uv run <tool>` to avoid having to manually activate the project
-venv. For example, to run the unit tests, use:
+To run the unit tests, use:
 
 ```sh
-uv run pytest
+make test
+# Alternatively, with coverage reporting enabled
+make test-cov
 ```
+
+You can also use `uv run <tool>`, which allows calling the tools without having
+to manually activate the project venv first.
 
 ### Native module
 
@@ -83,7 +89,7 @@ To rebuild the native module after modifying the Rust source code, run the
 following command:
 
 ```bash
-uv sync --reinstall-package capellambse
+make rebuild
 ```
 
 ### Example notebooks
@@ -95,15 +101,14 @@ output changes.
 The same script can be run locally with the following command:
 
 ```sh
-make -C docs verify-examples
+make verify-examples
 ```
 
 Use the following command to start a Jupyter server, which can be used to
 develop and re-run the example notebooks:
 
 ```bash
-cd docs/source/examples
-CAPELLAMBSE_UUID_SEED=0 uv run jupyter lab
+make jupyter
 ```
 
 > [!NOTE]
@@ -147,7 +152,7 @@ time. Before you commit your changes, make sure it is installed and set up, as
 described in the [installation instructions](#Developing):
 
 ```bash
-uv run pre-commit install
+make install-hooks
 ```
 
 Commit message format

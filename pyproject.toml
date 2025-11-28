@@ -141,6 +141,7 @@ dev = [
   "pandas>=2.3.0",
   "pre-commit==4.3.0",
   "pylsp-mypy==0.7.0",
+  "pytest-cov>=7.0.0",
   "python-lsp-server[rope]==1.13.1",
   "reuse==5.1.1",
   "ruff==0.13.1",
@@ -260,7 +261,7 @@ addopts = """
   --tb=short
 """
 testpaths = ["tests"]
-xfail_strict = true
+xfail_strict = "true"
 
 [tool.ruff]
 line-length = 79
