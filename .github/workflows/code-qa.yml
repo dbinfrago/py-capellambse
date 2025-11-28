@@ -75,9 +75,9 @@ jobs:
             manylinux: musllinux
           # }}}
           # macOS {{{
-          - os: macos-13
+          - os: macos-15-intel
             arch: x86_64
-          - os: macos-14
+          - os: macos-latest
             arch: arm64
           # }}}
           # Windows {{{
@@ -90,7 +90,7 @@ jobs:
       CIBW_ARCHS: ${{matrix.arch}}
       CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
       CIBW_ENVIRONMENT_WINDOWS: 'PATH="$UserProfile\.cargo\bin;$PATH"'
-      MACOSX_DEPLOYMENT_TARGET: "10.13"
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
     steps:
       - uses: actions/checkout@v6
         with:
