@@ -6,7 +6,7 @@ default_stages: [pre-commit, pre-merge-commit]
 minimum_pre_commit_version: 3.2.0
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -113,7 +113,7 @@ repos:
         args: [--extend-ignore=FIX, --fix]
         require_serial: true
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.2
+    rev: v1.7.9
     hooks:
       - id: actionlint-docker
   - repo: local # mypy
@@ -133,7 +133,7 @@ repos:
         entry: uv run --dev reuse lint-file
         require_serial: true
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.20.0
+    rev: v9.23.0
     hooks:
       - id: commitlint
         stages: [commit-msg]
