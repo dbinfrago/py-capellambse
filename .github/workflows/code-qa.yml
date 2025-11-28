@@ -213,7 +213,6 @@ jobs:
   docs: # {{{1
     name: Build documentation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
     permissions:
       contents: write
     steps:
@@ -227,14 +226,13 @@ jobs:
           python-version: "3.12"
       - name: Install system-level dependencies
         run: sudo apt-get install -y pandoc
-      - name: Auto-generate APIDOC sources
-        run: make docs-apidoc
       - name: Create docs
         env:
           SPHINXOPTS: ""
         run: make docs
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/master'
         with:
           force_orphan: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
