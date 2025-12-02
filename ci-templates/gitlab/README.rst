@@ -57,7 +57,7 @@ Add the following code to your ``.gitlab-ci.yml``:
   variables:
     CAPELLA_VERSION: 6.0.0 # Semantic Capella version
     ENTRYPOINT: test/test.aird # Entry point to the .aird file of the model (relative from root level of the repository)
-    CAPELLAMBSE_REVISION: release-0.5 # Set the capellambse revision. Defaults to release-0.5.
+    CAPELLAMBSE_REVISION: master # Set the capellambse revision. Defaults to the latest release on PyPI.
 
   derive:
     # If you want to change any settings (see filter-derive.yml),
