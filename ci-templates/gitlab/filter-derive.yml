@@ -8,46 +8,62 @@ derive:
     entrypoint: [""]
 
   script:
-    - ": ${MODEL_MODIFIER_EMAIL:?MODEL_MODIFIER_EMAIL is required, please set the environment variable}"
-    - ": ${GIT_USERNAME:?GIT_USERNAME and GIT_PASSWORD are required, please set the environment variables}"
-    - ": ${GIT_PASSWORD:?GIT_PASSWORD is required, please set the environment variable}"
+    - |-
+      # Prepare and check environment variables
+      ": ${MODEL_MODIFIER_EMAIL:?MODEL_MODIFIER_EMAIL is required, please set the environment variable}"
+      ": ${GIT_USERNAME:?GIT_USERNAME and GIT_PASSWORD are required, please set the environment variables}"
+      ": ${GIT_PASSWORD:?GIT_PASSWORD is required, please set the environment variable}"
+      if [[ -n $DERIVE_RESULTS ]]; then
+        mapfile -d ";" -t derive_results < <(echo -n "$DERIVE_RESULTS")
+      else
+        derive_results=()
+      fi
 
-    - if [[ -n $DERIVE_RESULTS ]]; then mapfile -d ";" -t derive_results < <(echo -n "$DERIVE_RESULTS"); else derive_results=(); fi
+    - |-
+      # Reset branch, to ensure we have all changes that previous pipeline jobs pushed
+      if [[ -n $CI_COMMIT_BRANCH ]]; then
+        git fetch --depth 1
+        git reset --hard origin/$CI_COMMIT_BRANCH
+      fi
 
-    # Reset branch. This is helpful when chaining jobs
-    # and a previous job pushes changes that should be
-    # considered for the model badge generation.
-    - if [[ -n $CI_COMMIT_BRANCH ]]; then git fetch --depth 1; git reset --hard origin/$CI_COMMIT_BRANCH; fi
-    - python -m venv /tmp/.venv
-    - source /tmp/.venv/bin/activate
-    - pip install "capellambse[cli] @ git+https://github.com/dbinfrago/py-capellambse.git@${CAPELLAMBSE_REVISION:-release-0.5}"
-    - export DISPLAY=:99
-    - |
-      xvfb-run python \
-        -m capellambse.extensions.filtering derive \
-        -m "${ENTRYPOINT:?}" \
+    - |-
+      # Install capellambse
+      python -m venv /tmp/.venv
+      if [[ -n "$CAPELLAMBSE_REVISION" ]]; then
+        printf 'Installing capellambse version %q from Github\n' "$CAPELLAMBSE_REVISION"
+        /tmp/.venv/bin/pip install "capellambse[cli] @ git+https://github.com/dbinfrago/py-capellambse.git@${CAPELLAMBSE_REVISION}"
+      else
+        echo "Installing latest capellambse release via pip"
+        /tmp/.venv/bin/pip install "capellambse[cli]"
+      fi
+      source /tmp/.venv/bin/activate
+
+    - |-
+      xvfb-run capellambse filter-derive \
+        -m "${ENTRYPOINT:-.}" \
         -o derived-projects \
         -p '{result.name}' \
         "${derive_results[@]/#/--result=}" \
         --exe="/opt/capella/capella"
+
+    - if [[ "${PUSH_DERIVED_MODELS:-1}" != "1" ]]; then exit 0; fi
+
     - git fetch origin "+refs/heads/derived/*:refs/heads/derived/*"
     - git config --global user.email "${MODEL_MODIFIER_EMAIL:?}";
     - git config --global user.name "Filtering model modifier";
     - mkdir -p .git/info && echo "derived-projects/" >> .git/info/exclude
-    - |
-      if [[ "${PUSH_DERIVED_MODELS:-1}" == "1" ]]; then
-        for result in derived-projects/*; do
-          RESULT_DIR_NAME="${result#derived-projects/}"
-          printf '\n=> Preparing derived model %s\n' "$RESULT_DIR_NAME"
-          DERIVED_BRANCH_NAME="$(echo "derived/$RESULT_DIR_NAME" | sed 's/[^a-zA-Z0-9.-_]/-/g')";
-          git switch "$DERIVED_BRANCH_NAME" || git switch --orphan "$DERIVED_BRANCH_NAME";
-          cp -r "$result/." .
-          git add .
-          git commit -m "feat: Add/update derived model '$RESULT_DIR_NAME'"
-          printf '=> Pushing derived model %s to %s\n' "$RESULT_DIR_NAME" "$DERIVED_BRANCH_NAME"
-          git push "https://${GIT_USERNAME:?}:${GIT_PASSWORD:?}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "$DERIVED_BRANCH_NAME"
-        done
-      fi
+    - |-
+      for result in derived-projects/*; do
+        RESULT_DIR_NAME="${result#derived-projects/}"
+        printf '\n=> Preparing derived model %s\n' "$RESULT_DIR_NAME"
+        DERIVED_BRANCH_NAME="$(echo "derived/$RESULT_DIR_NAME" | sed 's/[^a-zA-Z0-9.-_]/-/g')";
+        git switch "$DERIVED_BRANCH_NAME" || git switch --orphan "$DERIVED_BRANCH_NAME";
+        cp -r "$result/." .
+        git add .
+        git commit -m "feat: Add/update derived model '$RESULT_DIR_NAME'"
+        printf '=> Pushing derived model %s to %s\n' "$RESULT_DIR_NAME" "$DERIVED_BRANCH_NAME"
+        git push "https://${GIT_USERNAME:?}:${GIT_PASSWORD:?}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "$DERIVED_BRANCH_NAME"
+      done
 
   artifacts:
     paths:
