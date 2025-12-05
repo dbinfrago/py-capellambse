@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import collections.abc as cabc
 import itertools
 import math
 import operator
+import typing as t
 
 import pytest
 
@@ -87,7 +89,12 @@ from capellambse import aird, diagram
         (operator.floordiv, 8, diagram.Vector2D(4, 2), diagram.Vector2D(2, 4)),
     ],
 )
-def test_vector_math(calculate, vec_1, vec_2, expected):
+def test_vector_math(
+    calculate: cabc.Callable[..., t.Any],
+    vec_1: float | diagram.Vector2D,
+    vec_2: float | diagram.Vector2D,
+    expected: diagram.Vector2D,
+) -> None:
     actual = calculate(vec_1, vec_2)
     assert isinstance(actual, type(expected))
     if isinstance(expected, diagram.Vector2D):
@@ -105,7 +112,10 @@ def test_vector_math(calculate, vec_1, vec_2, expected):
         (diagram.Vector2D(-7, -4), (7, 4)),
     ],
 )
-def test_abs_makes_negative_components_positive(vector, expected):
+def test_abs_makes_negative_components_positive(
+    vector: diagram.Vector2D,
+    expected: tuple[float, float],
+) -> None:
     actual = abs(vector)
     assert isinstance(actual, diagram.Vector2D)
     assert actual == expected
@@ -120,7 +130,7 @@ def test_abs_makes_negative_components_positive(vector, expected):
         (diagram.Vector2D(-7, -4), 65),
     ],
 )
-def test_squared_length(vector, expected):
+def test_squared_length(vector: diagram.Vector2D, expected: float) -> None:
     actual = vector.sqlength
     assert math.isclose(actual, expected)
 
@@ -134,7 +144,7 @@ def test_squared_length(vector, expected):
         (diagram.Vector2D(-7, -4), 8.06225774829855),
     ],
 )
-def test_length(vector, expected):
+def test_length(vector: diagram.Vector2D, expected: float) -> None:
     actual = vector.length
     assert math.isclose(actual, expected)
 
@@ -151,7 +161,10 @@ def test_length(vector, expected):
         ),
     ],
 )
-def test_normalized(vector, expected):
+def test_normalized(
+    vector: diagram.Vector2D,
+    expected: tuple[float, float],
+) -> None:
     actual = vector.normalized
     assert math.isclose(actual[0], expected[0])
     assert math.isclose(actual[1], expected[1])
@@ -200,7 +213,7 @@ def test_normalized(vector, expected):
         (diagram.Vector2D(6, 5), diagram.Vector2D(5, 3)),
     ],
 )
-def test_boxsnap(vector: diagram.Vector2D, expected: diagram.Vector2D):
+def test_boxsnap(vector: diagram.Vector2D, expected: diagram.Vector2D) -> None:
     topleft = diagram.Vector2D(1, 1)
     botright = diagram.Vector2D(5, 3)
 
@@ -230,13 +243,13 @@ def test_line_intersect(
     vector1: tuple[diagram.Vector2D, diagram.Vector2D],
     vector2: tuple[diagram.Vector2D, diagram.Vector2D],
     expected: diagram.Vector2D,
-):
+) -> None:
     point = diagram.line_intersect(vector1, vector2)
 
     assert point == expected
 
 
-def test_line_intersect_raises_ValueError_when_parallel_lines_given():
+def test_line_intersect_raises_ValueError_when_parallel_lines_given() -> None:
     with pytest.raises(ValueError, match="parallel"):
         diagram.line_intersect(
             (diagram.Vector2D(0, 0), diagram.Vector2D(0, 1)),
@@ -303,7 +316,7 @@ class TestVectorSnapping:
     )
     def test_snap_manhattan_to_middle_of_port_side(
         self, points: list[diagram.Vector2D], expected: diagram.Vector2D
-    ):
+    ) -> None:
         aird._edge_factories.snaptarget(
             points, -1, -2, self.PORTBOX, False, "manhattan"
         )

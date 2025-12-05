@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: Copyright DB InfraGO AG
 # SPDX-License-Identifier: Apache-2.0
 
+import collections.abc as cabc
 import contextlib
 import errno
 import logging
+import pathlib
 import subprocess
+import typing as t
 from unittest import mock
 
 import pytest
@@ -13,7 +16,7 @@ import capellambse
 from capellambse.filehandler import git
 
 
-def test_gitfilehandler_can_read_remote_files_no_revision():
+def test_gitfilehandler_can_read_remote_files_no_revision() -> None:
     fh = capellambse.get_filehandler(
         "git+https://github.com/dbinfrago/py-capellambse.git"
     )
@@ -21,7 +24,7 @@ def test_gitfilehandler_can_read_remote_files_no_revision():
     assert fh.revision == "refs/heads/master"
 
 
-def test_gitfilehandler_can_read_remote_files_with_revision():
+def test_gitfilehandler_can_read_remote_files_with_revision() -> None:
     fh = capellambse.get_filehandler(
         "git+https://github.com/dbinfrago/py-capellambse.git",
         revision="gh-pages",
@@ -31,10 +34,17 @@ def test_gitfilehandler_can_read_remote_files_with_revision():
     assert fh.revision == "refs/heads/gh-pages"
 
 
-def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
+def test_GitFileHandler_locks_repo_during_tasks(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
     did_ls_files = False
 
-    def mock_run(cmd, *args, encoding="", **kw):
+    def mock_run(
+        cmd: cabc.Sequence[str],
+        *args: t.Any,
+        encoding: str = "",
+        **kw: t.Any,
+    ) -> mock.Mock:
         del args, kw
         nonlocal did_ls_files
 
@@ -59,7 +69,7 @@ def test_GitFileHandler_locks_repo_during_tasks(monkeypatch, caplog):
     flocked_files: set[str] = set()
 
     @contextlib.contextmanager
-    def mock_flock(file):
+    def mock_flock(file: pathlib.Path) -> cabc.Generator[None, None, None]:
         nonlocal flocked_files
         assert not flocked_files
         flocked_files.add(str(file))

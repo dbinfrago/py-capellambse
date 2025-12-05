@@ -23,6 +23,8 @@ import math
 import os
 import typing as t
 
+import typing_extensions as te
+
 from capellambse import diagram, helpers
 
 LOGGER = logging.getLogger(__name__)
@@ -152,9 +154,7 @@ class Box:
         self._parent: Box | None = None
         self.parent = parent
 
-    def create_portlabel(
-        self, labeltext: str, margin: float | int = 2
-    ) -> None:
+    def create_portlabel(self, labeltext: str, margin: float = 2) -> None:
         """Add a label to a port box.
 
         The port that this is called for must be snapped to its parent's
@@ -841,7 +841,7 @@ class Circle:
     def __init__(
         self,
         center: diagram.Vec2ish,
-        radius: float | int,
+        radius: float,
         *,
         uuid: str | None = None,
         styleclass: str | None = None,
@@ -1052,10 +1052,7 @@ class Diagram:
             top_left, bottom_right - top_left, styleclass="Viewport"
         )
 
-    def normalize_viewport(
-        self,
-        offset: float | int | diagram.Vec2ish = 0,
-    ) -> None:
+    def normalize_viewport(self, offset: float | diagram.Vec2ish = 0) -> None:
         """Normalize the viewport.
 
         This function moves all elements contained within this diagram
@@ -1166,6 +1163,6 @@ class Diagram:
             ]
         )
 
-    def __iadd__(self, element: DiagramElement) -> Diagram:
+    def __iadd__(self, element: DiagramElement) -> te.Self:
         self.add_element(element)
         return self

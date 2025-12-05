@@ -15,6 +15,8 @@ import os
 import pathlib
 import typing as t
 
+import typing_extensions as te
+
 from capellambse import helpers
 
 from . import abc
@@ -90,10 +92,10 @@ class MemoryFile(t.BinaryIO):
         self._mode = mode
         self._pos = 0
 
-    def __enter__(self) -> MemoryFile:
+    def __enter__(self) -> te.Self:
         return self
 
-    def __exit__(self, *args: t.Any) -> None:
+    def __exit__(self, *args: object) -> None:
         pass
 
     def write(self, s: bytes | bytearray) -> int:  # type: ignore[override]

@@ -28,7 +28,11 @@ class Styling:
     """
 
     def __init__(
-        self, diagram_class: str | None, class_: str, prefix: str = "", **attr
+        self,
+        diagram_class: str | None,
+        class_: str,
+        prefix: str = "",
+        **attr: t.Any,
     ):
         self._diagram_class = diagram_class
         self._class = class_
@@ -84,7 +88,7 @@ class Styling:
 
     @classmethod
     def _to_css(
-        cls, value: float | int | str | diagram.RGB | cabc.Iterable | None
+        cls, value: float | str | diagram.RGB | cabc.Iterable | None
     ) -> float | int | str:
         if isinstance(value, str | int | float):
             return value
@@ -140,7 +144,7 @@ class Styling:
         if not self._prefix:
             return attr
 
-        return "_".join((self._prefix, attr))
+        return f"{self._prefix}_{attr}"
 
     def __contains__(self, obj: t.Any) -> bool:
         return hasattr(self, obj)

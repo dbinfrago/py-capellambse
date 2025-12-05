@@ -15,7 +15,7 @@ SVG = functools.partial(etree.QName, "http://www.w3.org/2000/svg")
 
 def test_diagram_nodes_only_include_visible_elements(
     session_shared_model: capellambse.MelodyModel,
-):
+) -> None:
     diagram = session_shared_model.diagrams.by_name(
         "[LAB] Wizard Education (hidden functions)"
     )
@@ -23,7 +23,7 @@ def test_diagram_nodes_only_include_visible_elements(
     assert HIDDEN_UUID not in diagram.nodes.by_uuid
 
 
-def test_convert_format_converts_diagram_object_to_svg():
+def test_convert_format_converts_diagram_object_to_svg() -> None:
     diag_obj = capellambse.diagram.Diagram(
         name="Test diagram",
         viewport=capellambse.diagram.Box((10, 10), (10, 10)),

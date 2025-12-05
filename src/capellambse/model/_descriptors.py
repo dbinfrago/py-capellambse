@@ -657,7 +657,10 @@ class Relationship(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
 
 
 @deprecated("WritableAccessor is deprecated, use Relationship instead")
-class WritableAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
+class WritableAccessor(
+    Accessor["T_co | _obj.ElementList[T_co] | None"],
+    t.Generic[T_co],
+):
     """An Accessor that also provides write support on lists it returns."""
 
     aslist: type[_obj.ElementListCouplingMixin] | None
@@ -770,7 +773,11 @@ class WritableAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
         with parent._model._loader.new_uuid(pelem, want=want_id) as obj_id:
             return elmclass(parent._model, pelem, xmltag, uuid=obj_id, **kw)
 
-    def _make_list(self, parent_obj, elements):
+    def _make_list(
+        self,
+        parent_obj: _obj.ModelObject,
+        elements: list[etree._Element],
+    ) -> T_co | _obj.ElementList[T_co] | None:
         assert hasattr(self, "class_")
         assert hasattr(self, "list_extra_args")
         if self.aslist is None:
@@ -790,7 +797,7 @@ class WritableAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
                 f"Expected str as first type, got {type(hint).__name__!r}"
             )
 
-        (cls,) = t.cast(tuple[type[T_co]], _obj.find_wrapper(hint))
+        (cls,) = t.cast("tuple[type[T_co]]", _obj.find_wrapper(hint))
         return (cls, build_xtype(cls))  # type: ignore[deprecated]
 
     def _guess_xtype(self) -> tuple[type[T_co], str]:
@@ -891,7 +898,10 @@ class WritableAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
 
 
 @deprecated("PhysicalAccessor is deprecated, use Relationship instead")
-class PhysicalAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
+class PhysicalAccessor(
+    Accessor["T_co | _obj.ElementList[T_co] | None"],
+    t.Generic[T_co],
+):
     """Helper super class for accessors that work with real elements."""
 
     __slots__ = (
@@ -961,7 +971,11 @@ class PhysicalAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             raise ValueError("Multiple matching `xsi:type`s")
         return self.class_, next(iter(self.xtypes))
 
-    def _make_list(self, parent_obj, elements):
+    def _make_list(
+        self,
+        parent_obj: _obj.ModelElement,
+        elements: list[etree._Element],
+    ) -> T_co | _obj.ElementList[T_co] | None:
         if self.aslist is None:
             return no_list(self, parent_obj._model, elements, self.class_)
         return self.aslist(
@@ -1072,7 +1086,17 @@ class DirectProxyAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
                 for i in rootelem
             ]
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: _obj.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> T_co | _obj.ElementList[T_co] | None: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | None,
+        objtype: type[_obj.ModelElement] | None = None,
+    ) -> te.Self | T_co | _obj.ElementList[T_co] | None:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -1093,6 +1117,7 @@ class DirectProxyAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
             if isinstance(value, str) or not isinstance(value, cabc.Iterable):
                 raise TypeError("Can only set list attribute to an iterable")
             list = self.__get__(obj)
+            assert isinstance(list, _obj.ElementListCouplingMixin)
             for v in list:
                 self.delete(list, v)
             for i, v in enumerate(value):
@@ -1487,7 +1512,7 @@ class Allocation(Relationship[T_co]):
             )
             if ":" in alloc_type:
                 alloc_type = t.cast(
-                    tuple[str, str], tuple(alloc_type.rsplit(":", 1))
+                    "tuple[str, str]", tuple(alloc_type.rsplit(":", 1))
                 )
                 self.alloc_type = (
                     _obj.find_namespace(alloc_type[0]),
@@ -1586,7 +1611,7 @@ class Allocation(Relationship[T_co]):
         te.assert_type(value, cabc.Iterable[T_co | NewObject])
         if any(isinstance(i, NewObject) for i in value):
             raise TypeError(f"Cannot create objects on {self}")
-        value = t.cast(cabc.Iterable[T_co], value)
+        value = t.cast("cabc.Iterable[T_co]", value)
 
         # TODO Remove this extra check when removing deprecated features
         if self.tag is None:
@@ -1756,7 +1781,7 @@ class Allocation(Relationship[T_co]):
             else:
                 self.__insert_refobj(elmlist._parent, refobj, before=None)
         elmlist._elements = list(self.__find_refs(elmlist._parent))
-        return t.cast(T_co, value)
+        return t.cast("T_co", value)
 
     def delete(
         self,
@@ -1776,10 +1801,11 @@ class Allocation(Relationship[T_co]):
     def purge_references(
         self, obj: _obj.ModelObject, target: _obj.ModelObject
     ) -> cabc.Generator[None, None, None]:
-        purge: list[etree._Element] = []
-        for ref in self.__find_refs(obj):
-            if self.__follow_ref(obj, ref) is target._element:
-                purge.append(ref)
+        purge: list[etree._Element] = [
+            ref
+            for ref in self.__find_refs(obj)
+            if self.__follow_ref(obj, ref) is target._element
+        ]
 
         yield
 
@@ -1977,7 +2003,7 @@ class Association(Relationship[T_co]):
         te.assert_type(value, cabc.Iterable[T_co | NewObject])
         if any(isinstance(i, NewObject) for i in value):
             raise TypeError("Cannot create new objects on an Association")
-        value = t.cast(cabc.Iterable[T_co], value)
+        value = t.cast("cabc.Iterable[T_co]", value)
 
         if self.attr is None:
             raise RuntimeError(
@@ -2028,7 +2054,7 @@ class Association(Relationship[T_co]):
 
         objs = [*elmlist[:index], value, *elmlist[index:]]
         self.__set_links(elmlist._parent, objs)
-        return t.cast(T_co, value)
+        return t.cast("T_co", value)
 
     def delete(
         self, elmlist: _obj.ElementListCouplingMixin, obj: _obj.ModelObject
@@ -2200,7 +2226,17 @@ class AlternateAccessor(Accessor[T_co]):
         super().__init__()
         self.class_ = class_
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: _obj.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> T_co: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | T_co | None:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -2228,7 +2264,17 @@ class ParentAccessor(Accessor["_obj.ModelObject"]):
         del class_
         super().__init__()
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: _obj.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> _obj.ModelObject: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | _obj.ModelObject | None:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -2256,7 +2302,7 @@ class AttributeMatcherAccessor(DirectProxyAccessor[T_co]):
         *,
         aslist: type[_obj.ElementList] | None = None,
         attributes: dict[str, t.Any],
-        **kwargs,
+        **kwargs: t.Any,
     ) -> None:
         super().__init__(
             class_, xtypes, aslist=_obj.MixedElementList, **kwargs
@@ -2264,7 +2310,17 @@ class AttributeMatcherAccessor(DirectProxyAccessor[T_co]):
         self.__aslist = aslist
         self.attributes = attributes
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: _obj.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> T_co | _obj.ElementList[T_co] | None: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | None,
+        objtype: type[_obj.ModelObject] | None = None,
+    ) -> te.Self | T_co | _obj.ElementList[T_co] | None:
         if obj is None:  # pragma: no cover
             return self
 
@@ -2277,7 +2333,7 @@ class AttributeMatcherAccessor(DirectProxyAccessor[T_co]):
                     getattr(elm, k) == v for k, v in self.attributes.items()
                 ):
                     matches.append(elm._element)
-            except AttributeError:
+            except AttributeError:  # noqa: PERF203
                 pass
 
         if self.__aslist is None:
@@ -2382,7 +2438,19 @@ class SpecificationAccessor(Accessor[_Specification]):
 
     __slots__ = ()
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self,
+        obj: _obj.ModelObject,
+        objtype: type[t.Any] | None = ...,
+    ) -> _Specification: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | _Specification:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -2534,9 +2602,9 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
     def __repr__(self) -> str:
         try:
             attrs: cabc.Sequence[t.Any] = [
-                i for (_, (i,), *_) in t.cast(t.Any, self.attrs.__reduce__())
+                i for (_, (i,), *_) in t.cast("t.Any", self.attrs.__reduce__())
             ]
-        except Exception:
+        except Exception:  # noqa: BLE001
             attrs = self.attrs
         return (
             f"<{type(self).__name__} {self._qualname!r}"
@@ -2808,7 +2876,7 @@ class TypecastAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
             )
         setattr(obj, self.attr, value)
 
-    def __delete__(self, obj):
+    def __delete__(self, obj: _obj.ModelObject) -> None:
         delattr(obj, self.attr)
 
     def __repr__(self) -> str:
@@ -3176,7 +3244,7 @@ class Containment(Relationship[T_co]):
             else:
                 raise ValueError(f"Invalid type hint: {hint}")
 
-        return t.cast(list[type[T_co]], classes)
+        return t.cast("list[type[T_co]]", classes)
 
     def _insert_create(
         self,
@@ -3241,7 +3309,7 @@ def no_list(
     model: capellambse.MelodyModel,
     elems: cabc.Sequence[etree._Element],
     class_: type[T_co],
-) -> _obj.ModelObject | None:
+) -> T_co | None:
     """Return a single element or None instead of a list of elements.
 
     Parameters

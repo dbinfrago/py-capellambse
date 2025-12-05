@@ -8,41 +8,42 @@ import re
 import sys
 
 import pytest
+from lxml import etree
 
 from capellambse import helpers
 
 
-def test_paths_relative_to_root_are_not_changed():
+def test_paths_relative_to_root_are_not_changed() -> None:
     actual = helpers.normalize_pure_path("foo", base="/")
     expected = pathlib.PurePosixPath("foo")
     assert actual == expected
 
 
-def test_paths_relative_to_a_given_base_are_made_relative_to_root():
+def test_paths_relative_to_a_given_base_are_made_relative_to_root() -> None:
     actual = helpers.normalize_pure_path("bar", base="/foo")
     expected = pathlib.PurePosixPath("foo/bar")
     assert actual == expected
 
 
-def test_absolute_paths_are_made_relative_to_root():
+def test_absolute_paths_are_made_relative_to_root() -> None:
     actual = helpers.normalize_pure_path("/foo/bar")
     expected = pathlib.PurePosixPath("foo/bar")
     assert actual == expected
 
 
-def test_base_is_ignored_for_absolute_paths():
+def test_base_is_ignored_for_absolute_paths() -> None:
     actual = helpers.normalize_pure_path("/foo", base="/bar")
     expected = pathlib.PurePosixPath("foo")
     assert actual == expected
 
 
-def test_doubledot_removes_the_preceding_component():
+def test_doubledot_removes_the_preceding_component() -> None:
     actual = helpers.normalize_pure_path("/foo/../bar")
     expected = pathlib.PurePosixPath("bar")
     assert actual == expected
 
 
-def test_leading_doubledots_are_ignored():
+def test_leading_doubledots_are_ignored() -> None:
     actual = helpers.normalize_pure_path("/../../../foo")
     expected = pathlib.PurePosixPath("foo")
     assert actual == expected
@@ -102,7 +103,7 @@ def test_flatten_html_formats_unordered_lists(
 def test_process_html_fragments_does_not_process_empty_markup() -> None:
     markup = ""
 
-    def cb(_):
+    def cb(_: etree._Element) -> None:
         raise AssertionError("Callback should not be called")
 
     processed_markup = helpers.process_html_fragments(markup, cb)
@@ -113,7 +114,7 @@ def test_process_html_fragments_does_not_process_empty_markup() -> None:
 def test_process_html_fragments_does_not_process_plain_text() -> None:
     markup = "Test"
 
-    def cb(_):
+    def cb(_: etree._Element) -> None:
         raise AssertionError("Callback should not be called")
 
     processed_markup = helpers.process_html_fragments(markup, cb)
@@ -124,7 +125,7 @@ def test_process_html_fragments_does_not_process_plain_text() -> None:
 def test_process_html_fragments_processes_a_single_root_element() -> None:
     markup = "<div>Test</div>"
 
-    def cb(node):
+    def cb(node: etree._Element) -> None:
         if node.text == "Test":
             node.text = "Modified"
 
@@ -136,7 +137,7 @@ def test_process_html_fragments_processes_a_single_root_element() -> None:
 def test_process_html_fragments_processes_multiple_root_elements() -> None:
     markup = "<div>Test</div><p>Another</p>"
 
-    def cb(node):
+    def cb(node: etree._Element) -> None:
         if node.text == "Test":
             node.text = "Modified"
         elif node.text == "Another":
@@ -150,7 +151,7 @@ def test_process_html_fragments_processes_multiple_root_elements() -> None:
 def test_process_html_fragments_keeps_leading_text() -> None:
     markup = "Leading text<div>Test</div>"
 
-    def cb(node):
+    def cb(node: etree._Element) -> None:
         if node.text == "Test":
             node.text = "Modified"
 
@@ -174,7 +175,7 @@ def test_process_html_fragments_callback_visits_nodes_in_order() -> None:
     ]
     actual = []
 
-    def cb(node):
+    def cb(node: etree._Element) -> None:
         actual.append(node.text)
 
     helpers.process_html_fragments(markup, cb)
@@ -185,7 +186,7 @@ def test_process_html_fragments_callback_visits_nodes_in_order() -> None:
 if sys.platform.startswith("win"):
     import msvcrt
 
-    def test_flock_locks_and_unlocks_again(monkeypatch, tmpdir):
+    def test_flock_locks_and_unlocks_again(monkeypatch, tmpdir) -> None:
         calls = []
 
         def mock_locking(_1, mode, _2):
@@ -200,7 +201,7 @@ if sys.platform.startswith("win"):
 
         assert calls == [msvcrt.LK_LOCK, msvcrt.LK_UNLCK]
 
-    def test_flock_retries_after_EDEADLOCK(monkeypatch, tmpdir):
+    def test_flock_retries_after_EDEADLOCK(monkeypatch, tmpdir) -> None:
         locks = 0
 
         def mock_locking(_1, mode, _2):
@@ -221,10 +222,14 @@ if sys.platform.startswith("win"):
 else:
     import fcntl
 
-    def test_flock_blocks_indefinitely(monkeypatch, tmpdir, caplog):
+    def test_flock_blocks_indefinitely(
+        monkeypatch: pytest.MonkeyPatch,
+        tmpdir: str,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
         call_order = []
 
-        def mock_flock(_, flags):
+        def mock_flock(_: int, flags: int) -> None:
             nonlocal call_order
             if flags & fcntl.LOCK_NB == fcntl.LOCK_NB:
                 call_order.append("nonblock")

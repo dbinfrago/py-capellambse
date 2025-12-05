@@ -7,7 +7,7 @@ from __future__ import annotations
 from capellambse import model
 
 
-def protocol_ModelObject_compliance():
+def protocol_ModelObject_compliance() -> None:
     mobj: model.ModelObject
 
     mobj = model.ModelElement()  # type: ignore[call-arg]

@@ -40,6 +40,7 @@ import uuid
 import warnings
 
 import markupsafe
+import typing_extensions as te
 from lxml import etree
 
 import capellambse
@@ -266,7 +267,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
                 return self.render(fmt)
             except UnknownOutputFormat:
                 raise
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 if hasattr(self, "_error") and err is self._error:
                     err_img = self._render
                 else:
@@ -316,7 +317,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         self,
         include: cabc.Container[str] | None = None,
         exclude: cabc.Container[str] | None = None,
-        **_kw,
+        **_kw: t.Any,
     ) -> tuple[dict[str, t.Any], dict[t.Any, t.Any]] | dict[str, t.Any] | None:
         if include is None:
             include = helpers.EverythingContainer()
@@ -346,7 +347,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             try:
                 chain = list(_walk_converters(conv))
                 bundle[mime] = _run_converter_chain(chain, render)
-            except Exception:
+            except Exception:  # noqa: PERF203
                 LOGGER.exception("Failed converting diagram with %r", conv)
         if not bundle:
             LOGGER.error("Failed converting diagram for MIME bundle")
@@ -379,10 +380,15 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         return _obj.ElementList(self._model, elems, legacy_by_type=True)
 
     @t.overload
-    def render(self, fmt: None, /, **params) -> diagram.Diagram: ...
+    def render(self, fmt: None, /, **params: t.Any) -> diagram.Diagram: ...
     @t.overload
     def render(
-        self, fmt: str, /, *, pretty_print: bool = ..., **params
+        self,
+        fmt: str,
+        /,
+        *,
+        pretty_print: bool = ...,
+        **params: t.Any,
     ) -> t.Any: ...
     def render(
         self,
@@ -390,7 +396,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         /,
         *,
         pretty_print: bool = False,
-        **params,
+        **params: t.Any,
     ) -> t.Any:
         """Render the diagram in the given format.
 
@@ -447,7 +453,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         /,
         *,
         pretty_print: bool = False,
-        **params,
+        **params: t.Any,
     ) -> None:
         """Render the diagram and write it to a file.
 
@@ -578,7 +584,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             except FileNotFoundError:
                 LOGGER.debug("No index found")
                 index = None
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 err.__suppress_context__ = True
                 LOGGER.debug("Invalid or old index, ignoring", exc_info=err)
                 index = None
@@ -634,7 +640,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             self.invalidate_cache()
             try:
                 self._render = self._create_diagram(params)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001
                 self._error = err
                 self._render = self.__create_error_image("parse", self._error)
 
@@ -810,7 +816,23 @@ class DiagramAccessor(_descriptors.Accessor):
         self.cacheattr = cacheattr
         self.viewpoint = viewpoint
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(
+        self,
+        obj: None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self,
+        obj: _obj.ModelObject | capellambse.MelodyModel,
+        objtype: type[t.Any] | None = None,
+    ) -> _obj.CachedElementList[Diagram]: ...
+    def __get__(
+        self,
+        obj: _obj.ModelObject | capellambse.MelodyModel | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | _obj.CachedElementList[Diagram]:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -900,7 +922,7 @@ class ConfluenceSVGFormat:
 
     @classmethod
     def convert(cls, dg: str) -> str:
-        return "".join((cls.prefix, dg, cls.postfix))
+        return f"{cls.prefix}{dg}{cls.postfix}"
 
     @classmethod
     def convert_pretty(cls, dg: str) -> str:
@@ -1041,7 +1063,7 @@ def _iter_format_converters() -> t.Iterator[tuple[str, DiagramConverter]]:
     for ep in imm.entry_points(group="capellambse.diagram.formats"):
         try:
             conv = ep.load()
-        except ImportError:
+        except ImportError:  # noqa: PERF203
             pass
         else:
             yield (ep.name, conv)

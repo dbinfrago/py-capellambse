@@ -37,9 +37,7 @@ def generic_factory(
 def generic_factory(
     seb: C.SemanticElementBuilder,
     *,
-    boxtype: (
-        type[diagram.Box] | type[_T] | functools.partial[_T]
-    ) = diagram.Box,
+    boxtype: type[diagram.Box | _T] | functools.partial[_T] = diagram.Box,
     minsize: diagram.Vector2D = _MIN_SIZE,
 ) -> _T:
     """Construct a Box from the diagram XML."""
@@ -136,7 +134,7 @@ def generic_factory(
         box.minsize = (30, 30)
     _filters.setfilters(seb, box)
     box.parent = parent
-    return t.cast(_T, box)
+    return t.cast("_T", box)
 
 
 def generic_stacked_factory(seb: C.SemanticElementBuilder) -> C.StackingBox:
@@ -265,7 +263,7 @@ def control_node_factory(seb: C.SemanticElementBuilder) -> diagram.Box:
     r"""Differentiate ``ControlNode``\ s based on their KIND."""
     assert seb.styleclass is not None
     kind = seb.melodyobjs[0].get("kind", "OR")
-    seb.styleclass = "".join((kind.capitalize(), seb.styleclass))
+    seb.styleclass = f"{kind.capitalize()}{seb.styleclass}"
     return generic_factory(seb)
 
 

@@ -12,15 +12,19 @@ from . import _scripts
 
 
 class LazyGroup(click.Group):
-    def list_commands(self, ctx):
-        cmds: list[str] = []
-        for i in imr.files(_scripts).iterdir():
-            if i.name.endswith(".py") and not i.name.startswith("_"):
-                cmds.append(i.name.removesuffix(".py").replace("_", "-"))
-        cmds.sort()
+    def list_commands(self, ctx: click.Context) -> list[str]:
+        cmds = sorted(
+            i.name.removesuffix(".py").replace("_", "-")
+            for i in imr.files(_scripts).iterdir()
+            if i.name.endswith(".py") and not i.name.startswith("_")
+        )
         return super().list_commands(ctx) + cmds
 
-    def get_command(self, ctx, name):
+    def get_command(
+        self,
+        ctx: click.Context,
+        name: str,
+    ) -> click.Command | None:
         with contextlib.suppress(ImportError):
             modname = name.replace("-", "_")
             cmd = importlib.import_module(
@@ -34,7 +38,7 @@ class LazyGroup(click.Group):
 
 
 @click.group(cls=LazyGroup, no_args_is_help=True)
-def main():
+def main() -> None:
     pass
 
 
