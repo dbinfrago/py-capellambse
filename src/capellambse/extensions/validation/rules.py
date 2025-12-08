@@ -27,7 +27,7 @@ def SystemComponent(cmp: mm.sa.SystemComponent) -> bool:
 
 @virtual_type(mm.pa.PhysicalComponent)
 def BehaviourPhysicalComponent(cmp: mm.pa.PhysicalComponent) -> bool:
-    return cmp.nature == mm.modeltypes.PhysicalComponentNature.BEHAVIOR
+    return cmp.nature == mm.pa.PhysicalComponentNature.BEHAVIOR
 
 
 @virtual_type(mm.capellacommon.State)
@@ -169,7 +169,15 @@ def has_precondition(obj: capellambse.model.ModelElement) -> bool:
         " results and enable effective evaluation of system performance."
     ),
 )
-def has_postcondition(obj):
+def has_postcondition(obj: m.ModelElement) -> bool:
+    assert isinstance(
+        obj,
+        (
+            mm.sa.Capability
+            | mm.oa.OperationalCapability
+            | mm.la.CapabilityRealization
+        ),
+    )
     return obj.postcondition is not None
 
 

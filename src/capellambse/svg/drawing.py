@@ -260,7 +260,7 @@ class Drawing:
         class_: str,
         group: container.Group,
         labelstyle: style.Styling,
-        y: int | float | None = None,
+        y: float | None = None,
     ) -> None:
         """Draw features text on given object."""
         x = obj.attribs["x"]
@@ -478,7 +478,7 @@ class Drawing:
         defs_ids = {d.attribs.get("id") for d in self.__drawing.defs.elements}
         for attr in styling:
             val = getattr(styling, attr)
-            if isinstance(val, cabc.Iterable) and not isinstance(
+            if isinstance(val, cabc.Sequence) and not isinstance(
                 val, str | diagram.RGB
             ):
                 grad_id = styling._generate_id("CustomGradient", val)
@@ -530,10 +530,10 @@ class Drawing:
     def _draw_symbol(
         self,
         *,
-        x_: int | float,
-        y_: int | float,
-        width_: int | float,
-        height_: int | float,
+        x_: float,
+        y_: float,
+        width_: float,
+        height_: float,
         context_: cabc.Sequence[str] = (),
         parent_: str | None = None,
         label_: str = "",
@@ -543,7 +543,7 @@ class Drawing:
         obj_style: style.Styling,
         text_style: style.Styling,
         **kw: t.Any,
-    ):
+    ) -> None:
         del label_, kw
         assert isinstance(floating_labels_, list | dict | type(None))
         pos = (x_ + 0.5, y_ + 0.5)
@@ -611,10 +611,10 @@ class Drawing:
     def _draw_box(
         self,
         *,
-        x_: int | float,
-        y_: int | float,
-        width_: int | float,
-        height_: int | float,
+        x_: float,
+        y_: float,
+        width_: float,
+        height_: float,
         context_: cabc.Sequence[str] = (),
         children_: cabc.Sequence[str] = (),
         features_: cabc.Sequence[str] = (),
@@ -671,10 +671,10 @@ class Drawing:
     def _draw_box_symbol(
         self,
         *,
-        x_: int | float,
-        y_: int | float,
-        width_: int | float,
-        height_: int | float,
+        x_: float,
+        y_: float,
+        width_: float,
+        height_: float,
         label_: str,
         floating_labels_: list[LabelDict],
         id_: str,
@@ -753,7 +753,7 @@ class Drawing:
         context_: cabc.Sequence[str] = (),
         obj_style: style.Styling,
         text_style: style.Styling,
-        **kw,
+        **kw: t.Any,
     ) -> container.Group:
         del kw
         points: list = [(x + 0.5, y + 0.5) for x, y in points_]
@@ -789,7 +789,7 @@ class Drawing:
         class_: str,
         labelstyle: style.Styling,
         text_anchor: str = "start",
-        y_margin: int | float,
+        y_margin: float,
     ) -> container.Group:
         if diagram.has_icon(class_):
             additional_space = decorations.icon_size + decorations.icon_padding

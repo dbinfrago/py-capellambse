@@ -20,6 +20,7 @@ import sys
 import typing as t
 import warnings
 
+import typing_extensions as te
 from lxml import etree
 
 import capellambse
@@ -198,19 +199,38 @@ class RequirementsRelationAccessor(
 
     __slots__ = ("aslist",)
 
-    def __init__(self, *args, **kw) -> None:
+    def __init__(self, *args: t.Any, **kw: t.Any) -> None:
         super().__init__(
             *args, **kw, aslist=m.ElementList, single_attr="long_name"
         )
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: m.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> (
+        requirements.AbstractRelation
+        | m.ElementList[requirements.AbstractRelation]
+        | None
+    ): ...
+    def __get__(
+        self,
+        obj: m.ModelObject | None,
+        objtype: type[m.ModelObject] | None = None,
+    ) -> (
+        te.Self
+        | requirements.AbstractRelation
+        | m.ElementList[requirements.AbstractRelation]
+        | None
+    ):
         del objtype
         if obj is None:  # pragma: no cover
             return self
 
         return self._make_list(obj, self._find_relations(obj))
 
-    def __set__(self, obj, value: t.Any) -> None:
+    def __set__(self, obj: m.ModelObject, value: t.Any) -> None:
         if not isinstance(value, cabc.Iterable):
             value = (value,)
 
@@ -223,7 +243,7 @@ class RequirementsRelationAccessor(
             ip.remove(i)
         obj._element.extend(value)
 
-    def __delete__(self, obj) -> None:
+    def __delete__(self, obj: m.ModelObject) -> None:
         assert self.aslist is not None
 
         for i in self._find_relations(obj):
@@ -231,7 +251,7 @@ class RequirementsRelationAccessor(
             assert parent is not None
             parent.remove(i)
 
-    def _find_relations(self, obj) -> list[etree._Element]:
+    def _find_relations(self, obj: m.ModelObject) -> list[etree._Element]:
         rels = obj._model.search(
             CapellaIncomingRelation,
             requirements.InternalRelation,
@@ -239,7 +259,15 @@ class RequirementsRelationAccessor(
         )
         return [i._element for i in rels if obj in (i.source, i.target)]
 
-    def _make_list(self, parent_obj, elements):
+    def _make_list(
+        self,
+        parent_obj: m.ModelObject,
+        elements: list[etree._Element],
+    ) -> (
+        requirements.AbstractRelation
+        | m.ElementList[requirements.AbstractRelation]
+        | None
+    ):
         assert self.aslist is not None
         return self.aslist(
             parent_obj._model, elements, m.ModelElement, parent=parent_obj
@@ -280,7 +308,12 @@ class RequirementsRelationAccessor(
                 uuid=uuid,
             )
 
-    def delete(self, elmlist, obj) -> None:
+    def delete(
+        self,
+        elmlist: m.ElementListCouplingMixin[requirements.AbstractRelation],
+        obj: m.ModelObject,
+    ) -> None:
+        assert isinstance(obj, requirements.AbstractRelation)
         warnings.warn(
             (
                 "Mutating Requirement.relations directly is deprecated"
@@ -453,7 +486,17 @@ class ElementRelationAccessor(m.WritableAccessor[m.ModelElement]):
     def __init__(self) -> None:
         super().__init__(aslist=RelationsList, single_attr="long_name")
 
-    def __get__(self, obj, objtype=None):
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: m.ModelObject, objtype: type[t.Any] | None = ...
+    ) -> m.ModelElement | m.ElementList[m.ModelElement] | None: ...
+    def __get__(
+        self,
+        obj: m.ModelObject | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | m.ModelElement | m.ElementList[m.ModelElement] | None:
         del objtype
         if obj is None:  # pragma: no cover
             return self
@@ -484,7 +527,11 @@ class ElementRelationAccessor(m.WritableAccessor[m.ModelElement]):
         del obj, target
         yield
 
-    def _make_list(self, parent_obj, elements):
+    def _make_list(
+        self,
+        parent_obj: m.ModelObject,
+        elements: list[etree._Element],
+    ) -> m.ModelElement | m.ElementList[m.ModelElement] | None:
         assert self.aslist is not None
         return self.aslist(
             parent_obj._model,
@@ -495,5 +542,5 @@ class ElementRelationAccessor(m.WritableAccessor[m.ModelElement]):
         )
 
 
-requirements.Requirement.relations = RequirementsRelationAccessor()  # type: ignore[deprecated]
-requirements.Requirement.related = ElementRelationAccessor()  # type: ignore[deprecated]
+requirements.Requirement.relations = RequirementsRelationAccessor()  # type: ignore[assignment, deprecated]
+requirements.Requirement.related = ElementRelationAccessor()  # type: ignore[assignment, deprecated]

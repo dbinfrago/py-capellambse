@@ -90,7 +90,7 @@ def test_ReqIFElement_short_repr_(
     assert actual == expected
 
 
-def test_extension_was_loaded():
+def test_extension_was_loaded() -> None:
     capellambse.load_model_extensions()
 
     assert hasattr(m.ModelElement, "requirements")
@@ -299,7 +299,7 @@ class TestRequirementRelations:
         assert isinstance(ge.requirements, reqif.RelationsList)
         assert len(ge.requirements) == 3
 
-    def test_filtering_by_relation_type(self, model: m.MelodyModel):
+    def test_filtering_by_relation_type(self, model: m.MelodyModel) -> None:
         ge = model.by_uuid("00e7b925-cf4c-4cb0-929e-5409a1cd872b")
         assert isinstance(ge, mm.sa.SystemFunction)
         rel_type = model.by_uuid("f1aceb81-5f70-4469-a127-94830eb9be04")
@@ -326,8 +326,8 @@ class TestRequirementRelations:
         ],
     )
     def test_RequirementRelations(
-        self, model: m.MelodyModel, obj_uuid, target_uuids
-    ):
+        self, model: m.MelodyModel, obj_uuid: str, target_uuids: set[str]
+    ) -> None:
         obj = model.by_uuid(obj_uuid)
         assert isinstance(obj, reqif.Requirement)
 
@@ -360,7 +360,7 @@ class TestRequirementRelations:
         obj_uuid: str,
         target_uuid: str,
         expected_type: type[reqif.AbstractRelation],
-    ):
+    ) -> None:
         source = model.by_uuid(obj_uuid)
         target = model.by_uuid(target_uuid)
         req = source if isinstance(source, reqif.Requirement) else target
@@ -371,7 +371,7 @@ class TestRequirementRelations:
 
 
 class TestReqIFAccess:
-    def test_RequirementsModule_attributes(self, model: m.MelodyModel):
+    def test_RequirementsModule_attributes(self, model: m.MelodyModel) -> None:
         mod = model.by_uuid("f8e2195d-b5f5-4452-a12b-79233d943d5e")
         assert isinstance(mod, reqif.CapellaModule)
 
@@ -387,7 +387,7 @@ class TestReqIFAccess:
         }.items():
             assert getattr(mod, attr) == expected
 
-    def test_RequirementFolder_attributes(self, model: m.MelodyModel):
+    def test_RequirementFolder_attributes(self, model: m.MelodyModel) -> None:
         folder = model.by_uuid("e16f5cc1-3299-43d0-b1a0-82d31a137111")
         assert isinstance(folder, reqif.Folder)
 
@@ -406,7 +406,7 @@ class TestReqIFAccess:
         }.items():
             assert getattr(folder, attr) == expected
 
-    def test_Requirement_attributes(self, model: m.MelodyModel):
+    def test_Requirement_attributes(self, model: m.MelodyModel) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         assert isinstance(req, reqif.Requirement)
         assert req.type is not None
@@ -424,7 +424,7 @@ class TestReqIFAccess:
         }.items():
             assert getattr(req, attr) == expected
 
-    def test_Relations(self, model: m.MelodyModel):
+    def test_Relations(self, model: m.MelodyModel) -> None:
         req_with_relations = model.by_uuid(
             "3c2d312c-37c9-41b5-8c32-67578fa52dc3"
         )
@@ -433,19 +433,23 @@ class TestReqIFAccess:
         relations = req_with_relations.relations
         assert len(relations) == 4
 
-    def test_Requirement_without_Relations(self, model: m.MelodyModel):
+    def test_Requirement_without_Relations(self, model: m.MelodyModel) -> None:
         req_without_relations = model.by_uuid(
             "0a9a68b1-ba9a-4793-b2cf-4448f0b4b8cc"
         )
         assert isinstance(req_without_relations, reqif.Requirement)
         assert len(req_without_relations.relations) == 0
 
-    def test_outgoing_and_internal_Relations(self, model: m.MelodyModel):
+    def test_outgoing_and_internal_Relations(
+        self, model: m.MelodyModel
+    ) -> None:
         req_with_oir = model.by_uuid("85d41db2-9e17-438b-95cf-49342452ddf3")
         assert isinstance(req_with_oir, reqif.Requirement)
         assert len(req_with_oir.relations) == 2
 
-    def test_RequirementTypes_AttributeDefinitions(self, model: m.MelodyModel):
+    def test_RequirementTypes_AttributeDefinitions(
+        self, model: m.MelodyModel
+    ) -> None:
         reqtype = model.by_uuid("db47fca9-ddb6-4397-8d4b-e397e53d277e")
         attr_def = model.by_uuid("682bd51d-5451-4930-a97e-8bfca6c3a127")
         enum_def = model.by_uuid("c316ab07-c5c3-4866-a896-92e34733055c")
@@ -457,7 +461,7 @@ class TestReqIFAccess:
 class TestReqIFModification:
     def test_created_Requirements_can_be_found_in_the_model(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         mod = model.oa.requirement_modules[0]
         new_req = mod.requirements.create("Requirement")
 
@@ -466,7 +470,7 @@ class TestReqIFModification:
 
     def test_deleted_Requirements_vanish_from_model(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         mod = model.oa.requirement_modules[0]
         old_req = mod.requirements[0]
 
@@ -486,7 +490,7 @@ class TestReqIFModification:
     )
     def test_creating_invalid_Requirements_raises_error(
         self, model: m.MelodyModel, relcls: str
-    ):
+    ) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         assert isinstance(req, reqif.Requirement)
 
@@ -512,7 +516,7 @@ class TestReqIFModification:
 
     def test_created_Requirements_are_found_from_both_sides(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         target = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
         assert isinstance(req, reqif.Requirement)
@@ -548,7 +552,7 @@ class TestReqIFModification:
         model: m.MelodyModel,
         type_hint: str,
         default_value: t.Any,
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
 
         assert isinstance(req, reqif.Requirement)
@@ -593,7 +597,7 @@ class TestReqIFModification:
         type_hint: str,
         value: t.Any,
         xml: str | None,
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
 
         assert isinstance(req, reqif.Requirement)
@@ -609,7 +613,7 @@ class TestReqIFModification:
 
     def test_create_ValueAttribute_on_Requirements_without_definition(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
         assert isinstance(req, reqif.Requirement)
         assert not req.attributes
@@ -645,7 +649,7 @@ class TestReqIFModification:
         model: m.MelodyModel,
         type_hint: str,
         expected_type: str,
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
 
         assert isinstance(req, reqif.Requirement)
@@ -656,7 +660,7 @@ class TestReqIFModification:
 
     def test_create_EnumValueAttribute_on_Requirements(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
         definition = model.by_uuid("c316ab07-c5c3-4866-a896-92e34733055c")
         assert isinstance(req, reqif.Requirement)
@@ -671,7 +675,7 @@ class TestReqIFModification:
 
     def test_create_EnumValueAttribute_with_passing_values(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.oa.all_requirements[0]
         dtdef = model.by_uuid("637caf95-3229-4607-99a0-7d7b990bc97f")
         values = [
@@ -686,7 +690,7 @@ class TestReqIFModification:
 
     def test_create_ValueAttribute_with_wrong_type_hint_raises_ValueError(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.by_uuid("79291c33-5147-4543-9398-9077d582576d")
         assert isinstance(req, reqif.Requirement)
 
@@ -711,7 +715,7 @@ class TestReqIFModification:
     )
     def test_setting_ValueAttributes_on_Requirement(
         self, model: m.MelodyModel, value: t.Any
-    ):
+    ) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         definition = model.by_uuid("682bd51d-5451-4930-a97e-8bfca6c3a127")
         assert isinstance(req, reqif.Requirement)
@@ -738,7 +742,7 @@ class TestReqIFModification:
         self,
         model: m.MelodyModel,
         default_value: t.Any,
-    ):
+    ) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         definition = model.by_uuid("682bd51d-5451-4930-a97e-8bfca6c3a127")
         assert isinstance(req, reqif.Requirement)
@@ -767,14 +771,16 @@ class TestReqIFModification:
     )
     def test_setting_ValueAttribute_with_wrong_type_fails_with_TypeError(
         self, model: m.MelodyModel, uuid: str, value: t.Any
-    ):
+    ) -> None:
         attr = model.by_uuid(uuid)
         assert isinstance(attr, reqif.Attribute)
 
         with pytest.raises(TypeError):
             attr.value = value
 
-    def test_setting_values_on_EnumValueAttribute(self, model: m.MelodyModel):
+    def test_setting_values_on_EnumValueAttribute(
+        self, model: m.MelodyModel
+    ) -> None:
         evattr = model.by_uuid("a44b41f3-598c-4250-bca6-1329647e7a02")
         values = [
             model.by_uuid("efd6e108-3461-43c6-ad86-24168339ed3c"),
@@ -788,7 +794,7 @@ class TestReqIFModification:
 
     def test_create_RequirementType_AttributeDefinition_creation(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         reqtype = model.by_uuid("db47fca9-ddb6-4397-8d4b-e397e53d277e")
         definitions = reqtype.attributes
 
@@ -805,7 +811,7 @@ class TestReqIFModification:
 
     def test_create_EnumDataTypeDefinition_setting_EnumValues(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         reqtypesfolder = model.by_uuid("67bba9cf-953c-4f0b-9986-41991c68d241")
         dt_definitions = reqtypesfolder.definition_types
 
@@ -823,7 +829,7 @@ class TestReqIFModification:
     def test_create_EnumDataTypeDefinition_creating_EnumValues(
         self,
         model: m.MelodyModel,
-    ):
+    ) -> None:
         reqtypesfolder = model.by_uuid("67bba9cf-953c-4f0b-9986-41991c68d241")
         dt_definitions = reqtypesfolder.definition_types
 
@@ -851,7 +857,7 @@ class TestRequirementsFiltering:
     )
     reqtype_uuid = "db47fca9-ddb6-4397-8d4b-e397e53d277e"
 
-    def test_filtering_by_type_name(self, model: m.MelodyModel):
+    def test_filtering_by_type_name(self, model: m.MelodyModel) -> None:
         requirements = model.search(reqif.Requirement)
         rt = model.by_uuid(self.reqtype_uuid)
         assert isinstance(rt, reqif.RequirementType)
@@ -861,7 +867,7 @@ class TestRequirementsFiltering:
         uuids = {r.uuid for r in rtype_reqs}
         assert uuids & self.uuids == self.uuids
 
-    def test_filtering_by_type_names(self, model: m.MelodyModel):
+    def test_filtering_by_type_names(self, model: m.MelodyModel) -> None:
         requirements = model.search(reqif.Requirement)
         rt1 = model.by_uuid(self.reqtype_uuid)
         rt2 = model.by_uuid("00195554-8fae-4687-86ca-77c93330893d")
@@ -874,14 +880,14 @@ class TestRequirementsFiltering:
         uuids = {r.uuid for r in rtype_reqs}
         assert uuids & expected_uuids == expected_uuids
 
-    def test_filtering_by_RequirementType(self, model: m.MelodyModel):
+    def test_filtering_by_RequirementType(self, model: m.MelodyModel) -> None:
         requirements = model.search(reqif.Requirement)
         rt = model.by_uuid(self.reqtype_uuid)
 
         uuids = {r.uuid for r in requirements.by_type(rt)}
         assert uuids & self.uuids == self.uuids
 
-    def test_filtering_by_types(self, model: m.MelodyModel):
+    def test_filtering_by_types(self, model: m.MelodyModel) -> None:
         requirements = model.search(reqif.Requirement)
         rt1 = model.by_uuid(self.reqtype_uuid)
         rt2 = model.by_uuid("00195554-8fae-4687-86ca-77c93330893d")
@@ -890,7 +896,7 @@ class TestRequirementsFiltering:
         uuids = {r.uuid for r in requirements.by_type(rt1, rt2)}
         assert uuids & expected_uuids == expected_uuids
 
-    def test_filtering_by_name_and_type(self, model: m.MelodyModel):
+    def test_filtering_by_name_and_type(self, model: m.MelodyModel) -> None:
         requirements = model.search(reqif.Requirement)
         rt1 = model.by_uuid(self.reqtype_uuid)
         rt2 = model.by_uuid("00195554-8fae-4687-86ca-77c93330893d")
@@ -904,7 +910,7 @@ class TestRequirementsFiltering:
 
     def test_filtering_by_type_None_returns_requirements_with_undefined_type(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         requirements = model.search(reqif.Requirement)
         undefined_type_reqs = requirements.by_type(None)
         req = undefined_type_reqs[0]
@@ -935,7 +941,7 @@ class TestRequirementsFiltering:
         model: m.MelodyModel,
         relation_class: str,
         target_uuids: set[str],
-    ):
+    ) -> None:
         obj = model.by_uuid("00e7b925-cf4c-4cb0-929e-5409a1cd872b")
         relations = obj.requirements_relations
 
@@ -966,7 +972,7 @@ class TestRequirementsFiltering:
         model: m.MelodyModel,
         relation_class: str,
         target_uuids: set[str],
-    ):
+    ) -> None:
         obj = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         relations = obj.relations
 
@@ -980,7 +986,7 @@ class TestRequirementsFiltering:
 
     def test_attributes_filtering_by_definition_long_name(
         self, model: m.MelodyModel
-    ):
+    ) -> None:
         req = model.by_uuid("85d41db2-9e17-438b-95cf-49342452ddf3")
         ex_definition = model.by_uuid("c316ab07-c5c3-4866-a896-92e34733055c")
         def_name = ex_definition.long_name
@@ -992,7 +998,7 @@ class TestRequirementsFiltering:
         assert [attr.definition for attr in attributes] == [ex_definition]
         assert attr.definition == ex_definition
 
-    def test_RelationsLists_slicing(self, model: m.MelodyModel):
+    def test_RelationsLists_slicing(self, model: m.MelodyModel) -> None:
         req = model.by_uuid("3c2d312c-37c9-41b5-8c32-67578fa52dc3")
         assert isinstance(req, reqif.Requirement)
         related_objs = req.related

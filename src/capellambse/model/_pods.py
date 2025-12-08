@@ -72,10 +72,14 @@ class BasePOD(t.Generic[U]):
         return f"{self.__objclass__.__name__}.{self.__name__}"
 
     @t.overload
-    def __get__(self, obj: None, objtype: type) -> te.Self: ...
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
     @t.overload
-    def __get__(self, obj: t.Any, objtype: type | None = None) -> U: ...
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj: t.Any, objtype: type[t.Any] | None = None) -> U: ...
+    def __get__(
+        self,
+        obj: t.Any | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | U:
         del objtype
         if obj is None:
             return self
@@ -419,12 +423,18 @@ class MultiStringPOD(BasePOD[cabc.MutableSequence[str]]):
         self.__objclass__: type[t.Any] | None = None
 
     @t.overload
-    def __get__(self, obj: None, objtype: type) -> te.Self: ...
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
     @t.overload
     def __get__(
-        self, obj: t.Any, objtype: type | None = None
+        self,
+        obj: t.Any,
+        objtype: type[t.Any] | None = None,
     ) -> cabc.MutableSequence[str]: ...
-    def __get__(self, obj, objtype=None):
+    def __get__(
+        self,
+        obj: t.Any | None,
+        objtype: type[t.Any] | None = None,
+    ) -> te.Self | cabc.MutableSequence[str]:
         del objtype
         if obj is None:
             return self

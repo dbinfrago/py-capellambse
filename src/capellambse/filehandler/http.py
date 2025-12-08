@@ -54,10 +54,10 @@ class DownloadStream(t.BinaryIO):
         )
         self.__buffer = memoryview(b"")
 
-    def __enter__(self) -> DownloadStream:
+    def __enter__(self) -> te.Self:
         return self
 
-    def __exit__(self, *args: t.Any) -> None:
+    def __exit__(self, *args: object) -> None:
         self.close()
 
     def read(self, n: int = -1) -> bytes:

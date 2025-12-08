@@ -125,7 +125,7 @@ class TestSVG:
     @pytest.mark.parametrize("diagram_name", TEST_DIAGS)
     def test_diagram_decorations(
         self, model: capellambse.MelodyModel, diagram_name: str
-    ):
+    ) -> None:
         """Test diagrams get rendered successfully."""
         diag = model.diagrams.by_name(diagram_name)
         diag.render("svg")

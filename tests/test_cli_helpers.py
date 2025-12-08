@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Copyright DB InfraGO AG
 # SPDX-License-Identifier: Apache-2.0
 
+import pathlib
+
 import pytest
 
 import capellambse
@@ -11,7 +13,7 @@ from .conftest import INSTALLED_PACKAGE, Models  # type: ignore
 JSON_PATH = INSTALLED_PACKAGE.joinpath("known_models", "test-7.0.json")
 
 
-def test_enumerate_known_models_contains_known_test_models():
+def test_enumerate_known_models_contains_known_test_models() -> None:
     expected = {"test-7.0.json", "test-lib.json"}
 
     actual = {i.name for i in capellambse.enumerate_known_models()}
@@ -40,7 +42,7 @@ def test_climodel_is_idempotent(
         pytest.param(JSON_PATH.read_text(), id="json"),
     ],
 )
-def test_climodel_loads_model(value):
+def test_climodel_loads_model(value: str | pathlib.Path) -> None:
     paramtype = capellambse.ModelCLI()
 
     converted = paramtype.convert(value, None, None)
@@ -59,7 +61,7 @@ def test_climodel_loads_model(value):
         pytest.param(JSON_PATH.read_text(), id="json"),
     ],
 )
-def test_loadcli_loads_model(value):
+def test_loadcli_loads_model(value: str | pathlib.Path) -> None:
     model = capellambse.loadcli(value)
 
     assert isinstance(model, capellambse.MelodyModel)

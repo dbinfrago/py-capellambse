@@ -113,7 +113,7 @@ def _factory(
     if isinstance(needs, str):
         needs = (needs,)
 
-    def decorator(func):
+    def decorator(func: cabc.Callable[_P, _T], /) -> cabc.Callable[_P, _T]:
         symbol_name = re.sub(
             "(?:^|_)([a-z])",
             lambda m: m.group(1).capitalize(),
@@ -326,7 +326,7 @@ def _initial_pseudo_state_symbol() -> container.Symbol:
             center=(17.2, 283.23),
             r=8.5,
             focal=(17.2, 283.23),
-            matrix=[1.14887, 1.12434, -0.90541, 0.93377, 253.31643, -3.725107],
+            matrix=(1.14887, 1.12434, -0.90541, 0.93377, 253.31643, -3.725107),
         )
     )
     symb.add(
@@ -380,7 +380,7 @@ def _operational_activity_symbol() -> container.Symbol:
 @_factory()
 def function_symbol(
     id_: str = "FunctionSymbol",
-    gradient_url="green",
+    gradient_url: str = "green",
     label: str = "F",
     colors: tuple[str, str] = ("#6CB35B", "#ffffff"),
 ) -> container.Symbol:
@@ -913,14 +913,14 @@ def _brown_oval(id_: str) -> container.Symbol:
             center=(25.657873, 25.925144),
             r=20.562483,
             focal=(25.657873, 25.925144),
-            matrix=[
+            matrix=(
                 1.471657,
                 0.01303118,
                 -0.03846138,
                 4.3435681,
                 -11.744602,
                 -94.299935,
-            ],
+            ),
             stop_colors=("#ffffff", "#d0ab84"),
             offsets=(0, 1),
         )
@@ -1253,13 +1253,13 @@ def _make_edge_symbol(
 
 
 def _make_lgradient(
-    id_,
+    id_: str,
     /,
     *,
-    start=(0, 0),
-    end=(0, 1),
-    stop_colors=("#fff", "#000"),
-    stop_opacity=(1, 1),
+    start: tuple[float, float] = (0, 0),
+    end: tuple[float, float] = (0, 1),
+    stop_colors: cabc.Sequence[str] = ("#fff", "#000"),
+    stop_opacity: cabc.Sequence[float] = (1, 1),
 ) -> gradients.LinearGradient:
     if len(start) != 2 or len(end) != 2:
         raise ValueError(
@@ -1282,15 +1282,15 @@ def _make_lgradient(
 
 
 def _make_rgradient(
-    id_,
+    id_: str,
     /,
     *,
-    center=(0, 0),
-    r=1,
-    focal=(0, 0),
-    matrix=None,
-    stop_colors=("#fff", "#000"),
-    offsets=("0", "1"),
+    center: tuple[float, float] = (0, 0),
+    r: float = 1,
+    focal: tuple[float, float] = (0, 0),
+    matrix: tuple[float, float, float, float, float, float] | None = None,
+    stop_colors: cabc.Sequence[str] = ("#fff", "#000"),
+    offsets: cabc.Sequence[float] = (0, 1),
 ) -> gradients.RadialGradient:
     if len(stop_colors) != len(offsets):
         raise ValueError(

@@ -17,9 +17,12 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import types
 import typing as t
 import urllib.parse
 import weakref
+
+import typing_extensions as te
 
 import capellambse.helpers
 
@@ -125,11 +128,16 @@ class _WritableGitFile(t.BinaryIO):
     ) -> None:
         self.__file.writelines(lines)
 
-    def __enter__(self) -> _WritableGitFile:
+    def __enter__(self) -> te.Self:
         self.__file.__enter__()
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_trace):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_trace: types.TracebackType | None,
+    ) -> None:
         self.__file.__exit__(exc_type, exc_value, exc_trace)
         self.__tx.record_update(self.__path)
 
@@ -221,7 +229,12 @@ class _GitTransaction:
 
         return self.__outer_context.__enter__()
 
-    def __exit__(self, exc_type, exc_value, exc_trace):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_trace: types.TracebackType | None,
+    ) -> bool | None:
         if exc_value is not None:
             self.__handler._transaction = None
             self.__handler._git("reset", "--hard", self.__old_sha)

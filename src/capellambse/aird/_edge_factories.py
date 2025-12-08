@@ -122,8 +122,7 @@ def _extract_relative_bendpoints(
     seb: C.ElementBuilder,
     sourceport: diagram.DiagramElement,
     bendpoints_elm: etree._Element,
-):
-    bendpoints = []
+) -> list[diagram.Vector2D]:
     sourcebounds = sourceport.bounds
     try:
         sourceanchor = next(
@@ -138,11 +137,11 @@ def _extract_relative_bendpoints(
     bendpoints_attrib = bendpoints_elm.attrib.get(
         "points", "[0, 0, 0, 0]$[0, 0, 0, 0]"
     )
-    for point in bendpoints_attrib.split("$"):
-        bendpoints.append(
-            refpos + helpers.ssvparse(point, int, parens="[]", num=4)[:2]
-        )
 
+    bendpoints = [
+        refpos + helpers.ssvparse(point, int, parens="[]", num=4)[:2]
+        for point in bendpoints_attrib.split("$")
+    ]
     if len(bendpoints) == 1 or all(b == bendpoints[0] for b in bendpoints):
         return []
     return bendpoints

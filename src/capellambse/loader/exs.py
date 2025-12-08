@@ -32,7 +32,7 @@ except ImportError:
     ):
         raise
 
-    def _native_serialize(*_1, **_2):  # type: ignore[misc]
+    def _native_serialize(*_1, **_2):  # type: ignore[misc, no-untyped-def]
         raise TypeError("Native module is not available")
 
     HAS_NATIVE = False
@@ -135,7 +135,7 @@ def write(
     *,
     encoding: str | _UnspecifiedType = _NOT_SPECIFIED,
     errors: str | _UnspecifiedType = _NOT_SPECIFIED,
-    line_length: float | int = LINE_LENGTH,
+    line_length: float = LINE_LENGTH,
     siblings: bool = False,
 ) -> None:
     """Write the XML tree to ``file``.
@@ -189,7 +189,7 @@ def serialize(
     *,
     encoding: str = ...,
     errors: str = ...,
-    line_length: float | int = ...,
+    line_length: float = ...,
     siblings: bool | None = ...,
     file: None = ...,
 ) -> bytes: ...
@@ -200,7 +200,7 @@ def serialize(
     *,
     encoding: str = ...,
     errors: str = ...,
-    line_length: float | int = ...,
+    line_length: float = ...,
     siblings: bool | None = ...,
     file: HasWrite,
 ) -> None: ...
@@ -210,7 +210,7 @@ def serialize(
     *,
     encoding: str | _UnspecifiedType = _NOT_SPECIFIED,
     errors: str | _UnspecifiedType = _NOT_SPECIFIED,
-    line_length: float | int = LINE_LENGTH,
+    line_length: float = LINE_LENGTH,
     siblings: bool | None = None,
     file: HasWrite | None = None,
 ) -> bytes | None:
@@ -285,11 +285,11 @@ def serialize(
 
 
 def _python_serialize(
-    root,
+    root: lxml.etree._Element,
     *,
     encoding: str,
     errors: str,
-    line_length: float | int,
+    line_length: float,
     siblings: bool,
     file: HasWrite | None,
 ) -> bytes | None:
@@ -464,7 +464,7 @@ def _serialize_element(
     encoding: str,
     errors: str,
     pos: int = 0,
-    line_length: float | int,
+    line_length: float,
 ) -> int:
     assert isinstance(element, lxml.etree._Element)
     assert None not in element.nsmap

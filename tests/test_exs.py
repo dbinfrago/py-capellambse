@@ -58,7 +58,7 @@ SERIALIZERS = [
         ),
     ],
 )
-def test_escaping(serializer, string):
+def test_escaping(serializer: functools.partial[bytes], string: str) -> None:
     tree = etree.fromstring(string)
     expected = string.encode("utf-8")
 

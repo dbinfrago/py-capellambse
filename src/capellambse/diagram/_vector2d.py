@@ -40,7 +40,7 @@ class Vector2D(t.NamedTuple):
     def __rsub__(self, other: Vec2ish) -> Vector2D:
         return self.__map2(operator.sub, other, True)
 
-    @t.overload  # type: ignore
+    @t.overload  # type: ignore[override]
     def __mul__(self, other: Vec2ish) -> Vec2Element: ...
     @t.overload
     def __mul__(self, other: Vec2Element) -> Vector2D: ...
@@ -305,7 +305,7 @@ class Vec2List(t.MutableSequence[Vector2D]):
     ) -> None:
         if isinstance(index, slice):
             assert not isinstance(value, Vector2D)
-            value = t.cast(cabc.Iterable[Vec2ish], value)
+            value = t.cast("cabc.Iterable[Vec2ish]", value)
             self.__list[index] = (self.__cast(v) for v in value)
         else:
             assert isinstance(value, Vector2D)

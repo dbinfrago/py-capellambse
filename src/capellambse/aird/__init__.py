@@ -93,7 +93,7 @@ def enumerate_descriptors(
             if diag_root.tag not in DIAGRAM_ROOTS:
                 continue
 
-            yield t.cast(DRepresentationDescriptor, d)
+            yield t.cast("DRepresentationDescriptor", d)
 
 
 def viewpoint_of(descriptor: DRepresentationDescriptor) -> str:
@@ -121,7 +121,7 @@ def parse_diagrams(
     for descriptor in enumerate_descriptors(model):
         try:
             d = parse_diagram(model, descriptor, **params)
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001, PERF203
             C.LOGGER.warning(
                 "Ignoring invalid diagram %r: %s", descriptor, err
             )

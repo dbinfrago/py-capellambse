@@ -151,12 +151,11 @@ def _round_version(v: str, prec: int) -> str:
     assert prec > 0
     pos = dots = 0
     while pos < len(v) and dots < prec:
-        try:
-            pos = v.index(".", pos) + 1
-        except ValueError:
+        dot = v.find(".", pos)
+        if dot < 0:
             return v
-        else:
-            dots += 1
+        pos = dot + 1
+        dots += 1
     return v[:pos] + re.sub(r"[^.]+", "0", v[pos:])
 
 
@@ -1289,7 +1288,7 @@ class MelodyLoader:
         for part in helpers.split_links(links):
             try:
                 targets.append(self.follow_link(from_element, part))
-            except (KeyError, ValueError):
+            except (KeyError, ValueError):  # noqa: PERF203
                 if not ignore_broken:
                     raise
         return targets

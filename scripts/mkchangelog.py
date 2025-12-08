@@ -97,7 +97,7 @@ def _main(since: str, until: str) -> None:
             custom_changes = f.read().strip()
     except FileNotFoundError:
         custom_changes = ""
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         errtext = f" {type(err).__name__}: {err}"
         custom_changes = f"***Cannot read notable-changes.md:*** {errtext}"
 

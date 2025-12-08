@@ -18,6 +18,8 @@ import capellambse
 import capellambse.model as m
 from capellambse.metamodel import cs
 
+from ._validate import NS as NS
+
 
 def init() -> None:
     capellambse.MelodyModel.validation = property(  # type: ignore[attr-defined]

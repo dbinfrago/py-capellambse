@@ -347,7 +347,7 @@ class EnumerationValueAttribute(Attribute):
         "EnumerationValueAttribute.value is deprecated, use 'values' instead",
         category=FutureWarning,
     )
-    def value(self):
+    def value(self) -> EnumValue | None:
         vals = self.values
         if len(vals) > 1:
             raise TypeError("Multi-value enumeration, use `.values` instead")

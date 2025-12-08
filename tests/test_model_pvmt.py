@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Copyright DB InfraGO AG
 # SPDX-License-Identifier: Apache-2.0
 
+import pathlib
 import shutil
 
 import pytest
@@ -16,7 +17,9 @@ EXPECT_ROOT = Models.pvmt / "expected-output"
 
 
 @pytest.fixture
-def model(monkeypatch, tmp_path):
+def model(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+) -> capellambse.MelodyModel:
     new_test_root = tmp_path / "model"
     shutil.copytree(TEST_ROOT, new_test_root)
     monkeypatch.setitem(globals(), "TEST_ROOT", new_test_root)
@@ -24,7 +27,9 @@ def model(monkeypatch, tmp_path):
 
 
 class TestPVMTConfiguration:
-    def test_the_first_found_pvmt_configuration_is_used(self, model):
+    def test_the_first_found_pvmt_configuration_is_used(
+        self, model: capellambse.MelodyModel
+    ) -> None:
         model.project.property_value_pkgs.create(name="EXTENSIONS")
         assert len(model.project.property_value_pkgs) == 2
 
@@ -32,7 +37,7 @@ class TestPVMTConfiguration:
 
         assert domains
 
-    def test_domains(self, model):
+    def test_domains(self, model: capellambse.MelodyModel) -> None:
         expected = {
             "02e0c435-f085-471f-9f6e-e12fe5f27687": "Computer",
             "12a02f1b-8b97-4188-95ea-2afd377c4c41": "Out of scope",
@@ -57,7 +62,12 @@ class TestPVMTConfiguration:
             ),
         ],
     )
-    def test_enums(self, model, enum_uuid, enum_vals):
+    def test_enums(
+        self,
+        model: capellambse.MelodyModel,
+        enum_uuid: str,
+        enum_vals: set[str],
+    ) -> None:
         enum = model.by_uuid(enum_uuid)
         domain = model.pvmt.domains["Computer"]
         assert enum in domain.enumeration_property_types
@@ -65,7 +75,7 @@ class TestPVMTConfiguration:
         actual = {i.name for i in enum.literals}
         assert actual == enum_vals
 
-    def test_groups(self, model):
+    def test_groups(self, model: capellambse.MelodyModel) -> None:
         expected = {"Components", "Cables", "Physical Cables"}
 
         model_groups = model.pvmt.domains["Computer"].groups
@@ -99,7 +109,9 @@ class TestPVMTConfiguration:
             "Property (String, ends with)",
         ],
     )
-    def test_apply_outofscope(self, model, group: str):
+    def test_apply_outofscope(
+        self, model: capellambse.MelodyModel, group: str
+    ) -> None:
         obj = model.by_uuid("d32caffc-b9a1-448e-8e96-65a36ba06292")
         domain = model.pvmt.domains["Out of scope"]
         assert isinstance(domain, pvmt.ManagedDomain)
@@ -116,22 +128,26 @@ class TestPVMTConfiguration:
             "Property (String, equal)",
         ],
     )
-    def test_apply_inscope(self, model, group):
+    def test_apply_inscope(
+        self, model: capellambse.MelodyModel, group: str
+    ) -> None:
         obj = model.by_uuid("d32caffc-b9a1-448e-8e96-65a36ba06292")
         domain = model.pvmt.domains["In scope"]
-        group = domain.groups[group]
+        group_obj = domain.groups[group]
 
-        ag = group.apply(obj)
+        ag = group_obj.apply(obj)
 
         assert ag is not None
-        assert ag.name == f"In scope.{group.name}"
-        assert len(ag.property_values) == len(group.property_values)
+        assert ag.name == f"In scope.{group_obj.name}"
+        assert len(ag.property_values) == len(group_obj.property_values)
         applied_values = {i.name: i.value for i in ag.property_values}
-        default_values = {i.name: i.value for i in group.property_values}
+        default_values = {i.name: i.value for i in group_obj.property_values}
         assert applied_values == default_values
 
     @helpers.deterministic_ids()
-    def test_applying_sets_type_on_applied_enums(self, model):
+    def test_applying_sets_type_on_applied_enums(
+        self, model: capellambse.MelodyModel
+    ) -> None:
         obj = model.pa.root_component.owned_components.create(
             name="Test extension card",
             nature="NODE",
@@ -152,7 +168,9 @@ class TestAppliedPropertyValueGroupXML:
 
     elem_uuid = "d32caffc-b9a1-448e-8e96-65a36ba06292"
 
-    def compare_xml(self, model, expected_file):
+    def compare_xml(
+        self, model: capellambse.MelodyModel, expected_file: str
+    ) -> None:
         (pvmt_model_path,) = TEST_ROOT.glob("*.capella")
         expected_model_path = EXPECT_ROOT / expected_file
 
@@ -163,7 +181,7 @@ class TestAppliedPropertyValueGroupXML:
         assert actual == expected
 
     @helpers.deterministic_ids()
-    def test_apply(self, model):
+    def test_apply(self, model: capellambse.MelodyModel) -> None:
         elem = model.by_uuid(self.elem_uuid)
 
         elem.pvmt["External Data.Object IDs.Object ID"] = "CABLE-0001"
