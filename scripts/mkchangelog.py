@@ -66,7 +66,9 @@ def _main(since: str, until: str) -> None:
     breaking_changes: list[str] = []
 
     unknown_authors: set[str] = set()
-    for msg, author, hash in helpers.ntuples(3, all_commits.split("\0")):
+    for msg, author, hash in helpers.batched(
+        all_commits.split("\0"), 3, strict=True
+    ):
         if author_match := MAILUSER.search(author):
             author = "@" + author_match.group("user")
         else:

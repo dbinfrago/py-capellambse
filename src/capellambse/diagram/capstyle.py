@@ -104,7 +104,7 @@ class RGB(t.NamedTuple):
             slen = 6
         if slen == 6:
             r, g, b = (
-                int("".join(x), base=16) for x in helpers.ntuples(2, hs)
+                int("".join(x), base=16) for x in helpers.batched(hs, 2)
             )
             return cls(r, g, b, alpha)
 
