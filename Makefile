@@ -2,6 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # vim:set fdm=marker:
 
+# Most targets in this Makefile emit useful output to the user, which becomes
+# messed up when parallelizing execution. On the other hand, there aren't any
+# targets here which could actually benefit from parallelization - building the
+# package is done by a single tool call, which would hold a lock file anyway.
+.NOTPARALLEL:
+
 .PHONY: help
 help: #: Show this help
 	@awk 'BEGIN { printf "\x1B[95mAvailable make targets:\x1B[m\n" } \
@@ -76,6 +82,10 @@ jupyter: #: Start Jupyter Lab for examples
 	cd docs/source/examples && CAPELLAMBSE_UUID_SEED=0 ../../../.venv/bin/jupyter lab
 
 # Build & Distribution {{{1
+
+.PHONY: release
+release: lint sdist wheel #: Tag a new release
+	./scripts/release.py $${RELEASE_VERSION:+:--version=$$RELEASE_VERSION}
 
 .PHONY: sdist
 sdist: #: Build source distribution
