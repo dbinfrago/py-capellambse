@@ -38,6 +38,11 @@ import capellambse
 import capellambse._namespaces as _n
 import capellambse.filehandler as fh
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
 if sys.platform.startswith("win"):
     import msvcrt
 else:
@@ -1100,6 +1105,7 @@ def ntuples(
 def ntuples(
     num: int, iterable: cabc.Iterable[_T], *, pad: t.Literal[True]
 ) -> cabc.Iterator[tuple[_T | None, ...]]: ...
+@deprecated("Use 'itertools.batched' (or the backport in helpers) instead")
 def ntuples(
     num: int,
     iterable: cabc.Iterable[_T],
@@ -1133,6 +1139,22 @@ def ntuples(
             yield value + (None,) * (num - len(value))
         else:
             break
+
+
+if sys.version_info >= (3, 12):
+    from itertools import batched
+else:
+
+    def batched(
+        it: cabc.Iterable[_T], n: int, /, *, strict: bool = False
+    ) -> cabc.Iterable[tuple[_T, ...]]:
+        if n < 1:
+            raise ValueError("n must be at least one")
+        it = iter(it)
+        while batch := tuple(itertools.islice(it, n)):
+            if strict and len(batch) != n:
+                raise ValueError("batched(): incomplete batch")
+            yield batch
 
 
 # Simple one-trick helper classes
