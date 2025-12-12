@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import base64
 import collections
+import contextlib
 import dataclasses
 import enum
 import io
 import logging
+import os
 import pathlib
 import re
 import shutil
@@ -33,6 +35,7 @@ CONCOM = re.compile(
 MAILUSER = re.compile(
     r"^(?:\d+\+)?(?P<user>[^@]+)@users\.noreply\.github\.com$"
 )
+RELEASE_COMMIT_MESSAGE = "chore: Release v{version}"
 
 logger = logging.getLogger(__name__)
 
@@ -112,11 +115,17 @@ def _validate_version_tag(
         "based on the '--prev' tag and '--head' commit."
     ),
 )
+@click.option(
+    "--update-pyproject/--no-update-pyproject",
+    default=True,
+    help="Commit the new version number to pyproject.toml before tagging.",
+)
 def _main(
     *,
     prev: awesomeversion.AwesomeVersion | None,
     head: str | None,
     version: awesomeversion.AwesomeVersion | None,
+    update_pyproject: bool,
 ) -> None:
     logging.basicConfig()
 
@@ -145,6 +154,9 @@ def _main(
             bump = VersionBump.PATCH
         version = _bump_version(prev, bump)
         logger.info("%s version bump from %s to %s", bump.name, prev, version)
+
+    if update_pyproject:
+        head = _update_pyproject(head, version)
 
     changelog = _format_changelog(commit_log)
     _create_git_tag(head, version, changelog)
@@ -355,6 +367,21 @@ def _copy_to_clipboard(text: str) -> None:
             stream.write(escape)
         logger.info("Changelog copied to clipboard")
         return
+
+
+def _update_pyproject(
+    head: str,
+    version: awesomeversion.AwesomeVersion,
+) -> str:
+    msg = RELEASE_COMMIT_MESSAGE.format(version=version)
+
+    if pathlib.Path(".jj").exists() and shutil.which("jj") is not None:
+        _exec("jj", "new", f"-m{msg}", head)
+        _exec("uv", "version", version)
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
+        return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
+
+    raise NotImplementedError()
 
 
 def _exec(exe: str, /, *args: str, **kw: t.Any) -> str:
