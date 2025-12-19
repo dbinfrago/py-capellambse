@@ -33,6 +33,7 @@ CONCOM = re.compile(
 MAILUSER = re.compile(
     r"^(?:\d+\+)?(?P<user>[^@]+)@users\.noreply\.github\.com$"
 )
+RELEASE_COMMIT_MESSAGE = "chore: Release v{version}"
 
 logger = logging.getLogger(__name__)
 
@@ -112,19 +113,26 @@ def _validate_version_tag(
         "based on the '--prev' tag and '--head' commit."
     ),
 )
+@click.option(
+    "--update-pyproject/--no-update-pyproject",
+    default=True,
+    help="Commit the new version number to pyproject.toml before tagging.",
+)
 def _main(
     *,
     prev: awesomeversion.AwesomeVersion | None,
     head: str | None,
     version: awesomeversion.AwesomeVersion | None,
+    update_pyproject: bool,
 ) -> None:
     logging.basicConfig()
 
     if not pathlib.Path(".git").exists():
         raise SystemExit("This script must be run in the repository root")
+    jj = pathlib.Path(".jj").exists() and shutil.which("jj") is not None
 
     if not head:
-        head = _latest_commit()
+        head = _latest_commit(jj=jj)
     else:
         head = _exec("git", "log", "-1", "--format=%H", head)
 
@@ -146,24 +154,25 @@ def _main(
         version = _bump_version(prev, bump)
         logger.info("%s version bump from %s to %s", bump.name, prev, version)
 
+    if update_pyproject:
+        head = _update_pyproject(head, version, jj=jj)
+
     changelog = _format_changelog(commit_log)
     _create_git_tag(head, version, changelog)
+    _update_release_branch(head, version, jj=jj)
     changelog = _read_tag_message(version) or changelog
     _copy_to_clipboard(changelog)
 
 
-def _latest_commit() -> str:
-    if (
-        pathlib.Path(".jj").exists()
-        and shutil.which("jj") is not None
-        and not _exec(
-            "jj",
-            "log",
-            "--no-graph",
-            "-r@",
-            "-Tif(empty && parents.len() < 2, 'empty')",
-        )
+def _latest_commit(*, jj: bool) -> str:
+    if jj and not _exec(
+        "jj",
+        "log",
+        "--no-graph",
+        "-r@",
+        "-Tif(empty && parents.len() < 2, 'empty')",
     ):
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
         return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
     return _exec("git", "log", "-1", "--format=%H")
 
@@ -324,6 +333,16 @@ def _create_git_tag(
             ) from None
 
 
+def _update_release_branch(head: str, version: str, *, jj: bool) -> None:
+    releasever = re.search(r"(?<=^v)(?:0\.)?[1-9][0-9]*(?=\..*$)", version)
+    assert releasever is not None
+    releasebranch = f"release-{releasever.group(0)}.x"
+    if jj:
+        _exec("jj", "bookmark", "set", releasebranch, "-r", head)
+    else:
+        _exec("git", "branch", "-f", releasebranch, head)
+
+
 def _read_tag_message(version: awesomeversion.AwesomeVersion) -> str:
     contents = _exec("git", "tag", "-l", "--format=%(contents)", f"v{version}")
 
@@ -355,6 +374,33 @@ def _copy_to_clipboard(text: str) -> None:
             stream.write(escape)
         logger.info("Changelog copied to clipboard")
         return
+
+
+def _update_pyproject(
+    head: str,
+    version: awesomeversion.AwesomeVersion,
+    *,
+    jj: bool,
+) -> str:
+    msg = RELEASE_COMMIT_MESSAGE.format(version=version)
+
+    if jj:
+        _exec("jj", "new", "-m", msg, head)
+        _exec("uv", "version", version)
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
+        return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
+
+    try:
+        _exec("git", "diff", "--quiet")
+    except subprocess.CalledProcessError:
+        raise SystemExit(
+            "Worktree is dirty, commit or stash all changes and try again"
+        ) from None
+    _exec("git", "switch", "-d", head)
+    _exec("uv", "version", version)
+    _exec("git", "add", "pyproject.toml")
+    _exec("git", "commit", "-m", msg)
+    return _exec("git", "rev-parse", "HEAD")
 
 
 def _exec(exe: str, /, *args: str, **kw: t.Any) -> str:
