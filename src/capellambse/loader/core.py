@@ -32,9 +32,9 @@ from lxml import builder, etree
 
 import capellambse._namespaces as _n
 from capellambse import filehandler, helpers
+from capellambse.aird._common import XP_SEMANTIC_RESOURCES
 from capellambse.loader import exs
 from capellambse.loader.modelinfo import ModelInfo
-from capellambse.aird._common import XP_DANALYSIS, XP_SEMANTIC_RESOURCES
 
 if sys.version_info >= (3, 13):
     from warnings import deprecated
@@ -594,11 +594,10 @@ class MelodyLoader:
     def __get_metadata(
         self, afm: ModelFile
     ) -> etree._Element:
-        """
-        Returns metadata from given model
+        """Return metadata from given model.
 
         Parameters
-        -----------
+        ----------
         afm
             model metadata file
         return
@@ -618,9 +617,7 @@ class MelodyLoader:
     def _link_library(
         self, lib: pathlib.PurePosixPath
     ) -> None:
-        """
-        Links library into the project tree, updates .aird, .capella, .afm to correcrly reflect library in target model
-
+        """Link library into the project tree, updates .aird, .capella, .afm to correcrly reflect library in target model.
 
         Parameters
         ----------
@@ -640,7 +637,7 @@ class MelodyLoader:
         ```
         """
         handler = self.resources[str(lib)]
-        h , filename = _derive_entrypoint(handler)
+        _h , filename = _derive_entrypoint(handler)
         frag = ModelFile(
             filename, handler, ignore_uuid_dups=self.__ignore_uuid_dups
         )
@@ -653,22 +650,22 @@ class MelodyLoader:
             )
             self.__load_referenced_files(ref_name)
 
-            if ".afm" == ref_name.suffix:
+            if ref_name.suffix == ".afm":
                 meta_lib = self.__get_metadata(self.trees[ref_name])
                 meta_self = self.__find_metadata()
 
-                if None == next(filter(lambda el: re.search(str(ref_name), el.attrib["href"]), meta_self.iterchildren("additionalResources")), None):
-                    ael = meta_self.makeelement("additionalResources", href=f"../{ref_name}#{meta_lib.attrib["id"]}")
+                if not next(filter(lambda el: re.search(str(ref_name), el.attrib["href"]), meta_self.iterchildren("additionalResources")), None):
+                    ael = meta_self.makeelement("additionalResources", href=f"../{ref_name}#{meta_lib.attrib['id']}")
                     meta_self.append(ael)
-            elif ".capella" == ref_name.suffix:
+            elif ref_name.suffix == ".capella":
                 aird_self = self.trees[pathlib.PurePosixPath(f"\x00/{self.entrypoint}")]
 
                 last = next(filter(lambda el: re.search(str(ref_name), el.text), XP_SEMANTIC_RESOURCES(aird_self.root)), None)
-                if None == last:
+                if not last:
                     for r in XP_SEMANTIC_RESOURCES(aird_self.root):
                         last = r
 
-                    if last != None:
+                    if last:
                         sr = last.makeelement("semanticResources")
                         sr.text = f"platform:/resource/{ref_name}"
                         last.addnext(sr)
