@@ -44,6 +44,14 @@ XP_VIEWS = etree.XPath(
     "/xmi:XMI/viewpoint:DAnalysis/ownedViews[viewpoint]",
     namespaces=_n.NAMESPACES,
 )
+XP_DANALYSIS = etree.XPath(
+    "/xmi:XMI/viewpoint:DAnalysis",
+    namespaces=_n.NAMESPACES,
+)
+XP_SEMANTIC_RESOURCES = etree.XPath(
+    "/viewpoint:DAnalysis/semanticResources",
+    namespaces=_n.NAMESPACES,
+)
 ELEMENT = builder.ElementMaker(nsmap={"xmi": str(_n.NAMESPACES["xmi"])})
 
 

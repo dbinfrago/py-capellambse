@@ -32,6 +32,7 @@ from lxml import builder, etree
 
 import capellambse._namespaces as _n
 from capellambse import filehandler, helpers
+from capellambse.aird._common import XP_SEMANTIC_RESOURCES
 from capellambse.loader import exs
 from capellambse.loader.modelinfo import ModelInfo
 
@@ -589,6 +590,85 @@ class MelodyLoader:
                 "Model has duplicated UUIDs across fragments"
                 " - check the 'resources' for duplicate models"
             )
+
+    def __get_metadata(
+        self, afm: ModelFile
+    ) -> etree._Element:
+        """Return metadata from given model.
+
+        Parameters
+        ----------
+        afm
+            model metadata file
+        return
+            metadata element if found
+
+        Raises
+        ------
+        RuntimeError
+            If metadata could not be found
+        """
+        metadata = next(afm.root.iter(METADATA_TAG), None)
+        if metadata is None:
+            raise RuntimeError("Cannot find <Metadata> in primary .afm file")
+        LOGGER.debug("Found <Metadata> with ID %s", metadata.get("id"))
+        return metadata
+
+    def _link_library(
+        self, lib: pathlib.PurePosixPath
+    ) -> None:
+        """Link library into the project tree, updates .aird, .capella, .afm to correcrly reflect library in target model.
+
+        Parameters
+        ----------
+        lib
+            path to a library .aird file
+
+
+        Description
+        -----------
+        When you need to refere to external library (or reuse one in a project)
+        ```
+        p = "..." #path to library
+        model._loader._link_library(p)
+
+        lib = model.project.extensions[0].reference.library #no longer crashes, all fragments are in place
+
+        ```
+        """
+        handler = self.resources[str(lib)]
+        _h , filename = _derive_entrypoint(handler)
+        frag = ModelFile(
+            filename, handler, ignore_uuid_dups=self.__ignore_uuid_dups
+        )
+
+        p = lib.joinpath(filename)
+        self.trees[p] = frag
+        for ref in _find_refs(frag.root):
+            ref_name = helpers.normalize_pure_path(
+                _unquote_ref(ref), base=p.parent
+            )
+            self.__load_referenced_files(ref_name)
+
+            if ref_name.suffix == ".afm":
+                meta_lib = self.__get_metadata(self.trees[ref_name])
+                meta_self = self.__find_metadata()
+
+                if not next(filter(lambda el: re.search(str(ref_name), el.attrib["href"]), meta_self.iterchildren("additionalResources")), None):
+                    ael = meta_self.makeelement("additionalResources", href=f"../{ref_name}#{meta_lib.attrib['id']}")
+                    meta_self.append(ael)
+            elif ref_name.suffix == ".capella":
+                aird_self = self.trees[pathlib.PurePosixPath(f"\x00/{self.entrypoint}")]
+
+                last = next(filter(lambda el: re.search(str(ref_name), el.text), XP_SEMANTIC_RESOURCES(aird_self.root)), None)
+                if not last:
+                    for r in XP_SEMANTIC_RESOURCES(aird_self.root):
+                        last = r
+
+                    if last:
+                        sr = last.makeelement("semanticResources")
+                        sr.text = f"platform:/resource/{ref_name}"
+                        last.addnext(sr)
 
     def __load_referenced_files(
         self, resource_path: pathlib.PurePosixPath
@@ -1345,11 +1425,7 @@ class MelodyLoader:
         )
         if afm is None:
             raise RuntimeError("Cannot find .afm file in primary resource")
-        metadata = next(afm.root.iter(METADATA_TAG), None)
-        if metadata is None:
-            raise RuntimeError("Cannot find <Metadata> in primary .afm file")
-        LOGGER.debug("Found <Metadata> with ID %s", metadata.get("id"))
-        return metadata
+        return self.__get_metadata(afm)
 
     def referenced_viewpoints(self) -> cabc.Iterator[tuple[str, str]]:
         metadata = self.__find_metadata()
