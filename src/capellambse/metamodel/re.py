@@ -75,7 +75,11 @@ class CatalogElement(ReDescriptionElement, ReElementContainer):
     is_read_only = m.BoolPOD("readOnly")
     version = m.StringPOD("version")
     tags = m.StringPOD("tags")
-    origin = m.Association["CatalogElement"]((NS, "CatalogElement"), "origin")
+    origin = m.Single(
+        m.Association["CatalogElement"](
+            (NS, "CatalogElement"), "origin"
+        )
+    )
     current_compliancy = m.Association["CompliancyDefinition"](
         (NS, "CompliancyDefinition"), "currentCompliancy"
     )

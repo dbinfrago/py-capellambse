@@ -22,6 +22,7 @@ __all__ = [
     "MissingValueError",
     "NewObject",
     "NonUniqueMemberError",
+    "Optional",
     "ParentAccessor",
     "PhysicalAccessor",
     "PhysicalLinkEndsAccessor",
@@ -362,6 +363,90 @@ class DeprecatedAccessor(Accessor[T_co]):
             f"<{type(self).__name__} {self._qualname!r},"
             f" use {self.alternative!r} instead>"
         )
+
+class Optional(Accessor[T_co | "_obj.ElementList[T_co]" | None ], t.Generic[T_co]):
+    """An Accessor wrapper that makes result optional.
+
+    This Accessor is used to wrap other Accessors and make faults optional.
+    It catches wrapped accessor faults, hides them and intentionally
+    returns empty result effectively preventing runtime errors when accessing
+    optional model elements (i.e. extensions)
+
+    Parameters
+    ----------
+    wrapped
+        The accessor to wrap. This accessor must return a list (i.e. it
+        is not possible to nest *Single* descriptors). The instance
+        passed here should also not be used anywhere else.
+
+    optional
+        Marker of optional element, when set - hides the errors
+
+        Defaults to True.
+
+    Examples
+    --------
+    >>> class Foo(capellacore.CapellaElement):
+    ...     bar = Optional["Bar"](Containment("bar", (NS, "Bar")))
+    """
+
+    def __init__(
+        self,
+        wrapped: Accessor[T_co | _obj.ElementList[T_co] | None ],
+        optional: bool = False
+    ) -> None:
+        """Create a new optional descriptor."""
+        self.wrapped: t.Final = wrapped
+        self.optional: t.Final = optional
+
+    @t.overload
+    def __get__(self, obj: None, objtype: type[t.Any]) -> te.Self: ...
+    @t.overload
+    def __get__(
+        self, obj: _obj.ModelObject, objtype: type[t.Any] | None = None
+    ) -> T_co | None: ...
+    def __get__(
+        self, obj: _obj.ModelObject | None, objtype: t.Any | None = None
+    ) -> te.Self | T_co | None:
+        """Retrieve the value of the attribute."""
+        if obj is None:
+            return self
+
+        objs: t.Any = None
+        try:
+            objs = self.wrapped.__get__(obj, type(obj))
+        finally:
+            self.__objs = objs
+            return objs
+
+
+    def __set__(
+        self, obj: _obj.ModelObject, value: _obj.ModelObject | None
+    ) -> None:
+        """Set the value of the attribute."""
+        if self.__objs:
+            self.wrapped.__set__(obj, [value])
+
+    def __delete__(self, obj: _obj.ModelObject) -> None:
+        """Delete the attribute."""
+        if self.objs:
+            self.wrapped.__delete__(obj)
+
+    def __set_name__(self, owner: type[_obj.ModelObject], name: str) -> None:
+        """Set the name and owner of the descriptor."""
+        self.wrapped.__set_name__(owner, name)
+        super().__set_name__(owner, name)
+
+    def __repr__(self) -> str:
+        wrapped = repr(self.wrapped).replace(" " + repr(self._qualname), "")
+        return f"<Optional {self._qualname!r} of {wrapped}>"
+
+    def purge_references(
+        self, obj: _obj.ModelObject, target: _obj.ModelObject
+    ) -> contextlib.AbstractContextManager[None]:
+        if hasattr(self.wrapped, "purge_references"):
+            return self.wrapped.purge_references(obj, target)
+        return contextlib.nullcontext(None)
 
 
 class Single(Accessor[T_co | None], t.Generic[T_co]):
