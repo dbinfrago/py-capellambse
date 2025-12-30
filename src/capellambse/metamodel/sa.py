@@ -12,6 +12,7 @@ import sys
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods, diagram
 
 from . import capellacommon, capellacore, cs, fa, interaction
 from . import namespaces as ns
@@ -25,19 +26,19 @@ NS = ns.SA
 
 
 class SystemAnalysis(cs.ComponentArchitecture):
-    component_pkg = m.Single["SystemComponentPkg"](
-        m.Containment("ownedSystemComponentPkg", (NS, "SystemComponentPkg"))
+    component_pkg = _descriptors.Single["SystemComponentPkg"](
+        _descriptors.Containment("ownedSystemComponentPkg", (NS, "SystemComponentPkg"))
     )
-    mission_pkg = m.Containment["MissionPkg"](
+    mission_pkg = _descriptors.Containment["MissionPkg"](
         "ownedMissionPkg", (NS, "MissionPkg")
     )
-    operational_analysis_realizations = m.Containment[
+    operational_analysis_realizations = _descriptors.Containment[
         "OperationalAnalysisRealization"
     ](
         "ownedOperationalAnalysisRealizations",
         (NS, "OperationalAnalysisRealization"),
     )
-    realized_operational_analysis = m.Allocation["oa.OperationalAnalysis"](
+    realized_operational_analysis = _descriptors.Allocation["oa.OperationalAnalysis"](
         "ownedOperationalAnalysisRealizations",
         (NS, "OperationalAnalysisRealization"),
         (ns.OA, "OperationalAnalysis"),
@@ -61,19 +62,19 @@ class SystemAnalysis(cs.ComponentArchitecture):
         return self.component_pkg.components.by_is_actor(False, single=True)
 
     @property
-    def all_components(self) -> m.ElementList[SystemComponent]:
+    def all_components(self) -> _obj.ElementList[SystemComponent]:
         return self._model.search((NS, "SystemComponent"), below=self)
 
     @property
-    def all_actors(self) -> m.ElementList[SystemComponent]:
+    def all_actors(self) -> _obj.ElementList[SystemComponent]:
         return self.all_components.by_is_actor(True)
 
     @property
-    def all_missions(self) -> m.ElementList[Mission]:
+    def all_missions(self) -> _obj.ElementList[Mission]:
         return self._model.search((NS, "Mission"), below=self)
 
     @property
-    def all_actor_exchanges(self) -> m.ElementList[fa.ComponentExchange]:
+    def all_actor_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:
         return self._model.search(
             (ns.FA, "ComponentExchange"), below=self
         ).filter(
@@ -94,37 +95,37 @@ class SystemAnalysis(cs.ComponentArchitecture):
     @property
     def all_capability_exploitations(
         self,
-    ) -> m.ElementList[CapabilityExploitation]:
+    ) -> _obj.ElementList[CapabilityExploitation]:
         return self._model.search((NS, "CapabilityExploitation"), below=self)
 
     @property
-    def all_component_exchanges(self) -> m.ElementList[fa.ComponentExchange]:
+    def all_component_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:
         return self._model.search((ns.FA, "ComponentExchange"), below=self)
 
-    diagrams = m.DiagramAccessor(
+    diagrams = diagram.DiagramAccessor(
         "System Analysis", cacheattr="_MelodyModel__diagram_cache"
     )
 
     if not t.TYPE_CHECKING:
-        component_package = m.DeprecatedAccessor("component_pkg")
-        mission_package = m.DeprecatedAccessor("mission_pkg")
-        actor_exchanges = m.DeprecatedAccessor("all_actor_exchanges")
+        component_package = _descriptors.DeprecatedAccessor("component_pkg")
+        mission_package = _descriptors.DeprecatedAccessor("mission_pkg")
+        actor_exchanges = _descriptors.DeprecatedAccessor("all_actor_exchanges")
 
 
 class SystemFunction(fa.AbstractFunction):
-    packages = m.Containment["SystemFunctionPkg"](
+    packages = _descriptors.Containment["SystemFunctionPkg"](
         "ownedSystemFunctionPkgs", (NS, "SystemFunctionPkg")
     )
-    realized_operational_activities = m.Alias[
-        "m.ElementList[oa.OperationalActivity]"
+    realized_operational_activities = _descriptors.Alias[
+        "_obj.ElementList[oa.OperationalActivity]"
     ]("realized_functions")
-    owner = m.Single["SystemComponent"](
-        m.Backref((NS, "SystemComponent"), "allocated_functions")
+    owner = _descriptors.Single["SystemComponent"](
+        _descriptors.Backref((NS, "SystemComponent"), "allocated_functions")
     )
-    realizing_logical_functions = m.Backref["la.LogicalFunction"](
+    realizing_logical_functions = _descriptors.Backref["la.LogicalFunction"](
         (ns.LA, "LogicalFunction"), "realized_system_functions"
     )
-    involved_in = m.Backref["Capability"](
+    involved_in = _descriptors.Backref["Capability"](
         (NS, "Capability"), "involved_functions"
     )
 
@@ -134,23 +135,23 @@ class SystemFunctionPkg(fa.FunctionPkg):
 
     _xmltag = "ownedFunctionPkg"
 
-    functions = m.Containment["SystemFunction"](
+    functions = _descriptors.Containment["SystemFunction"](
         "ownedSystemFunctions", (NS, "SystemFunction")
     )
-    packages = m.Containment["SystemFunctionPkg"](
+    packages = _descriptors.Containment["SystemFunctionPkg"](
         "ownedSystemFunctionPkgs", (NS, "SystemFunctionPkg")
     )
 
 
 class SystemCommunicationHook(capellacore.NamedElement):
-    communication = m.Association["SystemCommunication"](
+    communication = _descriptors.Association["SystemCommunication"](
         (NS, "SystemCommunication"), "communication"
     )
-    type = m.Association["cs.Component"]((ns.CS, "Component"), "type")
+    type = _descriptors.Association["cs.Component"]((ns.CS, "Component"), "type")
 
 
 class SystemCommunication(capellacore.Relationship):
-    ends = m.Containment["SystemCommunicationHook"](
+    ends = _descriptors.Containment["SystemCommunicationHook"](
         "ends", (NS, "SystemCommunicationHook")
     )
 
@@ -166,16 +167,16 @@ class MissionInvolvement(capellacore.Involvement):
 class Mission(capellacore.NamedElement, capellacore.InvolverElement):
     _xmltag = "ownedMissions"
 
-    involvements = m.Containment["MissionInvolvement"](
+    involvements = _descriptors.Containment["MissionInvolvement"](
         "ownedMissionInvolvements", (NS, "MissionInvolvement")
     )
-    incoming_involvements = m.Backref["MissionInvolvement"](
+    incoming_involvements = _descriptors.Backref["MissionInvolvement"](
         (NS, "MissionInvolvement"), "target"
     )
-    capability_exploitations = m.Containment["CapabilityExploitation"](
+    capability_exploitations = _descriptors.Containment["CapabilityExploitation"](
         "ownedCapabilityExploitations", (NS, "CapabilityExploitation")
     )
-    exploits = m.Allocation["Capability"](
+    exploits = _descriptors.Allocation["Capability"](
         "ownedCapabilityExploitations",
         (NS, "CapabilityExploitation"),
         (NS, "Capability"),
@@ -183,45 +184,45 @@ class Mission(capellacore.NamedElement, capellacore.InvolverElement):
     )
 
     if not t.TYPE_CHECKING:
-        exploitations = m.DeprecatedAccessor("capability_exploitations")
+        exploitations = _descriptors.DeprecatedAccessor("capability_exploitations")
 
 
 class MissionPkg(capellacore.Structure):
     _xmltag = "ownedMissionPkg"
 
-    packages = m.Containment["MissionPkg"](
+    packages = _descriptors.Containment["MissionPkg"](
         "ownedMissionPkgs", (NS, "MissionPkg")
     )
-    missions = m.Containment["Mission"]("ownedMissions", (NS, "Mission"))
+    missions = _descriptors.Containment["Mission"]("ownedMissions", (NS, "Mission"))
 
 
 class Capability(interaction.AbstractCapability):
     _xmltag = "ownedCapabilities"
 
-    involvements = m.Containment["CapabilityInvolvement"](
+    involvements = _descriptors.Containment["CapabilityInvolvement"](
         "ownedCapabilityInvolvements", (NS, "CapabilityInvolvement")
     )
-    involved_components = m.Allocation["SystemComponent"](
+    involved_components = _descriptors.Allocation["SystemComponent"](
         "ownedCapabilityInvolvements",
         (NS, "CapabilityInvolvement"),
         (NS, "SystemComponent"),
         attr="involved",
         legacy_by_type=True,
     )
-    incoming_exploitations = m.Backref["CapabilityExploitation"](
+    incoming_exploitations = _descriptors.Backref["CapabilityExploitation"](
         (NS, "CapabilityExploitation"), "capability"
     )
 
     if not t.TYPE_CHECKING:
-        component_involvements = m.DeprecatedAccessor("involvements")
-        owned_chains = m.DeprecatedAccessor("functional_chains")
+        component_involvements = _descriptors.DeprecatedAccessor("involvements")
+        owned_chains = _descriptors.DeprecatedAccessor("functional_chains")
 
 
 class CapabilityExploitation(capellacore.Relationship):
     _xmltag = "ownedCapabilityExploitations"
 
-    capability = m.Single["Capability"](
-        m.Association((NS, "Capability"), "capability")
+    capability = _descriptors.Single["Capability"](
+        _descriptors.Association((NS, "Capability"), "capability")
     )
 
     @property
@@ -237,10 +238,10 @@ class CapabilityExploitation(capellacore.Relationship):
 class CapabilityPkg(capellacommon.AbstractCapabilityPkg):
     _xmltag = "ownedAbstractCapabilityPkg"
 
-    capabilities = m.Containment["Capability"](
+    capabilities = _descriptors.Containment["Capability"](
         "ownedCapabilities", (NS, "Capability")
     )
-    packages = m.Containment["CapabilityPkg"](
+    packages = _descriptors.Containment["CapabilityPkg"](
         "ownedCapabilityPkgs", (NS, "CapabilityPkg")
     )
 
@@ -252,10 +253,10 @@ class OperationalAnalysisRealization(cs.ArchitectureAllocation):
 class SystemComponentPkg(cs.ComponentPkg):
     _xmltag = "ownedSystemComponentPkg"
 
-    components = m.Containment["SystemComponent"](
+    components = _descriptors.Containment["SystemComponent"](
         "ownedSystemComponents", (NS, "SystemComponent")
     )
-    packages = m.Containment["SystemComponentPkg"](
+    packages = _descriptors.Containment["SystemComponentPkg"](
         "ownedSystemComponentPkgs", (NS, "SystemComponentPkg")
     )
 
@@ -263,26 +264,26 @@ class SystemComponentPkg(cs.ComponentPkg):
 class SystemComponent(cs.Component, capellacore.InvolvedElement):
     _xmltag = "ownedSystemComponents"
 
-    components = m.Containment["SystemComponent"](
+    components = _descriptors.Containment["SystemComponent"](
         "ownedSystemComponents", (NS, "SystemComponent")
     )
-    packages = m.Containment["SystemComponentPkg"](
+    packages = _descriptors.Containment["SystemComponentPkg"](
         "ownedSystemComponentPkgs", (NS, "SystemComponentPkg")
     )
-    is_data_component = m.BoolPOD("dataComponent")
-    data_type = m.Single["capellacore.Classifier"](
-        m.Association((ns.CAPELLACORE, "Classifier"), "dataType")
+    is_data_component = _pods.BoolPOD("dataComponent")
+    data_type = _descriptors.Single["capellacore.Classifier"](
+        _descriptors.Association((ns.CAPELLACORE, "Classifier"), "dataType")
     )
-    allocated_functions = m.Allocation["SystemFunction"](
+    allocated_functions = _descriptors.Allocation["SystemFunction"](
         None, None, (NS, "SystemFunction")
     )
-    realized_entities = m.Alias["m.ElementList[oa.Entity]"](
+    realized_entities = _descriptors.Alias["_obj.ElementList[oa.Entity]"](
         "realized_components"
     )
-    realized_operational_entities = m.Alias["m.ElementList[oa.Entity]"](
+    realized_operational_entities = _descriptors.Alias["_obj.ElementList[oa.Entity]"](
         "realized_components"
     )
-    realizing_logical_components = m.Backref["la.LogicalComponent"](
+    realizing_logical_components = _descriptors.Backref["la.LogicalComponent"](
         (ns.LA, "LogicalComponent"), "realized_components"
     )
 

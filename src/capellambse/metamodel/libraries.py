@@ -3,6 +3,7 @@
 import enum
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from . import namespaces as ns
 
@@ -16,26 +17,26 @@ class AccessPolicy(enum.Enum):
     READ_AND_WRITE = "readAndWrite"
 
 
-class LibraryAbstractElement(m.ModelElement, abstract=True):
+class LibraryAbstractElement(_obj.ModelElement, abstract=True):
     pass
 
 
 class ModelInformation(LibraryAbstractElement):
-    references = m.Containment["LibraryReference"](
+    references = _descriptors.Containment["LibraryReference"](
         "ownedReferences", (NS, "LibraryReference")
     )
-    version = m.Association["ModelVersion"]((NS, "ModelVersion"), "version")
+    version = _descriptors.Association["ModelVersion"]((NS, "ModelVersion"), "version")
 
 
 class LibraryReference(LibraryAbstractElement):
-    library = m.Single["ModelInformation"](
-        m.Association((NS, "ModelInformation"), "library")
+    library = _descriptors.Single["ModelInformation"](
+        _descriptors.Association((NS, "ModelInformation"), "library")
     )
-    access_policy = m.EnumPOD("accessPolicy", AccessPolicy)
-    version = m.Association["ModelVersion"]((NS, "ModelVersion"), "version")
+    access_policy = _pods.EnumPOD("accessPolicy", AccessPolicy)
+    version = _descriptors.Association["ModelVersion"]((NS, "ModelVersion"), "version")
 
 
 class ModelVersion(LibraryAbstractElement):
-    major_version_number = m.IntPOD("majorVersionNumber")
-    minor_version_number = m.IntPOD("minorVersionNumber")
-    last_modified_file_stamp = m.IntPOD("lastModifiedFileStamp")
+    major_version_number = _pods.IntPOD("majorVersionNumber")
+    minor_version_number = _pods.IntPOD("minorVersionNumber")
+    last_modified_file_stamp = _pods.IntPOD("lastModifiedFileStamp")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import capellambse.model as m
+from capellambse.model import _descriptors
 
 from .. import capellacore, cs
 from .. import namespaces as ns
@@ -19,40 +20,40 @@ class ComponentInstance(
     cs.DeployableElement,
     cs.DeploymentTarget,
 ):
-    abstract_physical_instances = m.Containment["AbstractPhysicalInstance"](
+    abstract_physical_instances = _descriptors.Containment["AbstractPhysicalInstance"](
         "ownedAbstractPhysicalInstances", (NS, "AbstractPhysicalInstance")
     )
-    instance_deployment_links = m.Containment["InstanceDeploymentLink"](
+    instance_deployment_links = _descriptors.Containment["InstanceDeploymentLink"](
         "ownedInstanceDeploymentLinks", (NS, "InstanceDeploymentLink")
     )
-    type = m.Association["PhysicalComponent"](
+    type = _descriptors.Association["PhysicalComponent"](
         (NS, "PhysicalComponent"), "type"
     )
 
 
 class ConnectionInstance(AbstractPhysicalInstance):
-    connection_ends = m.Association["PortInstance"](
+    connection_ends = _descriptors.Association["PortInstance"](
         (NS, "PortInstance"), "connectionEnds"
     )
-    type = m.Association["fa.ComponentExchange"](
+    type = _descriptors.Association["fa.ComponentExchange"](
         (ns.FA, "ComponentExchange"), "type"
     )
 
 
 class DeploymentAspect(capellacore.Structure):
-    configurations = m.Containment["DeploymentConfiguration"](
+    configurations = _descriptors.Containment["DeploymentConfiguration"](
         "ownedConfigurations", (NS, "DeploymentConfiguration")
     )
-    deployment_aspects = m.Containment["DeploymentAspect"](
+    deployment_aspects = _descriptors.Containment["DeploymentAspect"](
         "ownedDeploymentAspects", (NS, "DeploymentAspect")
     )
 
 
 class DeploymentConfiguration(capellacore.NamedElement):
-    deployment_links = m.Containment["cs.AbstractDeploymentLink"](
+    deployment_links = _descriptors.Containment["cs.AbstractDeploymentLink"](
         "ownedDeploymentLinks", (ns.CS, "AbstractDeploymentLink")
     )
-    physical_instances = m.Containment["AbstractPhysicalInstance"](
+    physical_instances = _descriptors.Containment["AbstractPhysicalInstance"](
         "ownedPhysicalInstances", (NS, "AbstractPhysicalInstance")
     )
 
@@ -66,10 +67,10 @@ class PartDeploymentLink(cs.AbstractDeploymentLink):
 
 
 class PortInstance(AbstractPhysicalInstance):
-    connections = m.Association["ConnectionInstance"](
+    connections = _descriptors.Association["ConnectionInstance"](
         (NS, "ConnectionInstance"), "connections"
     )
-    type = m.Association["fa.ComponentPort"]((ns.FA, "ComponentPort"), "type")
+    type = _descriptors.Association["fa.ComponentPort"]((ns.FA, "ComponentPort"), "type")
 
 
 class TypeDeploymentLink(cs.AbstractDeploymentLink):

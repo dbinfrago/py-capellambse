@@ -5,8 +5,10 @@ from __future__ import annotations
 import enum
 
 import capellambse.model as m
+from capellambse.metamodel.behavior import AbstractBehavior, AbstractSignal
+from capellambse.model import _descriptors, _pods
 
-from . import behavior, modellingcore
+from . import modellingcore
 from . import namespaces as ns
 
 NS = ns.ACTIVITY
@@ -51,70 +53,70 @@ class ObjectNodeOrderingKind(enum.Enum):
 
 
 class AbstractActivity(
-    behavior.AbstractBehavior, modellingcore.TraceableElement, abstract=True
+    AbstractBehavior, modellingcore.TraceableElement, abstract=True
 ):
-    is_read_only = m.BoolPOD("isReadOnly")
-    is_single_execution = m.BoolPOD("isSingleExecution")
-    nodes = m.Containment["ActivityNode"]("ownedNodes", (NS, "ActivityNode"))
-    edges = m.Containment["ActivityEdge"]("ownedEdges", (NS, "ActivityEdge"))
-    groups = m.Containment["ActivityGroup"](
+    is_read_only = _pods.BoolPOD("isReadOnly")
+    is_single_execution = _pods.BoolPOD("isSingleExecution")
+    nodes = _descriptors.Containment["ActivityNode"]("ownedNodes", (NS, "ActivityNode"))
+    edges = _descriptors.Containment["ActivityEdge"]("ownedEdges", (NS, "ActivityEdge"))
+    groups = _descriptors.Containment["ActivityGroup"](
         "ownedGroups", (NS, "ActivityGroup")
     )
 
 
 class ExceptionHandler(modellingcore.ModelElement, abstract=True):
-    protected_node = m.Single["ExecutableNode"](
-        m.Association((NS, "ExecutableNode"), "protectedNode")
+    protected_node = _descriptors.Single["ExecutableNode"](
+        _descriptors.Association((NS, "ExecutableNode"), "protectedNode")
     )
-    handler_body = m.Single["ExecutableNode"](
-        m.Association((NS, "ExecutableNode"), "handlerBody")
+    handler_body = _descriptors.Single["ExecutableNode"](
+        _descriptors.Association((NS, "ExecutableNode"), "handlerBody")
     )
-    exception_input = m.Single["ObjectNode"](
-        m.Association((NS, "ObjectNode"), "exceptionInput")
+    exception_input = _descriptors.Single["ObjectNode"](
+        _descriptors.Association((NS, "ObjectNode"), "exceptionInput")
     )
-    exception_types = m.Association["modellingcore.AbstractType"](
+    exception_types = _descriptors.Association["modellingcore.AbstractType"](
         (ns.MODELLINGCORE, "AbstractType"), "exceptionTypes"
     )
 
 
 class ActivityGroup(modellingcore.ModelElement, abstract=True):
-    super_group = m.Association["ActivityGroup"](
+    super_group = _descriptors.Association["ActivityGroup"](
         (NS, "ActivityGroup"), "superGroup"
     )
-    sub_groups = m.Containment["ActivityGroup"](
+    sub_groups = _descriptors.Containment["ActivityGroup"](
         "subGroups", (NS, "ActivityGroup")
     )
-    nodes = m.Containment["ActivityNode"]("ownedNodes", (NS, "ActivityNode"))
-    edges = m.Containment["ActivityEdge"]("ownedEdges", (NS, "ActivityEdge"))
+    nodes = _descriptors.Containment["ActivityNode"]("ownedNodes", (NS, "ActivityNode"))
+    edges = _descriptors.Containment["ActivityEdge"]("ownedEdges", (NS, "ActivityEdge"))
 
 
 class InterruptibleActivityRegion(ActivityGroup, abstract=True):
-    interrupting_edges = m.Association["ActivityEdge"](
+    interrupting_edges = _descriptors.Association["ActivityEdge"](
         (NS, "ActivityEdge"), "interruptingEdges"
     )
 
 
 class ActivityEdge(modellingcore.AbstractRelationship, abstract=True):
-    rate_kind = m.EnumPOD("kindOfRate", modellingcore.RateKind)
-    rate = m.Containment["modellingcore.ValueSpecification"](
+    rate_kind = _pods.EnumPOD("kindOfRate", modellingcore.RateKind)
+    rate = _descriptors.Containment["modellingcore.ValueSpecification"](
         "rate", (ns.MODELLINGCORE, "ValueSpecification")
     )
-    probability = m.Containment["modellingcore.ValueSpecification"](
+    probability = _descriptors.Containment["modellingcore.ValueSpecification"](
         "probability", (ns.MODELLINGCORE, "ValueSpecification")
     )
-    target = m.Single["ActivityNode"](
-        m.Association((NS, "ActivityNode"), "target")
+    target = _descriptors.Single["ActivityNode"](
+        _descriptors.Association((NS, "ActivityNode"), "target")
     )
-    source = m.Single["ActivityNode"](
-        m.Association((NS, "ActivityNode"), "source")
+    source = _descriptors.Single["ActivityNode"](
+        _descriptors.Association((NS, "ActivityNode"), "source")
     )
-    guard = m.Containment["modellingcore.ValueSpecification"](
+    guard = _descriptors.Containment["modellingcore.ValueSpecification"](
         "guard", (ns.MODELLINGCORE, "ValueSpecification")
     )
-    weight = m.Containment["modellingcore.ValueSpecification"](
+    weight = _descriptors.Containment["modellingcore.ValueSpecification"](
         "weight", (ns.MODELLINGCORE, "ValueSpecification")
     )
-    interrupts = m.Association["InterruptibleActivityRegion"](
+    interrupts = _descriptors.Association["InterruptibleActivityRegion"](
         (NS, "InterruptibleActivityRegion"), "interrupts"
     )
 
@@ -126,23 +128,23 @@ class ControlFlow(ActivityEdge, abstract=True):
 class ObjectFlow(ActivityEdge, abstract=True):
     """Models the flow of values to or from object nodes."""
 
-    is_multicast = m.BoolPOD("isMulticast")
-    is_multireceive = m.BoolPOD("isMultireceive")
-    transformation = m.Single["behavior.AbstractBehavior"](
-        m.Association((ns.BEHAVIOR, "AbstractBehavior"), "transformation")
+    is_multicast = _pods.BoolPOD("isMulticast")
+    is_multireceive = _pods.BoolPOD("isMultireceive")
+    transformation = _descriptors.Single[AbstractBehavior](
+        _descriptors.Association((ns.BEHAVIOR, "AbstractBehavior"), "transformation")
     )
-    selection = m.Single["behavior.AbstractBehavior"](
-        m.Association((ns.BEHAVIOR, "AbstractBehavior"), "selection")
+    selection = _descriptors.Single[AbstractBehavior](
+        _descriptors.Association((ns.BEHAVIOR, "AbstractBehavior"), "selection")
     )
 
 
 class ActivityPartition(
     ActivityGroup, modellingcore.AbstractNamedElement, abstract=True
 ):
-    is_dimension = m.BoolPOD("isDimension")
-    is_external = m.BoolPOD("isExternal")
-    represented_element = m.Single["modellingcore.AbstractType"](
-        m.Association((ns.MODELLINGCORE, "AbstractType"), "representedElement")
+    is_dimension = _pods.BoolPOD("isDimension")
+    is_external = _pods.BoolPOD("isExternal")
+    represented_element = _descriptors.Single["modellingcore.AbstractType"](
+        _descriptors.Association((ns.MODELLINGCORE, "AbstractType"), "representedElement")
     )
 
 
@@ -155,7 +157,7 @@ class ActivityNode(modellingcore.AbstractNamedElement, abstract=True):
 
 
 class ExecutableNode(ActivityNode, abstract=True):
-    handlers = m.Containment["ExceptionHandler"](
+    handlers = _descriptors.Containment["ExceptionHandler"](
         "ownedHandlers", (NS, "ExceptionHandler")
     )
 
@@ -163,21 +165,21 @@ class ExecutableNode(ActivityNode, abstract=True):
 class AbstractAction(
     ExecutableNode, modellingcore.AbstractNamedElement, abstract=True
 ):
-    local_precondition = m.Single["modellingcore.AbstractConstraint"](
-        m.Containment(
+    local_precondition = _descriptors.Single["modellingcore.AbstractConstraint"](
+        _descriptors.Containment(
             "localPrecondition", (ns.MODELLINGCORE, "AbstractConstraint")
         )
     )
-    local_postcondition = m.Single["modellingcore.AbstractConstraint"](
-        m.Containment(
+    local_postcondition = _descriptors.Single["modellingcore.AbstractConstraint"](
+        _descriptors.Containment(
             "localPostcondition", (ns.MODELLINGCORE, "AbstractConstraint")
         )
     )
-    context = m.Association["modellingcore.AbstractType"](
+    context = _descriptors.Association["modellingcore.AbstractType"](
         (ns.MODELLINGCORE, "AbstractType"), "context"
     )
-    inputs = m.Containment["InputPin"]("inputs", (NS, "InputPin"))
-    outputs = m.Containment["OutputPin"]("outputs", (NS, "OutputPin"))
+    inputs = _descriptors.Containment["InputPin"]("inputs", (NS, "InputPin"))
+    outputs = _descriptors.Containment["OutputPin"]("outputs", (NS, "OutputPin"))
 
 
 class StructuredActivityNode(ActivityGroup, AbstractAction, abstract=True):
@@ -185,61 +187,59 @@ class StructuredActivityNode(ActivityGroup, AbstractAction, abstract=True):
 
 
 class AcceptEventAction(AbstractAction, abstract=True):
-    is_unmarshall = m.BoolPOD("isUnmarshall")
-    result = m.Containment["OutputPin"]("result", (NS, "OutputPin"))
+    is_unmarshall = _pods.BoolPOD("isUnmarshall")
+    result = _descriptors.Containment["OutputPin"]("result", (NS, "OutputPin"))
 
 
 class InvocationAction(AbstractAction, abstract=True):
-    arguments = m.Containment["InputPin"]("arguments", (NS, "InputPin"))
+    arguments = _descriptors.Containment["InputPin"]("arguments", (NS, "InputPin"))
 
 
 class SendSignalAction(InvocationAction, abstract=True):
-    target = m.Single["InputPin"](m.Containment("target", (NS, "InputPin")))
-    signal = m.Single["behavior.AbstractSignal"](
-        m.Association((ns.BEHAVIOR, "AbstractSignal"), "signal")
+    target = _descriptors.Single["InputPin"](_descriptors.Containment("target", (NS, "InputPin")))
+    signal = _descriptors.Single[AbstractSignal](
+        _descriptors.Association((ns.BEHAVIOR, "AbstractSignal"), "signal")
     )
 
-
 class CallAction(InvocationAction, abstract=True):
-    results = m.Containment["OutputPin"]("results", (NS, "OutputPin"))
-
+    results = _descriptors.Containment["OutputPin"]("results", (NS, "OutputPin"))
 
 class CallBehaviorAction(CallAction, abstract=True):
-    behavior = m.Single["behavior.AbstractBehavior"](
-        m.Association((ns.BEHAVIOR, "AbstractBehavior"), "behavior")
+    behavior = _descriptors.Single[AbstractBehavior](
+        _descriptors.Association((ns.BEHAVIOR, "AbstractBehavior"), "behavior")
     )
 
 
 class ObjectNode(
     ActivityNode, modellingcore.AbstractTypedElement, abstract=True
 ):
-    is_control_type = m.BoolPOD("isControlType")
-    node_kind = m.EnumPOD("kindOfNode", ObjectNodeKind)
-    ordering = m.EnumPOD("ordering", ObjectNodeOrderingKind)
-    upper_bound = m.Containment["modellingcore.ValueSpecification"](
+    is_control_type = _pods.BoolPOD("isControlType")
+    node_kind = _pods.EnumPOD("kindOfNode", ObjectNodeKind)
+    ordering = _pods.EnumPOD("ordering", ObjectNodeOrderingKind)
+    upper_bound = _descriptors.Containment["modellingcore.ValueSpecification"](
         "upperBound", (ns.MODELLINGCORE, "ValueSpecification")
     )
-    in_state = m.Association["modellingcore.IState"](
+    in_state = _descriptors.Association["modellingcore.IState"](
         (ns.MODELLINGCORE, "IState"), "inState"
     )
-    selection = m.Single["behavior.AbstractBehavior"](
-        m.Association((ns.BEHAVIOR, "AbstractBehavior"), "selection")
+    selection = _descriptors.Single[AbstractBehavior](
+        _descriptors.Association((ns.BEHAVIOR, "AbstractBehavior"), "selection")
     )
 
 
 class Pin(ObjectNode, abstract=True):
-    is_control = m.BoolPOD("isControl")
+    is_control = _pods.BoolPOD("isControl")
 
 
 class InputPin(Pin, abstract=True):
-    input_evaluation_action = m.Single["AbstractAction"](
-        m.Association((NS, "AbstractAction"), "inputEvaluationAction")
+    input_evaluation_action = _descriptors.Single["AbstractAction"](
+        _descriptors.Association((NS, "AbstractAction"), "inputEvaluationAction")
     )
 
 
 class ValuePin(InputPin, abstract=True):
-    value = m.Single["modellingcore.ValueSpecification"](
-        m.Containment("value", (ns.MODELLINGCORE, "ValueSpecification"))
+    value = _descriptors.Single["modellingcore.ValueSpecification"](
+        _descriptors.Containment("value", (ns.MODELLINGCORE, "ValueSpecification"))
     )
 
 

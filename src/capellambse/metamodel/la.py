@@ -8,6 +8,7 @@ import sys
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, diagram
 
 from . import capellacommon, cs, fa, interaction
 from . import namespaces as ns
@@ -21,19 +22,19 @@ NS = ns.LA
 
 
 class LogicalArchitecturePkg(cs.BlockArchitecturePkg):
-    architectures = m.Containment["LogicalArchitecture"](
+    architectures = _descriptors.Containment["LogicalArchitecture"](
         "ownedLogicalArchitectures", (NS, "LogicalArchitecture")
     )
 
 
 class LogicalArchitecture(cs.ComponentArchitecture):
-    component_pkg = m.Single["LogicalComponentPkg"](
-        m.Containment("ownedLogicalComponentPkg", (NS, "LogicalComponentPkg"))
+    component_pkg = _descriptors.Single["LogicalComponentPkg"](
+        _descriptors.Containment("ownedLogicalComponentPkg", (NS, "LogicalComponentPkg"))
     )
-    system_analysis_realizations = m.Containment["SystemAnalysisRealization"](
+    system_analysis_realizations = _descriptors.Containment["SystemAnalysisRealization"](
         "ownedSystemAnalysisRealizations", (NS, "SystemAnalysisRealization")
     )
-    realized_system_analysis = m.Allocation["sa.SystemAnalysis"](
+    realized_system_analysis = _descriptors.Allocation["sa.SystemAnalysis"](
         "ownedSystemAnalysisRealizations",
         (NS, "SystemAnalysisRealization"),
         (ns.SA, "SystemAnalysis"),
@@ -56,15 +57,15 @@ class LogicalArchitecture(cs.ComponentArchitecture):
         return self.component_pkg.components.by_is_actor(False, single=True)
 
     @property
-    def all_components(self) -> m.ElementList[LogicalComponent]:
+    def all_components(self) -> _obj.ElementList[LogicalComponent]:
         return self._model.search((NS, "LogicalComponent"), below=self)
 
     @property
-    def all_actors(self) -> m.ElementList[LogicalComponent]:
+    def all_actors(self) -> _obj.ElementList[LogicalComponent]:
         return self._model.search(LogicalComponent).by_is_actor(True)
 
     @property
-    def all_actor_exchanges(self) -> m.ElementList[fa.ComponentExchange]:
+    def all_actor_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:
         return self._model.search(
             (ns.FA, "ComponentExchange"), below=self
         ).filter(
@@ -83,7 +84,7 @@ class LogicalArchitecture(cs.ComponentArchitecture):
         )
 
     @property
-    def all_component_exchanges(self) -> m.ElementList[fa.ComponentExchange]:
+    def all_component_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:
         return self._model.search((ns.FA, "ComponentExchange"), below=self)
 
     @property
@@ -96,35 +97,35 @@ class LogicalArchitecture(cs.ComponentArchitecture):
         ),
         category=FutureWarning,
     )
-    def component_exchanges(self) -> m.ElementList[fa.ComponentExchange]:  # type: ignore[override]
+    def component_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:  # type: ignore[override]
         return self.all_component_exchanges
 
-    diagrams = m.DiagramAccessor(
+    diagrams = diagram.DiagramAccessor(
         "Logical Architecture", cacheattr="_MelodyModel__diagram_cache"
     )
 
     if not t.TYPE_CHECKING:
-        component_package = m.DeprecatedAccessor("component_pkg")
-        actor_exchanges = m.DeprecatedAccessor("all_actor_exchanges")
+        component_package = _descriptors.DeprecatedAccessor("component_pkg")
+        actor_exchanges = _descriptors.DeprecatedAccessor("all_actor_exchanges")
 
 
 class LogicalFunction(fa.AbstractFunction):
-    functions = m.Containment["LogicalFunction"](
+    functions = _descriptors.Containment["LogicalFunction"](
         "ownedFunctions", (NS, "LogicalFunction")
     )
-    packages = m.Containment["LogicalFunctionPkg"](
+    packages = _descriptors.Containment["LogicalFunctionPkg"](
         "ownedLogicalFunctionPkgs", (NS, "LogicalFunctionPkg")
     )
-    realized_system_functions = m.Alias["m.ElementList[sa.SystemFunction]"](
+    realized_system_functions = _descriptors.Alias["_obj.ElementList[sa.SystemFunction]"](
         "realized_functions"
     )
-    owner = m.Single["LogicalComponent"](
-        m.Backref((NS, "LogicalComponent"), "allocated_functions")
+    owner = _descriptors.Single["LogicalComponent"](
+        _descriptors.Backref((NS, "LogicalComponent"), "allocated_functions")
     )
-    involved_in = m.Backref["CapabilityRealization"](
+    involved_in = _descriptors.Backref["CapabilityRealization"](
         (NS, "CapabilityRealization"), "involved_functions"
     )
-    realizing_physical_functions = m.Backref["pa.PhysicalFunction"](
+    realizing_physical_functions = _descriptors.Backref["pa.PhysicalFunction"](
         (ns.PA, "PhysicalFunction"), "realized_logical_functions"
     )
 
@@ -132,10 +133,10 @@ class LogicalFunction(fa.AbstractFunction):
 class LogicalFunctionPkg(fa.FunctionPkg):
     _xmltag = "ownedFunctionPkg"
 
-    functions = m.Containment["LogicalFunction"](
+    functions = _descriptors.Containment["LogicalFunction"](
         "ownedLogicalFunctions", (NS, "LogicalFunction")
     )
-    packages = m.Containment["LogicalFunctionPkg"](
+    packages = _descriptors.Containment["LogicalFunctionPkg"](
         "ownedLogicalFunctionPkgs", (NS, "LogicalFunctionPkg")
     )
 
@@ -145,19 +146,19 @@ class LogicalComponent(
 ):
     _xmltag = "ownedLogicalComponents"
 
-    components = m.Containment["LogicalComponent"](
+    components = _descriptors.Containment["LogicalComponent"](
         "ownedLogicalComponents", (NS, "LogicalComponent")
     )
-    architectures = m.Containment["LogicalArchitecture"](
+    architectures = _descriptors.Containment["LogicalArchitecture"](
         "ownedLogicalArchitectures", (NS, "LogicalArchitecture")
     )
-    packages = m.Containment["LogicalComponentPkg"](
+    packages = _descriptors.Containment["LogicalComponentPkg"](
         "ownedLogicalComponentPkgs", (NS, "LogicalComponentPkg")
     )
-    realized_system_components = m.Alias["m.ElementList[sa.SystemComponent]"](
+    realized_system_components = _descriptors.Alias["_obj.ElementList[sa.SystemComponent]"](
         "realized_components"
     )
-    realizing_physical_components = m.Backref["pa.PhysicalComponent"](
+    realizing_physical_components = _descriptors.Backref["pa.PhysicalComponent"](
         (ns.PA, "PhysicalComponent"), "realized_logical_components"
     )
 
@@ -165,10 +166,10 @@ class LogicalComponent(
 class LogicalComponentPkg(cs.ComponentPkg):
     _xmltag = "ownedLogicalComponentPkg"
 
-    components = m.Containment["LogicalComponent"](
+    components = _descriptors.Containment["LogicalComponent"](
         "ownedLogicalComponents", (NS, "LogicalComponent")
     )
-    packages = m.Containment["LogicalComponentPkg"](
+    packages = _descriptors.Containment["LogicalComponentPkg"](
         "ownedLogicalComponentPkgs", (NS, "LogicalComponentPkg")
     )
 
@@ -176,16 +177,16 @@ class LogicalComponentPkg(cs.ComponentPkg):
 class CapabilityRealization(interaction.AbstractCapability):
     _xmltag = "ownedCapabilityRealizations"
 
-    involved_functions = m.Allocation[LogicalFunction](
+    involved_functions = _descriptors.Allocation[LogicalFunction](
         None, None, (NS, "LogicalFunction")
     )
-    capability_realization_involvements = m.Containment[
+    capability_realization_involvements = _descriptors.Containment[
         "capellacommon.CapabilityRealizationInvolvement"
     ](
         "ownedCapabilityRealizationInvolvements",
         (ns.CAPELLACOMMON, "CapabilityRealizationInvolvement"),
     )
-    involved_elements = m.Allocation[
+    involved_elements = _descriptors.Allocation[
         "capellacommon.CapabilityRealizationInvolvedElement"
     ](
         "ownedCapabilityRealizationInvolvements",
@@ -193,12 +194,12 @@ class CapabilityRealization(interaction.AbstractCapability):
         (ns.CAPELLACOMMON, "CapabilityRealizationInvolvedElement"),
         attr="involved",
     )
-    involved_components = m.Filter["LogicalComponent"](
+    involved_components = _descriptors.Filter["LogicalComponent"](
         "involved_elements", (NS, "LogicalComponent"), legacy_by_type=True
     )
 
     if not t.TYPE_CHECKING:
-        owned_chains = m.DeprecatedAccessor("functional_chains")
+        owned_chains = _descriptors.DeprecatedAccessor("functional_chains")
 
 
 class CapabilityRealizationPkg(capellacommon.AbstractCapabilityPkg):
@@ -206,10 +207,10 @@ class CapabilityRealizationPkg(capellacommon.AbstractCapabilityPkg):
 
     _xmltag = "ownedAbstractCapabilityPkg"
 
-    capabilities = m.Containment["CapabilityRealization"](
+    capabilities = _descriptors.Containment["CapabilityRealization"](
         "ownedCapabilityRealizations", (NS, "CapabilityRealization")
     )
-    packages = m.Containment["CapabilityRealizationPkg"](
+    packages = _descriptors.Containment["CapabilityRealizationPkg"](
         "ownedCapabilityRealizationPkgs", (NS, "CapabilityRealizationPkg")
     )
 

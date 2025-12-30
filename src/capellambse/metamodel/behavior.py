@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-import capellambse.model as m
+from capellambse.model import _descriptors, _pods
 
 from . import modellingcore
 from . import namespaces as ns
@@ -13,11 +13,11 @@ NS = ns.BEHAVIOR
 class AbstractBehavior(modellingcore.AbstractNamedElement, abstract=True):
     """Abstract base class for behaviors."""
 
-    is_control_operator = m.BoolPOD("isControlOperator")
-    parameter_sets = m.Association["modellingcore.AbstractParameterSet"](
+    is_control_operator = _pods.BoolPOD("isControlOperator")
+    parameter_sets = _descriptors.Association["modellingcore.AbstractParameterSet"](
         (ns.MODELLINGCORE, "AbstractParameterSet"), "ownedParameterSet"
     )
-    parameters = m.Association["modellingcore.AbstractParameter"](
+    parameters = _descriptors.Association["modellingcore.AbstractParameter"](
         (ns.MODELLINGCORE, "AbstractParameter"), "ownedParameter"
     )
 
@@ -38,9 +38,9 @@ class AbstractTimeEvent(AbstractEvent, abstract=True):
     point in time.
     """
 
-    is_relative = m.BoolPOD("isRelative")
-    when = m.Single["TimeExpression"](
-        m.Association((NS, "TimeExpression"), "when")
+    is_relative = _pods.BoolPOD("isRelative")
+    when = _descriptors.Single["TimeExpression"](
+        _descriptors.Association((NS, "TimeExpression"), "when")
     )
 
 
@@ -58,17 +58,17 @@ class AbstractSignalEvent(AbstractMessageEvent, abstract=True):
     classifier that specified the receiver object.
     """
 
-    signal = m.Single["AbstractSignal"](
-        m.Association((NS, "AbstractSignal"), "signal")
+    signal = _descriptors.Single["AbstractSignal"](
+        _descriptors.Association((NS, "AbstractSignal"), "signal")
     )
 
 
 class TimeExpression(modellingcore.ValueSpecification, abstract=True):
     """A specification of a point in time."""
 
-    observations = m.Association["modellingcore.AbstractNamedElement"](
+    observations = _descriptors.Association["modellingcore.AbstractNamedElement"](
         (ns.MODELLINGCORE, "AbstractNamedElement"), "observations"
     )
-    expression = m.Single["modellingcore.ValueSpecification"](
-        m.Association((ns.MODELLINGCORE, "ValueSpecification"), "expression")
+    expression = _descriptors.Single["modellingcore.ValueSpecification"](
+        _descriptors.Association((ns.MODELLINGCORE, "ValueSpecification"), "expression")
     )

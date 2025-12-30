@@ -9,6 +9,7 @@ import typing as t
 import warnings
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods, diagram
 
 from . import (
     activity,
@@ -33,42 +34,42 @@ NS = ns.OA
 class OperationalAnalysis(cs.BlockArchitecture):
     """Provides access to the OperationalAnalysis layer of the model."""
 
-    role_pkg = m.Containment["RolePkg"]("ownedRolePkg", (NS, "RolePkg"))
-    entity_pkg = m.Single["EntityPkg"](
-        m.Containment("ownedEntityPkg", (NS, "EntityPkg"))
+    role_pkg = _descriptors.Containment["RolePkg"]("ownedRolePkg", (NS, "RolePkg"))
+    entity_pkg = _descriptors.Single["EntityPkg"](
+        _descriptors.Containment("ownedEntityPkg", (NS, "EntityPkg"))
     )
-    concept_pkg = m.Containment["ConceptPkg"](
+    concept_pkg = _descriptors.Containment["ConceptPkg"](
         "ownedConceptPkg", (NS, "ConceptPkg")
     )
 
-    activity_pkg = m.Alias["OperationalActivityPkg"]("function_pkg")
+    activity_pkg = _descriptors.Alias["OperationalActivityPkg"]("function_pkg")
 
     @property
-    def all_activities(self) -> m.ElementList[OperationalActivity]:
+    def all_activities(self) -> _obj.ElementList[OperationalActivity]:
         return self._model.search((NS, "OperationalActivity"), below=self)
 
     @property
-    def all_processes(self) -> m.ElementList[OperationalProcess]:
+    def all_processes(self) -> _obj.ElementList[OperationalProcess]:
         return self._model.search((NS, "OperationalProcess"), below=self)
 
     @property
-    def all_actors(self) -> m.ElementList[Entity]:
+    def all_actors(self) -> _obj.ElementList[Entity]:
         return self._model.search((NS, "Entity")).by_is_actor(True)
 
     @property
-    def all_entities(self) -> m.ElementList[Entity]:
+    def all_entities(self) -> _obj.ElementList[Entity]:
         return self._model.search((NS, "Entity"), below=self)
 
     @property
-    def all_activity_exchanges(self) -> m.ElementList[fa.FunctionalExchange]:
+    def all_activity_exchanges(self) -> _obj.ElementList[fa.FunctionalExchange]:
         return self._model.search((ns.FA, "FunctionalExchange"), below=self)
 
     @property
-    def all_entity_exchanges(self) -> m.ElementList[CommunicationMean]:
+    def all_entity_exchanges(self) -> _obj.ElementList[CommunicationMean]:
         return self._model.search((NS, "CommunicationMean"), below=self)
 
     @property
-    def all_operational_processes(self) -> m.ElementList[OperationalProcess]:
+    def all_operational_processes(self) -> _obj.ElementList[OperationalProcess]:
         return self._model.search(OperationalProcess, below=self)
 
     @property
@@ -122,53 +123,53 @@ class OperationalAnalysis(cs.BlockArchitecture):
             )
         return candidates[0]
 
-    diagrams = m.DiagramAccessor(
+    diagrams = diagram.DiagramAccessor(
         "Operational Analysis", cacheattr="_MelodyModel__diagram_cache"
     )
 
     if not t.TYPE_CHECKING:
-        entity_package = m.DeprecatedAccessor("entity_pkg")
-        activity_package = m.DeprecatedAccessor("activity_pkg")
-        capability_package = m.DeprecatedAccessor("capability_pkg")
+        entity_package = _descriptors.DeprecatedAccessor("entity_pkg")
+        activity_package = _descriptors.DeprecatedAccessor("activity_pkg")
+        capability_package = _descriptors.DeprecatedAccessor("capability_pkg")
 
 
 class OperationalScenario(capellacore.NamedElement, abstract=True):
-    context = m.StringPOD("context")
-    objective = m.StringPOD("objective")
+    context = _pods.StringPOD("context")
+    objective = _pods.StringPOD("objective")
 
 
 class OperationalActivityPkg(fa.FunctionPkg):
     _xmltag = "ownedFunctionPkg"
 
-    activities = m.Containment["OperationalActivity"](
+    activities = _descriptors.Containment["OperationalActivity"](
         "ownedOperationalActivities", (NS, "OperationalActivity")
     )
-    packages = m.Containment["OperationalActivityPkg"](
+    packages = _descriptors.Containment["OperationalActivityPkg"](
         "ownedOperationalActivityPkgs", (NS, "OperationalActivityPkg")
     )
-    owner = m.Single["Entity"](m.Backref((NS, "Entity"), "activities"))
+    owner = _descriptors.Single["Entity"](_descriptors.Backref((NS, "Entity"), "activities"))
 
 
 class OperationalActivity(fa.AbstractFunction):
     _xmltag = "ownedOperationalActivities"
 
-    packages = m.Containment["OperationalActivityPkg"](
+    packages = _descriptors.Containment["OperationalActivityPkg"](
         "ownedOperationalActivityPkgs", (NS, "OperationalActivityPkg")
     )
-    activities = m.Alias["m.ElementList[OperationalActivity]"]("functions")
-    inputs = m.Backref["fa.FunctionalExchange"](  # type: ignore[assignment]
+    activities = _descriptors.Alias["_obj.ElementList[OperationalActivity]"]("functions")
+    inputs = _descriptors.Backref["fa.FunctionalExchange"](  # type: ignore[assignment]
         (ns.FA, "FunctionalExchange"), "target"
     )
-    outputs = m.Backref["fa.FunctionalExchange"](  # type: ignore[assignment]
+    outputs = _descriptors.Backref["fa.FunctionalExchange"](  # type: ignore[assignment]
         (ns.FA, "FunctionalExchange"), "source"
     )
-    realizing_system_functions = m.Backref["sa.SystemFunction"](
+    realizing_system_functions = _descriptors.Backref["sa.SystemFunction"](
         (ns.SA, "SystemFunction"), "realized_operational_activities"
     )
 
-    owner = m.Single["Entity"](m.Backref((NS, "Entity"), "activities"))
+    owner = _descriptors.Single["Entity"](_descriptors.Backref((NS, "Entity"), "activities"))
 
-    related_exchanges = m.Backref[fa.FunctionalExchange](
+    related_exchanges = _descriptors.Backref[fa.FunctionalExchange](
         (ns.FA, "FunctionalExchange"), "source", "target"
     )
 
@@ -184,19 +185,19 @@ class Swimlane(capellacore.NamedElement, activity.ActivityPartition):
 class OperationalCapabilityPkg(capellacommon.AbstractCapabilityPkg):
     _xmltag = "ownedAbstractCapabilityPkg"
 
-    capabilities = m.Containment["OperationalCapability"](
+    capabilities = _descriptors.Containment["OperationalCapability"](
         "ownedOperationalCapabilities", (NS, "OperationalCapability")
     )
-    packages = m.Containment["OperationalCapabilityPkg"](
+    packages = _descriptors.Containment["OperationalCapabilityPkg"](
         "ownedOperationalCapabilityPkgs", (NS, "OperationalCapabilityPkg")
     )
-    capability_configurations = m.Containment["CapabilityConfiguration"](
+    capability_configurations = _descriptors.Containment["CapabilityConfiguration"](
         "ownedCapabilityConfigurations", (NS, "CapabilityConfiguration")
     )
-    concept_compliances = m.Containment["ConceptCompliance"](
+    concept_compliances = _descriptors.Containment["ConceptCompliance"](
         "ownedConceptCompliances", (NS, "ConceptCompliance")
     )
-    complies_with_concepts = m.Allocation["Concept"](
+    complies_with_concepts = _descriptors.Allocation["Concept"](
         "ownedConceptCompliances",
         (NS, "ConceptCompliance"),
         (NS, "Concept"),
@@ -212,32 +213,32 @@ class OperationalCapability(
 
     _xmltag = "ownedOperationalCapabilities"
 
-    compliances = m.Association["ConceptCompliance"](
+    compliances = _descriptors.Association["ConceptCompliance"](
         (NS, "ConceptCompliance"), "compliances"
     )
-    configurations = m.Association["CapabilityConfiguration"](
+    configurations = _descriptors.Association["CapabilityConfiguration"](
         (NS, "CapabilityConfiguration"), "configurations"
     )
-    entity_involvements = m.Containment[
+    entity_involvements = _descriptors.Containment[
         "EntityOperationalCapabilityInvolvement"
     ](
         "ownedEntityOperationalCapabilityInvolvements",
         (NS, "EntityOperationalCapabilityInvolvement"),
     )
-    involved_entities = m.Allocation["Entity"](
+    involved_entities = _descriptors.Allocation["Entity"](
         "ownedEntityOperationalCapabilityInvolvements",
         (NS, "EntityOperationalCapabilityInvolvement"),
         (NS, "Entity"),
         attr="involved",
         legacy_by_type=True,
     )
-    involved_activities = m.Alias["m.ElementList[OperationalActivity]"](
+    involved_activities = _descriptors.Alias["_obj.ElementList[OperationalActivity]"](
         "involved_functions"
     )
-    involved_processes = m.Alias["m.ElementList[OperationalProcess]"](
+    involved_processes = _descriptors.Alias["_obj.ElementList[OperationalProcess]"](
         "involved_chains"
     )
-    owned_processes = m.Alias["m.ElementList[OperationalProcess]"](
+    owned_processes = _descriptors.Alias["_obj.ElementList[OperationalProcess]"](
         "functional_chains"
     )
 
@@ -247,21 +248,21 @@ class ActivityAllocation(capellacore.Allocation):
 
 
 class RolePkg(capellacore.Structure):
-    packages = m.Containment["RolePkg"]("ownedRolePkgs", (NS, "RolePkg"))
-    roles = m.Containment["Role"]("ownedRoles", (NS, "Role"))
+    packages = _descriptors.Containment["RolePkg"]("ownedRolePkgs", (NS, "RolePkg"))
+    roles = _descriptors.Containment["Role"]("ownedRoles", (NS, "Role"))
 
 
 class Role(information.AbstractInstance):
-    assembly_usages = m.Containment["RoleAssemblyUsage"](
+    assembly_usages = _descriptors.Containment["RoleAssemblyUsage"](
         "ownedRoleAssemblyUsages", (NS, "RoleAssemblyUsage")
     )
-    activity_allocations = m.Containment["ActivityAllocation"](
+    activity_allocations = _descriptors.Containment["ActivityAllocation"](
         "ownedActivityAllocations", (NS, "ActivityAllocation")
     )
 
 
 class RoleAssemblyUsage(capellacore.NamedElement):
-    child = m.Association["Role"]((NS, "Role"), "child")
+    child = _descriptors.Association["Role"]((NS, "Role"), "child")
 
 
 class RoleAllocation(capellacore.Allocation):
@@ -271,16 +272,16 @@ class RoleAllocation(capellacore.Allocation):
 class EntityPkg(cs.ComponentPkg):
     _xmltag = "ownedEntityPkg"
 
-    entities = m.Containment["Entity"]("ownedEntities", (NS, "Entity"))
-    packages = m.Containment["EntityPkg"]("ownedEntityPkgs", (NS, "EntityPkg"))
-    locations = m.Containment["Location"]("ownedLocations", (NS, "Location"))
-    communication_means = m.Alias["m.ElementList[CommunicationMean]"](
+    entities = _descriptors.Containment["Entity"]("ownedEntities", (NS, "Entity"))
+    packages = _descriptors.Containment["EntityPkg"]("ownedEntityPkgs", (NS, "EntityPkg"))
+    locations = _descriptors.Containment["Location"]("ownedLocations", (NS, "Location"))
+    communication_means = _descriptors.Alias["_obj.ElementList[CommunicationMean]"](
         "exchanges"
     )
 
 
 class AbstractConceptItem(cs.Component, abstract=True):
-    composing_links = m.Association["ItemInConcept"](
+    composing_links = _descriptors.Association["ItemInConcept"](
         (NS, "ItemInConcept"), "composingLinks"
     )
 
@@ -294,79 +295,79 @@ class Entity(
 
     _xmltag = "ownedEntities"
 
-    organisational_unit_memberships = m.Association[
+    organisational_unit_memberships = _descriptors.Association[
         "OrganisationalUnitComposition"
     ]((NS, "OrganisationalUnitComposition"), "organisationalUnitMemberships")
-    actual_location = m.Association["Location"](
+    actual_location = _descriptors.Association["Location"](
         (NS, "Location"), "actualLocation"
     )
-    entities = m.Containment["Entity"]("ownedEntities", (NS, "Entity"))
-    communication_means = m.Containment["CommunicationMean"](
+    entities = _descriptors.Containment["Entity"]("ownedEntities", (NS, "Entity"))
+    communication_means = _descriptors.Containment["CommunicationMean"](
         "ownedCommunicationMeans", (NS, "CommunicationMean")
     )
-    exchanges = m.Alias["m.ElementList[CommunicationMean]"](
+    exchanges = _descriptors.Alias["_obj.ElementList[CommunicationMean]"](
         "communication_means"
     )
-    activities = m.Allocation["OperationalActivity"](
+    activities = _descriptors.Allocation["OperationalActivity"](
         "ownedFunctionalAllocation",
         (ns.FA, "ComponentFunctionalAllocation"),
         (NS, "OperationalActivity"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    capabilities = m.Backref["OperationalCapability"](
+    capabilities = _descriptors.Backref["OperationalCapability"](
         (NS, "OperationalCapability"), "involved_entities"
     )
-    related_exchanges = m.Backref["CommunicationMean"](
+    related_exchanges = _descriptors.Backref["CommunicationMean"](
         (NS, "CommunicationMean"), "source", "target"
     )
-    realizing_system_components = m.Backref["sa.SystemComponent"](
+    realizing_system_components = _descriptors.Backref["sa.SystemComponent"](
         (ns.SA, "SystemComponent"), "realized_operational_entities"
     )
 
     @property
-    def inputs(self) -> m.ElementList[CommunicationMean]:
+    def inputs(self) -> _obj.ElementList[CommunicationMean]:
         return self._model.search((NS, "CommunicationMean")).by_target(self)
 
     @property
-    def outputs(self) -> m.ElementList[CommunicationMean]:
+    def outputs(self) -> _obj.ElementList[CommunicationMean]:
         return self._model.search((NS, "CommunicationMean")).by_source(self)
 
 
 class ConceptPkg(capellacore.Structure):
-    packages = m.Containment["ConceptPkg"](
+    packages = _descriptors.Containment["ConceptPkg"](
         "ownedConceptPkgs", (NS, "ConceptPkg")
     )
-    concepts = m.Containment["Concept"]("ownedConcepts", (NS, "Concept"))
+    concepts = _descriptors.Containment["Concept"]("ownedConcepts", (NS, "Concept"))
 
 
 class Concept(capellacore.NamedElement):
-    compliances = m.Association["ConceptCompliance"](
+    compliances = _descriptors.Association["ConceptCompliance"](
         (NS, "ConceptCompliance"), "compliances"
     )
-    composite_links = m.Containment["ItemInConcept"](
+    composite_links = _descriptors.Containment["ItemInConcept"](
         "compositeLinks", (NS, "ItemInConcept")
     )
 
 
 class ConceptCompliance(capellacore.Relationship):
-    comply_with_concept = m.Single["Concept"](
-        m.Association((NS, "Concept"), "complyWithConcept")
+    comply_with_concept = _descriptors.Single["Concept"](
+        _descriptors.Association((NS, "Concept"), "complyWithConcept")
     )
-    compliant_capability = m.Single["OperationalCapability"](
-        m.Association((NS, "OperationalCapability"), "compliantCapability")
+    compliant_capability = _descriptors.Single["OperationalCapability"](
+        _descriptors.Association((NS, "OperationalCapability"), "compliantCapability")
     )
 
 
 class ItemInConcept(capellacore.NamedElement):
-    concept = m.Single["Concept"](m.Association((NS, "Concept"), "concept"))
-    item = m.Single["AbstractConceptItem"](
-        m.Association((NS, "AbstractConceptItem"), "item")
+    concept = _descriptors.Single["Concept"](_descriptors.Association((NS, "Concept"), "concept"))
+    item = _descriptors.Single["AbstractConceptItem"](
+        _descriptors.Association((NS, "AbstractConceptItem"), "item")
     )
 
 
 class CommunityOfInterest(capellacore.NamedElement):
-    community_of_interest_compositions = m.Containment[
+    community_of_interest_compositions = _descriptors.Containment[
         "CommunityOfInterestComposition"
     ](
         "communityOfInterestCompositions",
@@ -375,41 +376,41 @@ class CommunityOfInterest(capellacore.NamedElement):
 
 
 class CommunityOfInterestComposition(capellacore.NamedElement):
-    community_of_interest = m.Association["CommunityOfInterest"](
+    community_of_interest = _descriptors.Association["CommunityOfInterest"](
         (NS, "CommunityOfInterest"), "communityOfInterest"
     )
-    interested_organisational_unit = m.Association["OrganisationalUnit"](
+    interested_organisational_unit = _descriptors.Association["OrganisationalUnit"](
         (NS, "OrganisationalUnit"), "interestedOrganisationUnit"
     )
 
 
 class OrganisationalUnit(capellacore.NamedElement):
-    organisational_unit_compositions = m.Containment[
+    organisational_unit_compositions = _descriptors.Containment[
         "OrganisationalUnitComposition"
     ]("organisationalUnitCompositions", (NS, "OrganisationalUnitComposition"))
-    community_of_interest_memberships = m.Association[
+    community_of_interest_memberships = _descriptors.Association[
         "CommunityOfInterestComposition"
     ]((NS, "CommunityOfInterestComposition"), "communityOfInterestMemberships")
 
 
 class OrganisationalUnitComposition(capellacore.NamedElement):
-    organisational_unit = m.Association["OrganisationalUnit"](
+    organisational_unit = _descriptors.Association["OrganisationalUnit"](
         (NS, "OrganisationalUnit"), "organisationalUnit"
     )
-    participating_entity = m.Association["Entity"](
+    participating_entity = _descriptors.Association["Entity"](
         (NS, "Entity"), "participatingEntity"
     )
 
 
 class Location(AbstractConceptItem):
-    location_description = m.StringPOD("locationDescription")
-    located_entities = m.Association["Entity"](
+    location_description = _pods.StringPOD("locationDescription")
+    located_entities = _descriptors.Association["Entity"](
         (NS, "Entity"), "locatedEntities"
     )
 
 
 class CapabilityConfiguration(AbstractConceptItem):
-    configured_capability = m.Association["OperationalCapability"](
+    configured_capability = _descriptors.Association["OperationalCapability"](
         (NS, "OperationalCapability"), "configuredCapability"
     )
 
@@ -424,11 +425,11 @@ class CommunicationMean(fa.ComponentExchange):
     _xmltag = "ownedComponentExchanges"
 
     # Taken from NamedRelationship, see note above
-    naming_rules = m.Containment["capellacore.NamingRule"](
+    naming_rules = _descriptors.Containment["capellacore.NamingRule"](
         "namingRules", (ns.CAPELLACORE, "NamingRule")
     )
 
-    allocated_interactions = m.Alias["m.ElementList[fa.FunctionalExchange]"](
+    allocated_interactions = _descriptors.Alias["_obj.ElementList[fa.FunctionalExchange]"](
         "allocated_functional_exchanges"
     )
 

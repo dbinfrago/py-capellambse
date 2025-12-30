@@ -17,6 +17,7 @@ from lxml import etree
 import capellambse
 import capellambse.helpers
 from capellambse import _diagram_cache, aird, filehandler, loader
+from capellambse.metamodel import capellacore, epbs, la, oa, pa, sa
 
 from . import _descriptors, _obj, diagram
 
@@ -25,6 +26,8 @@ from . import _descriptors, _obj, diagram
 import pathlib  # isort: skip  # noqa: F401
 
 LOGGER = logging.getLogger(__name__)
+
+import capellambse.metamodel as mm
 
 
 class MelodyModel:
@@ -37,14 +40,10 @@ class MelodyModel:
     """
 
     @property
-    def project(self) -> capellambse.metamodel.capellamodeller.Project:
-        import capellambse.metamodel as mm  # noqa: PLC0415
-
+    def project(self) -> mm.capellamodeller.Project:
         cls_project = self.resolve_class((mm.capellamodeller.NS, "Project"))
         if __debug__:
-            cls_library = self.resolve_class(
-                (mm.capellamodeller.NS, "Library")
-            )
+            cls_library = self.resolve_class((mm.capellamodeller.NS, "Library"))
             assert issubclass(cls_library, cls_project)
 
         roots: list[etree._Element] = []
@@ -77,35 +76,35 @@ class MelodyModel:
         return obj
 
     @property
-    def oa(self) -> capellambse.metamodel.oa.OperationalAnalysis:
+    def oa(self) -> oa.OperationalAnalysis:
         return self.project.model_root.oa
 
     @property
-    def sa(self) -> capellambse.metamodel.sa.SystemAnalysis:
+    def sa(self) -> sa.SystemAnalysis:
         return self.project.model_root.sa
 
     @property
-    def la(self) -> capellambse.metamodel.la.LogicalArchitecture:
+    def la(self) -> la.LogicalArchitecture:
         return self.project.model_root.la
 
     @property
-    def pa(self) -> capellambse.metamodel.pa.PhysicalArchitecture:
+    def pa(self) -> pa.PhysicalArchitecture:
         return self.project.model_root.pa
 
     @property
-    def epbs(self) -> capellambse.metamodel.epbs.EPBSArchitecture:
+    def epbs(self) -> epbs.EPBSArchitecture:
         return self.project.model_root.epbs
 
     def enumeration_property_types(
         self,
     ) -> _obj.ElementList[
-        capellambse.metamodel.capellacore.EnumerationPropertyType
+        capellacore.EnumerationPropertyType
     ]:
         return self.project.model_root.enumeration_property_types
 
     def property_value_packages(
         self,
-    ) -> _obj.ElementList[capellambse.metamodel.capellacore.PropertyValuePkg]:
+    ) -> _obj.ElementList[capellacore.PropertyValuePkg]:
         return self.project.model_root.property_value_packages
 
     @property
@@ -129,7 +128,7 @@ class MelodyModel:
     diagram_cache: filehandler.FileHandler | None
 
     _diagram_cache_index: (
-        dict[str, capellambse._diagram_cache.IndexEntry] | None
+        dict[str, _diagram_cache.IndexEntry] | None
     )
     """An index describing the diagrams in the cache.
 

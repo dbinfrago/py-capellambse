@@ -10,6 +10,7 @@ import warnings
 from lxml import etree
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from . import capellacore, fa, information, modellingcore
 from . import namespaces as ns
@@ -29,35 +30,35 @@ class BlockArchitecture(fa.AbstractFunctionalArchitecture, abstract=True):
     Formerly known as BaseArchitectureLayer.
     """
 
-    capability_pkg = m.Single["capellacommon.AbstractCapabilityPkg"](
-        m.Containment(
+    capability_pkg = _descriptors.Single["capellacommon.AbstractCapabilityPkg"](
+        _descriptors.Containment(
             "ownedAbstractCapabilityPkg",
             (ns.CAPELLACOMMON, "AbstractCapabilityPkg"),
         )
     )
-    interface_pkg = m.Single["InterfacePkg"](
-        m.Containment("ownedInterfacePkg", (NS, "InterfacePkg"))
+    interface_pkg = _descriptors.Single["InterfacePkg"](
+        _descriptors.Containment("ownedInterfacePkg", (NS, "InterfacePkg"))
     )
-    data_pkg = m.Single["information.DataPkg"](
-        m.Containment("ownedDataPkg", (ns.INFORMATION, "DataPkg"))
+    data_pkg = _descriptors.Single["information.DataPkg"](
+        _descriptors.Containment("ownedDataPkg", (ns.INFORMATION, "DataPkg"))
     )
 
     @property
-    def all_classes(self) -> m.ElementList[information.Class]:
+    def all_classes(self) -> _obj.ElementList[information.Class]:
         return self._model.search((ns.INFORMATION, "Class"), below=self)
 
     @property
-    def all_collections(self) -> m.ElementList[information.Collection]:
+    def all_collections(self) -> _obj.ElementList[information.Collection]:
         return self._model.search((ns.INFORMATION, "Collection"), below=self)
 
     @property
-    def all_unions(self) -> m.ElementList[information.Union]:
+    def all_unions(self) -> _obj.ElementList[information.Union]:
         return self._model.search((ns.INFORMATION, "Union"), below=self)
 
     @property
     def all_enumerations(
         self,
-    ) -> m.ElementList[information.datatype.Enumeration]:
+    ) -> _obj.ElementList[information.datatype.Enumeration]:
         return self._model.search(
             (ns.INFORMATION_DATATYPE, "Enumeration"), below=self
         )
@@ -65,27 +66,27 @@ class BlockArchitecture(fa.AbstractFunctionalArchitecture, abstract=True):
     @property
     def all_complex_values(
         self,
-    ) -> m.ElementList[information.datavalue.AbstractComplexValue]:
+    ) -> _obj.ElementList[information.datavalue.AbstractComplexValue]:
         return self._model.search(
             (ns.INFORMATION_DATAVALUE, "AbstractComplexValue"), below=self
         )
 
     @property
-    def all_interfaces(self) -> m.ElementList[Interface]:
+    def all_interfaces(self) -> _obj.ElementList[Interface]:
         return self._model.search((NS, "Interface"), below=self)
 
     @property
     def all_capabilities(
         self,
-    ) -> m.ElementList[interaction.AbstractCapability]:
+    ) -> _obj.ElementList[interaction.AbstractCapability]:
         return self._model.search(
             (ns.INTERACTION, "AbstractCapability"), below=self
         )
 
     if not t.TYPE_CHECKING:
-        capability_package = m.DeprecatedAccessor("capability_pkg")
-        interface_package = m.DeprecatedAccessor("interface_pkg")
-        data_package = m.DeprecatedAccessor("data_pkg")
+        capability_package = _descriptors.DeprecatedAccessor("capability_pkg")
+        interface_package = _descriptors.DeprecatedAccessor("interface_pkg")
+        data_package = _descriptors.DeprecatedAccessor("data_pkg")
 
 
 class Block(
@@ -97,25 +98,25 @@ class Block(
 ):
     """A modular unit that describes the structure of a system or element."""
 
-    capability_pkg = m.Single["capellacommon.AbstractCapabilityPkg"](
-        m.Containment(
+    capability_pkg = _descriptors.Single["capellacommon.AbstractCapabilityPkg"](
+        _descriptors.Containment(
             "ownedAbstractCapabilityPkg",
             (ns.CAPELLACOMMON, "AbstractCapabilityPkg"),
         )
     )
-    interface_pkg = m.Single["InterfacePkg"](
-        m.Containment("ownedInterfacePkg", (NS, "InterfacePkg"))
+    interface_pkg = _descriptors.Single["InterfacePkg"](
+        _descriptors.Containment("ownedInterfacePkg", (NS, "InterfacePkg"))
     )
-    data_pkg = m.Single["information.DataPkg"](
-        m.Containment("ownedDataPkg", (ns.INFORMATION, "DataPkg"))
+    data_pkg = _descriptors.Single["information.DataPkg"](
+        _descriptors.Containment("ownedDataPkg", (ns.INFORMATION, "DataPkg"))
     )
-    state_machines = m.Containment["capellacommon.StateMachine"](
+    state_machines = _descriptors.Containment["capellacommon.StateMachine"](
         "ownedStateMachines", (ns.CAPELLACOMMON, "StateMachine")
     )
 
     if not t.TYPE_CHECKING:
-        interface_package = m.DeprecatedAccessor("interface_pkg")
-        data_package = m.DeprecatedAccessor("data_pkg")
+        interface_package = _descriptors.DeprecatedAccessor("interface_pkg")
+        data_package = _descriptors.DeprecatedAccessor("data_pkg")
 
 
 class ComponentArchitecture(BlockArchitecture, abstract=True):
@@ -127,10 +128,10 @@ class ComponentArchitecture(BlockArchitecture, abstract=True):
 
 
 class InterfaceAllocator(capellacore.CapellaElement, abstract=True):
-    interface_allocations = m.Containment["InterfaceAllocation"](
+    interface_allocations = _descriptors.Containment["InterfaceAllocation"](
         "ownedInterfaceAllocations", (NS, "InterfaceAllocation")
     )
-    allocated_interfaces = m.Allocation["Interface"](
+    allocated_interfaces = _descriptors.Allocation["Interface"](
         "ownedInterfaceAllocations",
         (NS, "InterfaceAllocation"),
         (NS, "Interface"),
@@ -152,59 +153,59 @@ class Component(
     at its lowest level to the system properties and characteristics.
     """
 
-    is_actor = m.BoolPOD("actor")
+    is_actor = _pods.BoolPOD("actor")
     """Indicates if the Component is an Actor."""
-    is_human = m.BoolPOD("human")
+    is_human = _pods.BoolPOD("human")
     """Indicates whether the Component is a Human."""
-    interface_uses = m.Containment["InterfaceUse"](
+    interface_uses = _descriptors.Containment["InterfaceUse"](
         "ownedInterfaceUses", (NS, "InterfaceUse")
     )
-    used_interfaces = m.Allocation["Interface"](
+    used_interfaces = _descriptors.Allocation["Interface"](
         "ownedInterfaceUses",
         (NS, "InterfaceUse"),
         (NS, "Interface"),
         attr="usedInterface",
     )
-    interface_implementations = m.Containment["InterfaceImplementation"](
+    interface_implementations = _descriptors.Containment["InterfaceImplementation"](
         "ownedInterfaceImplementations", (NS, "InterfaceImplementation")
     )
-    implemented_interfaces = m.Allocation["Interface"](
+    implemented_interfaces = _descriptors.Allocation["Interface"](
         "ownedInterfaceImplementations",
         (NS, "InterfaceImplementation"),
         (NS, "Interface"),
         attr="implementedInterfaces",
     )
-    component_realizations = m.Containment["ComponentRealization"](
+    component_realizations = _descriptors.Containment["ComponentRealization"](
         "ownedComponentRealizations", (NS, "ComponentRealization")
     )
-    realized_components = m.Allocation["Component"](
+    realized_components = _descriptors.Allocation["Component"](
         "ownedComponentRealizations",
         (NS, "ComponentRealization"),
         (NS, "Component"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_components = m.Backref["Component"](
+    realizing_components = _descriptors.Backref["Component"](
         (NS, "Component"), "realized_components"
     )
-    ports = m.Filter["fa.ComponentPort"](
+    ports = _descriptors.Filter["fa.ComponentPort"](
         "owned_features", (ns.FA, "ComponentPort")
     )
-    physical_ports = m.Filter["PhysicalPort"](
+    physical_ports = _descriptors.Filter["PhysicalPort"](
         "owned_features", (NS, "PhysicalPort")
     )
-    owned_parts = m.Filter["Part"]("owned_features", (NS, "Part"))
-    representing_parts = m.Backref["Part"]((NS, "Part"), "type")
-    physical_paths = m.Containment["PhysicalPath"](
+    owned_parts = _descriptors.Filter["Part"]("owned_features", (NS, "Part"))
+    representing_parts = _descriptors.Backref["Part"]((NS, "Part"), "type")
+    physical_paths = _descriptors.Containment["PhysicalPath"](
         "ownedPhysicalPath", (NS, "PhysicalPath")
     )
-    physical_links = m.Containment["PhysicalLink"](
+    physical_links = _descriptors.Containment["PhysicalLink"](
         "ownedPhysicalLinks", (NS, "PhysicalLink")
     )
-    physical_link_categories = m.Containment["PhysicalLinkCategory"](
+    physical_link_categories = _descriptors.Containment["PhysicalLinkCategory"](
         "ownedPhysicalLinkCategories", (NS, "PhysicalLinkCategory")
     )
-    related_exchanges = m.Backref["fa.ComponentExchange"](
+    related_exchanges = _descriptors.Backref["fa.ComponentExchange"](
         (ns.FA, "ComponentExchange"),
         "source",
         "source.owner",
@@ -213,14 +214,15 @@ class Component(
     )
 
     if not t.TYPE_CHECKING:
-        owner = m.DeprecatedAccessor("parent")
-        exchanges = m.DeprecatedAccessor("component_exchanges")
-        parts = m.DeprecatedAccessor("representing_parts")
+        owner = _descriptors.DeprecatedAccessor("parent")
+        exchanges = _descriptors.DeprecatedAccessor("component_exchanges")
+        parts = _descriptors.DeprecatedAccessor("representing_parts")
 
     def __init__(
         self,
         model: m.MelodyModel,
         parent: etree._Element,
+        xmltag: str | None,
         /,
         create_part: bool = True,
         **kw: t.Any,
@@ -260,18 +262,18 @@ class Part(
 
     _xmltag = "ownedParts"
 
-    deployment_links = m.Containment["AbstractDeploymentLink"](
+    deployment_links = _descriptors.Containment["AbstractDeploymentLink"](
         "ownedDeploymentLinks", (NS, "AbstractDeploymentLink")
     )
-    deployed_parts = m.Allocation["DeployableElement"](
+    deployed_parts = _descriptors.Allocation["DeployableElement"](
         "ownedDeploymentLinks",
         (NS, "AbstractDeploymentLink"),
         (NS, "DeployableElement"),
         attr="deployedElement",
         backattr="location",
     )
-    owned_type = m.Single["modellingcore.AbstractType"](
-        m.Containment("ownedAbstractType", (ns.MODELLINGCORE, "AbstractType"))
+    owned_type = _descriptors.Single["modellingcore.AbstractType"](
+        _descriptors.Containment("ownedAbstractType", (ns.MODELLINGCORE, "AbstractType"))
     )
 
 
@@ -292,10 +294,10 @@ class InterfacePkg(
 ):
     """A container for Interface elements."""
 
-    interfaces = m.Containment["Interface"](
+    interfaces = _descriptors.Containment["Interface"](
         "ownedInterfaces", (NS, "Interface")
     )
-    packages = m.Containment["InterfacePkg"](
+    packages = _descriptors.Containment["InterfacePkg"](
         "ownedInterfacePkgs", (NS, "InterfacePkg")
     )
 
@@ -326,12 +328,12 @@ class Interface(capellacore.GeneralClass, InterfaceAllocator):
     between the System and external actors.
     """
 
-    mechanism = m.StringPOD("mechanism")
-    is_structural = m.BoolPOD("structural")
-    exchange_item_allocations = m.Containment["ExchangeItemAllocation"](
+    mechanism = _pods.StringPOD("mechanism")
+    is_structural = _pods.BoolPOD("structural")
+    exchange_item_allocations = _descriptors.Containment["ExchangeItemAllocation"](
         "ownedExchangeItemAllocations", (NS, "ExchangeItemAllocation")
     )
-    allocated_exchange_items = m.Allocation["information.ExchangeItem"](
+    allocated_exchange_items = _descriptors.Allocation["information.ExchangeItem"](
         "ownedExchangeItemAllocations",
         (NS, "ExchangeItemAllocation"),
         (ns.INFORMATION, "ExchangeItem"),
@@ -340,26 +342,26 @@ class Interface(capellacore.GeneralClass, InterfaceAllocator):
 
 
 class InterfaceImplementation(capellacore.Relationship):
-    implemented_interface = m.Single["Interface"](
-        m.Association((NS, "Interface"), "implementedInterface")
+    implemented_interface = _descriptors.Single["Interface"](
+        _descriptors.Association((NS, "Interface"), "implementedInterface")
     )
 
 
 class InterfaceUse(capellacore.Relationship):
-    used_interface = m.Single["Interface"](
-        m.Association((NS, "Interface"), "usedInterface")
+    used_interface = _descriptors.Single["Interface"](
+        _descriptors.Association((NS, "Interface"), "usedInterface")
     )
 
 
 class ProvidedInterfaceLink(capellacore.Relationship, abstract=True):
-    interface = m.Single["Interface"](
-        m.Association((NS, "Interface"), "interface")
+    interface = _descriptors.Single["Interface"](
+        _descriptors.Association((NS, "Interface"), "interface")
     )
 
 
 class RequiredInterfaceLink(capellacore.Relationship, abstract=True):
-    interface = m.Single["Interface"](
-        m.Association((NS, "Interface"), "interface")
+    interface = _descriptors.Single["Interface"](
+        _descriptors.Association((NS, "Interface"), "interface")
     )
 
 
@@ -374,26 +376,26 @@ class ExchangeItemAllocation(
 ):
     """An allocation of an ExchangeItem to an Interface."""
 
-    send_protocol = m.EnumPOD(
+    send_protocol = _pods.EnumPOD(
         "sendProtocol", information.communication.CommunicationLinkProtocol
     )
-    receive_protocol = m.EnumPOD(
+    receive_protocol = _pods.EnumPOD(
         "receiveProtocol", information.communication.CommunicationLinkProtocol
     )
-    allocated_item = m.Single["information.ExchangeItem"](
-        m.Association((ns.INFORMATION, "ExchangeItem"), "allocatedItem")
+    allocated_item = _descriptors.Single["information.ExchangeItem"](
+        _descriptors.Association((ns.INFORMATION, "ExchangeItem"), "allocatedItem")
     )
 
     if not t.TYPE_CHECKING:
-        item = m.DeprecatedAccessor("allocated_item")
+        item = _descriptors.DeprecatedAccessor("allocated_item")
 
 
 class AbstractDeploymentLink(capellacore.Relationship, abstract=True):
-    deployed_element = m.Single["DeployableElement"](
-        m.Association((NS, "DeployableElement"), "deployedElement")
+    deployed_element = _descriptors.Single["DeployableElement"](
+        _descriptors.Association((NS, "DeployableElement"), "deployedElement")
     )
-    location = m.Single["DeploymentTarget"](
-        m.Association((NS, "DeploymentTarget"), "location")
+    location = _descriptors.Single["DeploymentTarget"](
+        _descriptors.Association((NS, "DeploymentTarget"), "location")
     )
 
 
@@ -414,36 +416,36 @@ class PhysicalLink(
     AbstractPhysicalArtifact,
     AbstractPathInvolvedElement,
 ):
-    ends = m.Association["AbstractPhysicalLinkEnd"](
+    ends = _descriptors.Association["AbstractPhysicalLinkEnd"](
         (NS, "AbstractPhysicalLinkEnd"), "linkEnds", fixed_length=2
     )
-    functional_exchange_allocations = m.Containment[
+    functional_exchange_allocations = _descriptors.Containment[
         "fa.ComponentExchangeFunctionalExchangeAllocation"
     ](
         "ownedComponentExchangeFunctionalExchangeAllocations",
         (ns.FA, "ComponentExchangeFunctionalExchangeAllocation"),
     )
-    allocated_functional_exchanges = m.Allocation["fa.FunctionalExchange"](
+    allocated_functional_exchanges = _descriptors.Allocation["fa.FunctionalExchange"](
         "ownedComponentExchangeFunctionalExchangeAllocations",
         (ns.FA, "ComponentExchangeFunctionalExchangeAllocation"),
         (ns.FA, "FunctionalExchange"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    physical_link_ends = m.Containment["PhysicalLinkEnd"](
+    physical_link_ends = _descriptors.Containment["PhysicalLinkEnd"](
         "ownedPhysicalLinkEnds", (NS, "PhysicalLinkEnd")
     )
-    physical_link_realizations = m.Containment["PhysicalLinkRealization"](
+    physical_link_realizations = _descriptors.Containment["PhysicalLinkRealization"](
         "ownedPhysicalLinkRealizations", (NS, "PhysicalLinkRealization")
     )
-    realized_physical_links = m.Allocation["PhysicalLink"](
+    realized_physical_links = _descriptors.Allocation["PhysicalLink"](
         "ownedPhysicalLinkRealizations",
         (NS, "PhysicalLinkRealization"),
         (NS, "PhysicalLink"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    physical_paths = m.Backref["PhysicalPath"](
+    physical_paths = _descriptors.Backref["PhysicalPath"](
         (NS, "PhysicalPath"), "involved_items"
     )
 
@@ -488,28 +490,28 @@ class PhysicalLink(
         else:
             ends[1] = end
 
-    def links(self) -> m.ElementList[m.ModelElement]:
+    def links(self) -> _obj.ElementList[m.ModelElement]:
         warnings.warn(
             "PhysicalLink.links is deprecated and will be removed soon",
             category=FutureWarning,
             stacklevel=2,
         )
-        return m.ElementList(self._model, [])
+        return _obj.ElementList(self._model, [])
 
     if not t.TYPE_CHECKING:
-        exchanges = m.DeprecatedAccessor("allocated_component_exchanges")
-        owner = m.DeprecatedAccessor("parent")
+        exchanges = _descriptors.DeprecatedAccessor("allocated_component_exchanges")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class PhysicalLinkCategory(capellacore.NamedElement):
-    links = m.Association["PhysicalLink"]((NS, "PhysicalLink"), "links")
+    links = _descriptors.Association["PhysicalLink"]((NS, "PhysicalLink"), "links")
 
 
 class PhysicalLinkEnd(AbstractPhysicalLinkEnd):
-    port = m.Single["PhysicalPort"](
-        m.Association((NS, "PhysicalPort"), "port")
+    port = _descriptors.Single["PhysicalPort"](
+        _descriptors.Association((NS, "PhysicalPort"), "port")
     )
-    part = m.Single["Part"](m.Association((NS, "Part"), "part"))
+    part = _descriptors.Single["Part"](_descriptors.Association((NS, "Part"), "part"))
 
 
 class PhysicalLinkRealization(capellacore.Allocation):
@@ -526,39 +528,39 @@ class PhysicalPath(
 
     _xmltag = "ownedPhysicalPath"
 
-    _involved_links = m.Association["AbstractPhysicalPathLink"](
+    _involved_links = _descriptors.Association["AbstractPhysicalPathLink"](
         (NS, "AbstractPhysicalPathLink"), "involvedLinks"
     )
-    physical_path_involvements = m.Containment["PhysicalPathInvolvement"](
+    physical_path_involvements = _descriptors.Containment["PhysicalPathInvolvement"](
         "ownedPhysicalPathInvolvements", (NS, "PhysicalPathInvolvement")
     )
-    involved_items = m.Allocation["AbstractPathInvolvedElement"](
+    involved_items = _descriptors.Allocation["AbstractPathInvolvedElement"](
         "ownedPhysicalPathInvolvements",
         (NS, "PhysicalPathInvolvement"),
         (NS, "AbstractPathInvolvedElement"),
         attr="involved",
         legacy_by_type=True,
     )
-    physical_path_realizations = m.Containment["PhysicalPathRealization"](
+    physical_path_realizations = _descriptors.Containment["PhysicalPathRealization"](
         "ownedPhysicalPathRealizations", (NS, "PhysicalPathRealization")
     )
-    realized_paths = m.Allocation["PhysicalPath"](
+    realized_paths = _descriptors.Allocation["PhysicalPath"](
         "ownedPhysicalPathRealizations",
         (NS, "PhysicalPathRealization"),
         (NS, "PhysicalPath"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    involved_links = m.Filter["PhysicalLink"](
+    involved_links = _descriptors.Filter["PhysicalLink"](
         "involved_items", (NS, "PhysicalLink")
     )
 
     if not t.TYPE_CHECKING:
-        exchanges = m.DeprecatedAccessor("allocated_component_exchanges")
+        exchanges = _descriptors.DeprecatedAccessor("allocated_component_exchanges")
 
 
 class PhysicalPathInvolvement(capellacore.Involvement):
-    next_involvements = m.Association["PhysicalPathInvolvement"](
+    next_involvements = _descriptors.Association["PhysicalPathInvolvement"](
         (NS, "PhysicalPathInvolvement"), "nextInvolvements"
     )
 
@@ -582,31 +584,31 @@ class PhysicalPort(
 
     _xmltag = "ownedFeatures"
 
-    component_port_allocations = m.Containment["fa.ComponentPortAllocation"](
+    component_port_allocations = _descriptors.Containment["fa.ComponentPortAllocation"](
         "ownedComponentPortAllocations",
         (ns.FA, "ComponentPortAllocation"),
     )
-    allocated_component_ports = m.Allocation["fa.ComponentPort"](
+    allocated_component_ports = _descriptors.Allocation["fa.ComponentPort"](
         "ownedComponentPortAllocations",
         (ns.FA, "ComponentPortAllocation"),
         (ns.FA, "ComponentPort"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    physical_port_realizations = m.Containment["PhysicalPortRealization"](
+    physical_port_realizations = _descriptors.Containment["PhysicalPortRealization"](
         "ownedPhysicalPortRealizations", (NS, "PhysicalPortRealization")
     )
-    realized_ports = m.Allocation["PhysicalPort"](
+    realized_ports = _descriptors.Allocation["PhysicalPort"](
         "ownedPhysicalPortRealizations",
         (NS, "PhysicalPortRealization"),
         (NS, "PhysicalPort"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    links = m.Backref["PhysicalLink"]((NS, "PhysicalLink"), "ends")
+    links = _descriptors.Backref["PhysicalLink"]((NS, "PhysicalLink"), "ends")
 
     if not t.TYPE_CHECKING:
-        owner = m.DeprecatedAccessor("parent")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class PhysicalPortRealization(capellacore.Allocation):
@@ -616,49 +618,49 @@ class PhysicalPortRealization(capellacore.Allocation):
 class ComponentPkg(capellacore.Structure, abstract=True):
     """A package containing parts."""
 
-    parts = m.Containment["Part"]("ownedParts", (NS, "Part"))
-    owned_parts = m.Alias["m.ElementList[Part]"]("parts")
-    exchanges = m.Containment["fa.ComponentExchange"](
+    parts = _descriptors.Containment["Part"]("ownedParts", (NS, "Part"))
+    owned_parts = _descriptors.Alias["_obj.ElementList[Part]"]("parts")
+    exchanges = _descriptors.Containment["fa.ComponentExchange"](
         "ownedComponentExchanges", (ns.FA, "ComponentExchange")
     )
-    exchange_categories = m.Containment["fa.ComponentExchangeCategory"](
+    exchange_categories = _descriptors.Containment["fa.ComponentExchangeCategory"](
         "ownedComponentExchangeCategories",
         (ns.FA, "ComponentExchangeCategory"),
     )
-    functional_links = m.Containment["fa.ExchangeLink"](
+    functional_links = _descriptors.Containment["fa.ExchangeLink"](
         "ownedFunctionalLinks", (ns.FA, "ExchangeLink")
     )
-    functional_allocations = m.Containment["fa.ComponentFunctionalAllocation"](
+    functional_allocations = _descriptors.Containment["fa.ComponentFunctionalAllocation"](
         "ownedFunctionalAllocations",
         (ns.FA, "ComponentFunctionalAllocation"),
     )
-    allocated_functions = m.Allocation["fa.AbstractFunction"](
+    allocated_functions = _descriptors.Allocation["fa.AbstractFunction"](
         "ownedFunctionalAllocations",
         (ns.FA, "ComponentFunctionalAllocation"),
         (ns.FA, "AbstractFunction"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    component_exchange_realizations = m.Containment[
+    component_exchange_realizations = _descriptors.Containment[
         "fa.ComponentExchangeRealization"
     ](
         "ownedComponentExchangeRealizations",
         (ns.FA, "ComponentExchangeRealization"),
     )
-    realized_component_exchanges = m.Allocation["fa.ComponentExchange"](
+    realized_component_exchanges = _descriptors.Allocation["fa.ComponentExchange"](
         "ownedComponentExchangeRealizations",
         (ns.FA, "ComponentExchangeRealization"),
         (ns.FA, "ComponentExchange"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    physical_links = m.Containment["PhysicalLink"](
+    physical_links = _descriptors.Containment["PhysicalLink"](
         "ownedPhysicalLinks", (NS, "PhysicalLink")
     )
-    physical_link_categories = m.Containment["PhysicalLinkCategory"](
+    physical_link_categories = _descriptors.Containment["PhysicalLinkCategory"](
         "ownedPhysicalLinkCategories", (NS, "PhysicalLinkCategory")
     )
-    state_machines = m.Containment["capellacommon.StateMachine"](
+    state_machines = _descriptors.Containment["capellacommon.StateMachine"](
         "ownedStateMachines", (ns.CAPELLACOMMON, "StateMachine")
     )
 

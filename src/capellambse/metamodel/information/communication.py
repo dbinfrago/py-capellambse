@@ -6,6 +6,7 @@ import enum
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from .. import behavior, capellacore
 from .. import namespaces as ns
@@ -69,8 +70,8 @@ class CommunicationLinkProtocol(enum.Enum):
 class CommunicationItem(
     capellacore.Classifier, datavalue.DataValueContainer, abstract=True
 ):
-    visibility = m.EnumPOD("visibility", capellacore.VisibilityKind)
-    state_machines = m.Containment["capellacommon.StateMachine"](
+    visibility = _pods.EnumPOD("visibility", capellacore.VisibilityKind)
+    state_machines = _descriptors.Containment["capellacommon.StateMachine"](
         "ownedStateMachines", (ns.CAPELLACOMMON, "StateMachine")
     )
 
@@ -84,17 +85,17 @@ class Message(CommunicationItem):
 
 
 class MessageReference(capellacore.Relationship):
-    message = m.Single["Message"](m.Association((NS, "Message"), "message"))
+    message = _descriptors.Single["Message"](_descriptors.Association((NS, "Message"), "message"))
 
 
 class MessageReferencePkg(capellacore.Structure, abstract=True):
-    message_references = m.Containment["MessageReference"](
+    message_references = _descriptors.Containment["MessageReference"](
         "ownedMessageReferences", (NS, "MessageReference")
     )
 
 
 class Signal(CommunicationItem, behavior.AbstractSignal):
-    instances = m.Containment["SignalInstance"](
+    instances = _descriptors.Containment["SignalInstance"](
         "signalInstances", (NS, "SignalInstance")
     )
 
@@ -107,15 +108,15 @@ class SignalInstance(AbstractInstance):
 
 
 class CommunicationLink(capellacore.CapellaElement):
-    kind = m.EnumPOD("kind", CommunicationLinkKind)
-    protocol = m.EnumPOD("protocol", CommunicationLinkProtocol)
-    exchange_item = m.Association["ExchangeItem"](
+    kind = _pods.EnumPOD("kind", CommunicationLinkKind)
+    protocol = _pods.EnumPOD("protocol", CommunicationLinkProtocol)
+    exchange_item = _descriptors.Association["ExchangeItem"](
         (NS, "ExchangeItem"), "exchangeItem"
     )
 
 
-class CommunicationLinkExchanger(m.ModelElement, abstract=True):
-    links = m.Containment["CommunicationLink"](
+class CommunicationLinkExchanger(_obj.ModelElement, abstract=True):
+    links = _descriptors.Containment["CommunicationLink"](
         "ownedCommunicationLinks", (NS, "CommunicationLink")
     )
 

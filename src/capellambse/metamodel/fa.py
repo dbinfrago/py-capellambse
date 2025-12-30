@@ -8,6 +8,7 @@ import typing as t
 import warnings
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from . import activity, behavior, capellacore, information, modellingcore
 from . import namespaces as ns
@@ -21,11 +22,11 @@ NS = ns.FA
 
 
 # TODO Remove _AbstractExchange when removing deprecated features
-class _AbstractExchange(m.ModelElement):
+class _AbstractExchange(_obj.ModelElement):
     if not t.TYPE_CHECKING:
 
         @property
-        def source(self) -> m.ModelElement:
+        def source(self) -> _obj.ModelElement:
             raise TypeError(
                 "AbstractExchange is deprecated and will be removed soon,"
                 " use the concrete FunctionalExchange or ComponentExchange"
@@ -33,7 +34,7 @@ class _AbstractExchange(m.ModelElement):
             )
 
         @property
-        def target(self) -> m.ModelElement:
+        def target(self) -> _obj.ModelElement:
             raise TypeError(
                 "AbstractExchange is deprecated and will be removed soon,"
                 " use the concrete FunctionalExchange or ComponentExchange"
@@ -122,22 +123,22 @@ class OrientationPortKind(enum.Enum):
 class AbstractFunctionalArchitecture(
     capellacore.ModellingArchitecture, abstract=True
 ):
-    function_pkg = m.Single["FunctionPkg"](
-        m.Containment("ownedFunctionPkg", (NS, "FunctionPkg"))
+    function_pkg = _descriptors.Single["FunctionPkg"](
+        _descriptors.Containment("ownedFunctionPkg", (NS, "FunctionPkg"))
     )
-    component_exchanges = m.Containment["ComponentExchange"](
+    component_exchanges = _descriptors.Containment["ComponentExchange"](
         "ownedComponentExchanges", (NS, "ComponentExchange")
     )
-    component_exchange_categories = m.Containment["ComponentExchangeCategory"](
+    component_exchange_categories = _descriptors.Containment["ComponentExchangeCategory"](
         "ownedComponentExchangeCategories", (NS, "ComponentExchangeCategory")
     )
-    functional_links = m.Containment["ExchangeLink"](
+    functional_links = _descriptors.Containment["ExchangeLink"](
         "ownedFunctionalLinks", (NS, "ExchangeLink")
     )
-    functional_allocations = m.Containment["ComponentFunctionalAllocation"](
+    functional_allocations = _descriptors.Containment["ComponentFunctionalAllocation"](
         "ownedFunctionalAllocations", (NS, "ComponentFunctionalAllocation")
     )
-    component_exchange_realizations = m.Containment[
+    component_exchange_realizations = _descriptors.Containment[
         "ComponentExchangeRealization"
     ](
         "ownedComponentExchangeRealizations",
@@ -145,82 +146,82 @@ class AbstractFunctionalArchitecture(
     )
 
     @property
-    def all_functions(self) -> m.ElementList[AbstractFunction]:
+    def all_functions(self) -> _obj.ElementList[AbstractFunction]:
         return self._model.search((NS, "AbstractFunction"), below=self)
 
     @property
-    def all_functional_chains(self) -> m.ElementList[FunctionalChain]:
+    def all_functional_chains(self) -> _obj.ElementList[FunctionalChain]:
         return self._model.search((NS, "FunctionalChain"), below=self)
 
     @property
-    def all_function_exchanges(self) -> m.ElementList[FunctionalExchange]:
+    def all_function_exchanges(self) -> _obj.ElementList[FunctionalExchange]:
         return self._model.search((NS, "FunctionalExchange"), below=self)
 
     if not t.TYPE_CHECKING:
-        function_package = m.DeprecatedAccessor("function_pkg")
+        function_package = _descriptors.DeprecatedAccessor("function_pkg")
 
 
 class AbstractFunctionalBlock(capellacore.ModellingBlock, abstract=True):
-    functional_allocations = m.Containment["ComponentFunctionalAllocation"](
+    functional_allocations = _descriptors.Containment["ComponentFunctionalAllocation"](
         "ownedFunctionalAllocation", (NS, "ComponentFunctionalAllocation")
     )
-    allocated_functions = m.Allocation["AbstractFunction"](
+    allocated_functions = _descriptors.Allocation["AbstractFunction"](
         "ownedFunctionalAllocation",
         (NS, "ComponentFunctionalAllocation"),
         (NS, "AbstractFunction"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    component_exchanges = m.Containment["ComponentExchange"](
+    component_exchanges = _descriptors.Containment["ComponentExchange"](
         "ownedComponentExchanges", (NS, "ComponentExchange")
     )
-    component_exchange_categories = m.Containment["ComponentExchangeCategory"](
+    component_exchange_categories = _descriptors.Containment["ComponentExchangeCategory"](
         "ownedComponentExchangeCategories", (NS, "ComponentExchangeCategory")
     )
-    in_exchange_links = m.Association["ExchangeLink"](
+    in_exchange_links = _descriptors.Association["ExchangeLink"](
         (NS, "ExchangeLink"), "inExchangeLinks"
     )
-    out_exchange_links = m.Association["ExchangeLink"](
+    out_exchange_links = _descriptors.Association["ExchangeLink"](
         (NS, "ExchangeLink"), "outExchangeLinks"
     )
 
 
 class FunctionPkg(capellacore.Structure, abstract=True):
-    functional_links = m.Containment["ExchangeLink"](
+    functional_links = _descriptors.Containment["ExchangeLink"](
         "ownedFunctionalLinks", (NS, "ExchangeLink")
     )
-    exchanges = m.Containment["FunctionalExchangeSpecification"](
+    exchanges = _descriptors.Containment["FunctionalExchangeSpecification"](
         "ownedExchanges", (NS, "FunctionalExchangeSpecification")
     )
-    exchange_specification_realizations = m.Containment[
+    exchange_specification_realizations = _descriptors.Containment[
         "ExchangeSpecificationRealization"
     ](
         "ownedExchangeSpecificationRealizations",
         (NS, "ExchangeSpecificationRealization"),
     )
-    realized_exchange_specifications = m.Allocation["ExchangeSpecification"](
+    realized_exchange_specifications = _descriptors.Allocation["ExchangeSpecification"](
         "ownedExchangeSpecificationRealizations",
         (NS, "ExchangeSpecificationRealization"),
         (NS, "ExchangeSpecification"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    categories = m.Containment["ExchangeCategory"](
+    categories = _descriptors.Containment["ExchangeCategory"](
         "ownedCategories", (NS, "ExchangeCategory")
     )
-    function_specifications = m.Containment["FunctionSpecification"](
+    function_specifications = _descriptors.Containment["FunctionSpecification"](
         "ownedFunctionSpecifications", (NS, "FunctionSpecification")
     )
 
 
 class FunctionSpecification(capellacore.Namespace, activity.AbstractActivity):
-    in_exchange_links = m.Association["ExchangeLink"](
+    in_exchange_links = _descriptors.Association["ExchangeLink"](
         (NS, "ExchangeLink"), "inExchangeLinks"
     )
-    out_exchange_links = m.Association["ExchangeLink"](
+    out_exchange_links = _descriptors.Association["ExchangeLink"](
         (NS, "ExchangeLink"), "outExchangeLinks"
     )
-    ports = m.Containment["FunctionPort"](
+    ports = _descriptors.Containment["FunctionPort"](
         "ownedFunctionPorts", (NS, "FunctionPort")
     )
 
@@ -228,39 +229,39 @@ class FunctionSpecification(capellacore.Namespace, activity.AbstractActivity):
 class ExchangeCategory(capellacore.NamedElement):
     _xmltag = "ownedCategories"
 
-    exchanges = m.Association["FunctionalExchange"](
+    exchanges = _descriptors.Association["FunctionalExchange"](
         (NS, "FunctionalExchange"), "exchanges"
     )
 
 
 class ExchangeLink(capellacore.NamedRelationship):
-    exchange_containment_links = m.Association["ExchangeContainment"](
+    exchange_containment_links = _descriptors.Association["ExchangeContainment"](
         (NS, "ExchangeContainment"), "exchangeContainmentLinks"
     )
-    exchange_containments = m.Containment["ExchangeContainment"](
+    exchange_containments = _descriptors.Containment["ExchangeContainment"](
         "ownedExchangeContainments", (NS, "ExchangeContainment")
     )
-    sources = m.Association["FunctionSpecification"](
+    sources = _descriptors.Association["FunctionSpecification"](
         (NS, "FunctionSpecification"), "sources"
     )
-    destinations = m.Association["FunctionSpecification"](
+    destinations = _descriptors.Association["FunctionSpecification"](
         (NS, "FunctionSpecification"), "destinations"
     )
 
 
 class ExchangeContainment(capellacore.Relationship):
-    exchange = m.Single["ExchangeSpecification"](
-        m.Association((NS, "ExchangeSpecification"), "exchange")
+    exchange = _descriptors.Single["ExchangeSpecification"](
+        _descriptors.Association((NS, "ExchangeSpecification"), "exchange")
     )
-    link = m.Single["ExchangeLink"](
-        m.Association((NS, "ExchangeLink"), "link")
+    link = _descriptors.Single["ExchangeLink"](
+        _descriptors.Association((NS, "ExchangeLink"), "link")
     )
 
 
 class ExchangeSpecification(
     capellacore.NamedElement, activity.ActivityExchange, abstract=True
 ):
-    link = m.Association["ExchangeContainment"](
+    link = _descriptors.Association["ExchangeContainment"](
         (NS, "ExchangeContainment"), "link"
     )
 
@@ -276,73 +277,73 @@ class FunctionalChain(
 ):
     _xmltag = "ownedFunctionalChains"
 
-    kind = m.EnumPOD("kind", FunctionalChainKind)
-    involvements = m.Containment["FunctionalChainInvolvement"](
+    kind = _pods.EnumPOD("kind", FunctionalChainKind)
+    involvements = _descriptors.Containment["FunctionalChainInvolvement"](
         "ownedFunctionalChainInvolvements", (NS, "FunctionalChainInvolvement")
     )
 
     @property
-    def involved_functions(self) -> m.ElementList[AbstractFunction]:
+    def involved_functions(self) -> _obj.ElementList[AbstractFunction]:
         objs = self.involvements.map("involved").by_class(AbstractFunction)
-        return m.ElementList(self._model, objs._elements, legacy_by_type=True)
+        return _obj.ElementList(self._model, objs._elements, legacy_by_type=True)
 
     @property
-    def involved_links(self) -> m.ElementList[FunctionalExchange]:
+    def involved_links(self) -> _obj.ElementList[FunctionalExchange]:
         objs = self.involvements.map("involved").by_class(FunctionalExchange)
-        return m.ElementList(self._model, objs._elements, legacy_by_type=True)
+        return _obj.ElementList(self._model, objs._elements, legacy_by_type=True)
 
     @property
-    def involved_chains(self) -> m.ElementList[FunctionalChain]:
+    def involved_chains(self) -> _obj.ElementList[FunctionalChain]:
         return self.involvements.map("involved").by_class(FunctionalChain)
 
     @property
-    def involved(self) -> m.ElementList[AbstractFunction | FunctionalExchange]:
+    def involved(self) -> _obj.ElementList[AbstractFunction | FunctionalExchange]:
         objs = self.involvements.map("involved").by_class(
             AbstractFunction, FunctionalExchange
         )
-        return m.ElementList(self._model, objs._elements, legacy_by_type=True)
+        return _obj.ElementList(self._model, objs._elements, legacy_by_type=True)
 
-    involving_chains = m.Backref["FunctionalChain"](
+    involving_chains = _descriptors.Backref["FunctionalChain"](
         (NS, "FunctionalChain"), "involved_chains"
     )
 
-    functional_chain_realizations = m.Containment[
+    functional_chain_realizations = _descriptors.Containment[
         "FunctionalChainRealization"
     ]("ownedFunctionalChainRealizations", (NS, "FunctionalChainRealization"))
-    realized_chains = m.Allocation["FunctionalChain"](
+    realized_chains = _descriptors.Allocation["FunctionalChain"](
         "ownedFunctionalChainRealizations",
         (NS, "FunctionalChainRealization"),
         (NS, "FunctionalChain"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_chains = m.Backref["FunctionalChain"](
+    realizing_chains = _descriptors.Backref["FunctionalChain"](
         (NS, "FunctionalChain"), "realized_chains"
     )
-    available_in_states = m.Association["capellacommon.State"](
+    available_in_states = _descriptors.Association["capellacommon.State"](
         (ns.CAPELLACOMMON, "State"), "availableInStates"
     )
-    precondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
+    precondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
     )
-    postcondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
+    postcondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
     )
-    sequence_nodes = m.Containment["ControlNode"](
+    sequence_nodes = _descriptors.Containment["ControlNode"](
         "ownedSequenceNodes", (NS, "ControlNode")
     )
-    sequence_links = m.Containment["SequenceLink"](
+    sequence_links = _descriptors.Containment["SequenceLink"](
         "ownedSequenceLinks", (NS, "SequenceLink")
     )
 
     if not t.TYPE_CHECKING:
-        control_nodes = m.DeprecatedAccessor("sequence_nodes")
+        control_nodes = _descriptors.DeprecatedAccessor("sequence_nodes")
 
 
 class AbstractFunctionalChainContainer(
     capellacore.CapellaElement, abstract=True
 ):
-    functional_chains = m.Containment["FunctionalChain"](
+    functional_chains = _descriptors.Containment["FunctionalChain"](
         "ownedFunctionalChains", (NS, "FunctionalChain")
     )
 
@@ -352,8 +353,8 @@ class FunctionalChainInvolvement(capellacore.Involvement, abstract=True):
 
 
 class FunctionalChainReference(FunctionalChainInvolvement):
-    involved = m.Single["FunctionalChain"](
-        m.Association((NS, "FunctionalChain"), None)
+    involved = _descriptors.Single["FunctionalChain"](
+        _descriptors.Association((NS, "FunctionalChain"), None)
     )
 
 
@@ -363,21 +364,21 @@ class FunctionPort(
     behavior.AbstractEvent,
     abstract=True,
 ):
-    represented_component_port = m.Single["ComponentPort"](
-        m.Association((NS, "ComponentPort"), "representedComponentPort")
+    represented_component_port = _descriptors.Single["ComponentPort"](
+        _descriptors.Association((NS, "ComponentPort"), "representedComponentPort")
     )
-    realized_ports = m.Allocation["FunctionPort"](
+    realized_ports = _descriptors.Allocation["FunctionPort"](
         None, None, (NS, "FunctionPort")
     )
-    allocated_ports = m.Allocation["FunctionPort"](
+    allocated_ports = _descriptors.Allocation["FunctionPort"](
         None, None, (NS, "FunctionPort")
     )
-    exchanges = m.Backref["FunctionalExchange"](
+    exchanges = _descriptors.Backref["FunctionalExchange"](
         (NS, "FunctionalExchange"), "source", "target"
     )
 
     if not t.TYPE_CHECKING:
-        owner = m.DeprecatedAccessor("parent")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class FunctionInputPort(FunctionPort, activity.InputPin):
@@ -385,7 +386,7 @@ class FunctionInputPort(FunctionPort, activity.InputPin):
 
     _xmltag = "inputs"
 
-    exchange_items = m.Association["information.ExchangeItem"](
+    exchange_items = _descriptors.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "incomingExchangeItems"
     )
 
@@ -395,7 +396,7 @@ class FunctionOutputPort(FunctionPort, activity.OutputPin):
 
     _xmltag = "outputs"
 
-    exchange_items = m.Association["information.ExchangeItem"](
+    exchange_items = _descriptors.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "outgoingExchangeItems"
     )
 
@@ -440,42 +441,42 @@ class FunctionalExchange(
 ):
     _xmltag = "ownedFunctionalExchanges"
 
-    exchange_specifications = m.Association["FunctionalExchangeSpecification"](
+    exchange_specifications = _descriptors.Association["FunctionalExchangeSpecification"](
         (NS, "FunctionalExchangeSpecification"), "exchangeSpecifications"
     )
-    exchanged_items = m.Association["information.ExchangeItem"](
+    exchanged_items = _descriptors.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "exchangedItems"
     )
-    functional_exchange_realizations = m.Containment[
+    functional_exchange_realizations = _descriptors.Containment[
         "FunctionalExchangeRealization"
     ](
         "ownedFunctionalExchangeRealizations",
         (NS, "FunctionalExchangeRealization"),
     )
-    realized_functional_exchanges = m.Allocation["FunctionalExchange"](
+    realized_functional_exchanges = _descriptors.Allocation["FunctionalExchange"](
         "ownedFunctionalExchangeRealizations",
         (NS, "FunctionalExchangeRealization"),
         (NS, "FunctionalExchange"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_functional_exchanges = m.Backref["FunctionalExchange"](
+    realizing_functional_exchanges = _descriptors.Backref["FunctionalExchange"](
         (NS, "FunctionalExchange"), "realized_functional_exchanges"
     )
-    owner = m.Single["ComponentExchange"](
-        m.Backref((NS, "ComponentExchange"), "allocated_functional_exchanges")
+    owner = _descriptors.Single["ComponentExchange"](
+        _descriptors.Backref((NS, "ComponentExchange"), "allocated_functional_exchanges")
     )
-    allocating_component_exchange = m.Alias["ComponentExchange"]("owner")
-    categories = m.Backref["ExchangeCategory"](
+    allocating_component_exchange = _descriptors.Alias["ComponentExchange"]("owner")
+    categories = _descriptors.Backref["ExchangeCategory"](
         (NS, "ExchangeCategory"), "exchanges"
     )
 
-    involving_functional_chains = m.Backref["FunctionalChain"](
+    involving_functional_chains = _descriptors.Backref["FunctionalChain"](
         (NS, "FunctionalChain"), "involved_links"
     )
 
     if not t.TYPE_CHECKING:
-        exchange_items = m.DeprecatedAccessor("exchanged_items")
+        exchange_items = _descriptors.DeprecatedAccessor("exchanged_items")
 
 
 class AbstractFunction(
@@ -491,35 +492,35 @@ class AbstractFunction(
 
     _xmltag = "ownedFunctions"
 
-    kind = m.EnumPOD("kind", FunctionKind)
-    condition = m.StringPOD("condition")
-    functions = m.Containment["AbstractFunction"](
+    kind = _pods.EnumPOD("kind", FunctionKind)
+    condition = _pods.StringPOD("condition")
+    functions = _descriptors.Containment["AbstractFunction"](
         "ownedFunctions", (NS, "AbstractFunction")
     )
-    function_realizations = m.Containment["FunctionRealization"](
+    function_realizations = _descriptors.Containment["FunctionRealization"](
         "ownedFunctionRealizations", (NS, "FunctionRealization")
     )
-    realized_functions = m.Allocation["AbstractFunction"](
+    realized_functions = _descriptors.Allocation["AbstractFunction"](
         "ownedFunctionRealizations",
         (NS, "FunctionRealization"),
         (NS, "AbstractFunction"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_functions = m.Backref["AbstractFunction"](
+    realizing_functions = _descriptors.Backref["AbstractFunction"](
         (NS, "AbstractFunction"), "realized_functions", legacy_by_type=True
     )
-    exchanges = m.Containment["FunctionalExchange"](
+    exchanges = _descriptors.Containment["FunctionalExchange"](
         "ownedFunctionalExchanges", (NS, "FunctionalExchange")
     )
-    available_in_states = m.Association["capellacommon.State"](
+    available_in_states = _descriptors.Association["capellacommon.State"](
         (ns.CAPELLACOMMON, "State"), "availableInStates"
     )
 
-    related_exchanges = m.Backref["FunctionalExchange"](
+    related_exchanges = _descriptors.Backref["FunctionalExchange"](
         (NS, "FunctionalExchange"), "source.owner", "target.owner"
     )
-    scenarios = m.Backref["interaction.Scenario"](
+    scenarios = _descriptors.Backref["interaction.Scenario"](
         (ns.INTERACTION, "Scenario"), "related_functions"
     )
 
@@ -539,49 +540,49 @@ class ComponentExchange(
 ):
     _xmltag = "ownedComponentExchanges"
 
-    kind = m.EnumPOD("kind", ComponentExchangeKind)
-    is_oriented = m.BoolPOD("oriented")
+    kind = _pods.EnumPOD("kind", ComponentExchangeKind)
+    is_oriented = _pods.BoolPOD("oriented")
 
-    functional_exchange_allocations = m.Containment[
+    functional_exchange_allocations = _descriptors.Containment[
         "ComponentExchangeFunctionalExchangeAllocation"
     ](
         "ownedComponentExchangeFunctionalExchangeAllocations",
         (NS, "ComponentExchangeFunctionalExchangeAllocation"),
     )
-    allocated_functional_exchanges = m.Allocation["FunctionalExchange"](
+    allocated_functional_exchanges = _descriptors.Allocation["FunctionalExchange"](
         "ownedComponentExchangeFunctionalExchangeAllocations",
         (NS, "ComponentExchangeFunctionalExchangeAllocation"),
         (NS, "FunctionalExchange"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    component_exchange_realizations = m.Containment[
+    component_exchange_realizations = _descriptors.Containment[
         "ComponentExchangeRealization"
     ](
         "ownedComponentExchangeRealizations",
         (NS, "ComponentExchangeRealization"),
     )
-    realized_component_exchanges = m.Allocation["ComponentExchange"](
+    realized_component_exchanges = _descriptors.Allocation["ComponentExchange"](
         "ownedComponentExchangeRealizations",
         (NS, "ComponentExchangeRealization"),
         (NS, "ComponentExchange"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_component_exchanges = m.Backref["ComponentExchange"](
+    realizing_component_exchanges = _descriptors.Backref["ComponentExchange"](
         (NS, "ComponentExchange"), "realized_component_exchanges"
     )
-    ends = m.Containment["ComponentExchangeEnd"](
+    ends = _descriptors.Containment["ComponentExchangeEnd"](
         "ownedComponentExchangeEnds", (NS, "ComponentExchangeEnd")
     )
-    categories = m.Backref["ComponentExchangeCategory"](
+    categories = _descriptors.Backref["ComponentExchangeCategory"](
         (NS, "ComponentExchangeCategory"), "exchanges"
     )
 
-    allocating_physical_links = m.Backref["cs.PhysicalLink"](
+    allocating_physical_links = _descriptors.Backref["cs.PhysicalLink"](
         (ns.CS, "PhysicalLink"), "allocated_component_exchanges"
     )
-    allocating_physical_paths = m.Backref["cs.PhysicalPath"](
+    allocating_physical_paths = _descriptors.Backref["cs.PhysicalPath"](
         (ns.CS, "PhysicalPath"), "allocated_component_exchanges"
     )
 
@@ -614,14 +615,14 @@ class ComponentExchange(
     @property
     def exchange_items(
         self,
-    ) -> m.ElementList[modellingcore.AbstractExchangeItem]:
+    ) -> _obj.ElementList[modellingcore.AbstractExchangeItem]:
         return (
             self.convoyed_informations
             + self.allocated_functional_exchanges.map("exchanged_items")
         )
 
     if not t.TYPE_CHECKING:
-        allocated_exchange_items = m.DeprecatedAccessor(
+        allocated_exchange_items = _descriptors.DeprecatedAccessor(
             "convoyed_informations"
         )
 
@@ -631,10 +632,10 @@ class ComponentExchangeAllocation(capellacore.Allocation):
 
 
 class ComponentExchangeAllocator(capellacore.NamedElement, abstract=True):
-    component_exchange_allocations = m.Containment[
+    component_exchange_allocations = _descriptors.Containment[
         "ComponentExchangeAllocation"
     ]("ownedComponentExchangeAllocations", (NS, "ComponentExchangeAllocation"))
-    allocated_component_exchanges = m.Allocation["ComponentExchange"](
+    allocated_component_exchanges = _descriptors.Allocation["ComponentExchange"](
         "ownedComponentExchangeAllocations",
         (NS, "ComponentExchangeAllocation"),
         (NS, "ComponentExchange"),
@@ -646,7 +647,7 @@ class ComponentExchangeAllocator(capellacore.NamedElement, abstract=True):
 class ComponentExchangeCategory(capellacore.NamedElement):
     _xmltag = "ownedComponentExchangeCategories"
 
-    exchanges = m.Association["ComponentExchange"](
+    exchanges = _descriptors.Association["ComponentExchange"](
         (NS, "ComponentExchange"), "exchanges"
     )
 
@@ -654,10 +655,10 @@ class ComponentExchangeCategory(capellacore.NamedElement):
 class ComponentExchangeEnd(
     modellingcore.InformationsExchanger, capellacore.CapellaElement
 ):
-    port = m.Single["information.Port"](
-        m.Association((ns.INFORMATION, "Port"), "port")
+    port = _descriptors.Single["information.Port"](
+        _descriptors.Association((ns.INFORMATION, "Port"), "port")
     )
-    part = m.Single["cs.Part"](m.Association((ns.CS, "Part"), "part"))
+    part = _descriptors.Single["cs.Part"](_descriptors.Association((ns.CS, "Part"), "part"))
 
 
 class ComponentExchangeFunctionalExchangeAllocation(
@@ -677,35 +678,35 @@ class ComponentPort(
 
     _xmltag = "ownedFeatures"
 
-    orientation = m.EnumPOD("orientation", OrientationPortKind)
-    kind = m.EnumPOD("kind", ComponentPortKind)
-    exchanges = m.Backref["ComponentExchange"](
+    orientation = _pods.EnumPOD("orientation", OrientationPortKind)
+    kind = _pods.EnumPOD("kind", ComponentPortKind)
+    exchanges = _descriptors.Backref["ComponentExchange"](
         (NS, "ComponentExchange"), "source", "target"
     )
 
     if not t.TYPE_CHECKING:
-        direction = m.DeprecatedAccessor("orientation")
-        owner = m.DeprecatedAccessor("parent")
+        direction = _descriptors.DeprecatedAccessor("orientation")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class ComponentPortAllocation(capellacore.Allocation):
-    ends = m.Containment["ComponentPortAllocationEnd"](
+    ends = _descriptors.Containment["ComponentPortAllocationEnd"](
         "ownedComponentPortAllocationEnds", (NS, "ComponentPortAllocationEnd")
     )
 
 
 class ComponentPortAllocationEnd(capellacore.CapellaElement):
-    port = m.Single["information.Port"](
-        m.Association((ns.INFORMATION, "Port"), "port")
+    port = _descriptors.Single["information.Port"](
+        _descriptors.Association((ns.INFORMATION, "Port"), "port")
     )
-    part = m.Single["cs.Part"](m.Association((ns.CS, "Part"), "part"))
+    part = _descriptors.Single["cs.Part"](_descriptors.Association((ns.CS, "Part"), "part"))
 
 
 class ReferenceHierarchyContext(modellingcore.ModelElement, abstract=True):
-    source_reference_hierarchy = m.Association["FunctionalChainReference"](
+    source_reference_hierarchy = _descriptors.Association["FunctionalChainReference"](
         (NS, "FunctionalChainReference"), "sourceReferenceHierarchy"
     )
-    target_reference_hierarchy = m.Association["FunctionalChainReference"](
+    target_reference_hierarchy = _descriptors.Association["FunctionalChainReference"](
         (NS, "FunctionalChainReference"), "targetReferenceHierarchy"
     )
 
@@ -713,35 +714,35 @@ class ReferenceHierarchyContext(modellingcore.ModelElement, abstract=True):
 class FunctionalChainInvolvementLink(
     FunctionalChainInvolvement, ReferenceHierarchyContext
 ):
-    exchange_context = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "exchangeContext")
+    exchange_context = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "exchangeContext")
     )
-    exchanged_items = m.Association["information.ExchangeItem"](
+    exchanged_items = _descriptors.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "exchangedItems"
     )
-    source = m.Single["FunctionalChainInvolvementFunction"](
-        m.Association((NS, "FunctionalChainInvolvementFunction"), "source")
+    source = _descriptors.Single["FunctionalChainInvolvementFunction"](
+        _descriptors.Association((NS, "FunctionalChainInvolvementFunction"), "source")
     )
-    target = m.Single["FunctionalChainInvolvementFunction"](
-        m.Association((NS, "FunctionalChainInvolvementFunction"), "target")
+    target = _descriptors.Single["FunctionalChainInvolvementFunction"](
+        _descriptors.Association((NS, "FunctionalChainInvolvementFunction"), "target")
     )
 
     if not t.TYPE_CHECKING:
-        context = m.DeprecatedAccessor("exchange_context")
+        context = _descriptors.DeprecatedAccessor("exchange_context")
 
 
 class SequenceLink(capellacore.CapellaElement, ReferenceHierarchyContext):
-    condition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "condition")
+    condition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "condition")
     )
-    links = m.Association["FunctionalChainInvolvementLink"](
+    links = _descriptors.Association["FunctionalChainInvolvementLink"](
         (NS, "FunctionalChainInvolvementLink"), "links"
     )
-    source = m.Single["SequenceLinkEnd"](
-        m.Association((NS, "SequenceLinkEnd"), "source")
+    source = _descriptors.Single["SequenceLinkEnd"](
+        _descriptors.Association((NS, "SequenceLinkEnd"), "source")
     )
-    target = m.Single["SequenceLinkEnd"](
-        m.Association((NS, "SequenceLinkEnd"), "target")
+    target = _descriptors.Single["SequenceLinkEnd"](
+        _descriptors.Association((NS, "SequenceLinkEnd"), "target")
     )
 
 
@@ -758,7 +759,7 @@ class FunctionalChainInvolvementFunction(
 class ControlNode(SequenceLinkEnd):
     _xmltag = "ownedSequenceNodes"
 
-    kind = m.EnumPOD("kind", ControlNodeKind)
+    kind = _pods.EnumPOD("kind", ControlNodeKind)
 
 
 if not t.TYPE_CHECKING:

@@ -7,6 +7,7 @@ import typing as t
 import warnings
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _pods
 
 from . import behavior, capellacore, fa
 from . import namespaces as ns
@@ -79,68 +80,68 @@ class ScenarioKind(enum.Enum):
 class SequenceMessage(capellacore.NamedElement):
     """A sequence message."""
 
-    kind = m.EnumPOD("kind", MessageKind)
-    exchange_context = m.Association["capellacore.Constraint"](
+    kind = _pods.EnumPOD("kind", MessageKind)
+    exchange_context = _descriptors.Association["capellacore.Constraint"](
         (ns.CAPELLACORE, "Constraint"), "exchangeContext"
     )
-    sending_end = m.Association["MessageEnd"]((NS, "MessageEnd"), "sendingEnd")
-    receiving_end = m.Association["MessageEnd"](
+    sending_end = _descriptors.Association["MessageEnd"]((NS, "MessageEnd"), "sendingEnd")
+    receiving_end = _descriptors.Association["MessageEnd"](
         (NS, "MessageEnd"), "receivingEnd"
     )
-    exchanged_items = m.Association["information.ExchangeItem"](
+    exchanged_items = _descriptors.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "exchangedItems"
     )
-    valuations = m.Containment["SequenceMessageValuation"](
+    valuations = _descriptors.Containment["SequenceMessageValuation"](
         "ownedSequenceMessageValuations", (NS, "SequenceMessageValuation")
     )
 
     if not t.TYPE_CHECKING:
-        source = m.DeprecatedAccessor("sending_end")
-        target = m.DeprecatedAccessor("receiving_end")
+        source = _descriptors.DeprecatedAccessor("sending_end")
+        target = _descriptors.DeprecatedAccessor("receiving_end")
 
 
 class Scenario(capellacore.Namespace, behavior.AbstractBehavior):
-    kind = m.EnumPOD("kind", ScenarioKind)
-    is_merged = m.BoolPOD("merged")
+    kind = _pods.EnumPOD("kind", ScenarioKind)
+    is_merged = _pods.BoolPOD("merged")
 
-    precondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
+    precondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
     )
-    postcondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
+    postcondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
     )
-    instance_roles = m.Containment["InstanceRole"](
+    instance_roles = _descriptors.Containment["InstanceRole"](
         "ownedInstanceRoles", (NS, "InstanceRole")
     )
-    messages = m.Containment["SequenceMessage"](
+    messages = _descriptors.Containment["SequenceMessage"](
         "ownedMessages", (NS, "SequenceMessage")
     )
-    fragments = m.Containment["InteractionFragment"](
+    fragments = _descriptors.Containment["InteractionFragment"](
         "ownedInteractionFragments",
         (NS, "InteractionFragment"),
         legacy_by_type=True,
     )
-    time_lapses = m.Containment["TimeLapse"](
+    time_lapses = _descriptors.Containment["TimeLapse"](
         "ownedTimeLapses", (NS, "TimeLapse"), legacy_by_type=True
     )
-    events = m.Containment["Event"](
+    events = _descriptors.Containment["Event"](
         "ownedEvents", (NS, "Event"), legacy_by_type=True
     )
-    formal_gates = m.Containment["Gate"]("ownedFormalGates", (NS, "Gate"))
-    scenario_realizations = m.Containment["ScenarioRealization"](
+    formal_gates = _descriptors.Containment["Gate"]("ownedFormalGates", (NS, "Gate"))
+    scenario_realizations = _descriptors.Containment["ScenarioRealization"](
         "ownedScenarioRealization", (NS, "ScenarioRealization")
     )
-    realized_scenarios = m.Allocation["Scenario"](
+    realized_scenarios = _descriptors.Allocation["Scenario"](
         "ownedScenarioRealization",
         (NS, "ScenarioRealization"),
         (NS, "Scenario"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_scenarios = m.Backref["Scenario"](
+    realizing_scenarios = _descriptors.Backref["Scenario"](
         (NS, "Scenario"), "realized_scenarios"
     )
-    constraint_durations = m.Containment["ConstraintDuration"](
+    constraint_durations = _descriptors.Containment["ConstraintDuration"](
         "ownedConstraintDurations", (NS, "ConstraintDuration")
     )
 
@@ -150,16 +151,16 @@ class Scenario(capellacore.Namespace, behavior.AbstractBehavior):
 
 
 class InteractionFragment(capellacore.NamedElement, abstract=True):
-    covered_instance_roles = m.Association["InstanceRole"](
+    covered_instance_roles = _descriptors.Association["InstanceRole"](
         (NS, "InstanceRole"), "coveredInstanceRoles", legacy_by_type=True
     )
 
     if not t.TYPE_CHECKING:
-        covered = m.DeprecatedAccessor("covered_instance_roles")
+        covered = _descriptors.DeprecatedAccessor("covered_instance_roles")
 
 
 class AbstractEnd(InteractionFragment, abstract=True):
-    event = m.Single["Event"](m.Association((NS, "Event"), "event"))
+    event = _descriptors.Single["Event"](_descriptors.Association((NS, "Event"), "event"))
 
 
 class MessageEnd(AbstractEnd):
@@ -167,11 +168,11 @@ class MessageEnd(AbstractEnd):
 
 
 class TimeLapse(capellacore.NamedElement, abstract=True):
-    start = m.Single["InteractionFragment"](
-        m.Association((NS, "InteractionFragment"), "start")
+    start = _descriptors.Single["InteractionFragment"](
+        _descriptors.Association((NS, "InteractionFragment"), "start")
     )
-    finish = m.Single["InteractionFragment"](
-        m.Association((NS, "InteractionFragment"), "finish")
+    finish = _descriptors.Single["InteractionFragment"](
+        _descriptors.Association((NS, "InteractionFragment"), "finish")
     )
 
 
@@ -200,31 +201,31 @@ class ExecutionEvent(Event):
 
 
 class InstanceRole(capellacore.NamedElement):
-    represented_instance = m.Single["information.AbstractInstance"](
-        m.Association(
+    represented_instance = _descriptors.Single["information.AbstractInstance"](
+        _descriptors.Association(
             (ns.INFORMATION, "AbstractInstance"), "representedInstance"
         )
     )
 
     if not t.TYPE_CHECKING:
-        instance = m.DeprecatedAccessor("represented_instance")
+        instance = _descriptors.DeprecatedAccessor("represented_instance")
 
 
 class _EventOperation(Event):
     # TODO delete this class when removing deprecated features
-    operation = m.Association["information.AbstractEventOperation"](
+    operation = _descriptors.Association["information.AbstractEventOperation"](
         (ns.INFORMATION, "AbstractEventOperation"), "operation"
     )
 
 
 class EventReceiptOperation(_EventOperation):
-    operation = m.Association["information.AbstractEventOperation"](
+    operation = _descriptors.Association["information.AbstractEventOperation"](
         (ns.INFORMATION, "AbstractEventOperation"), "operation"
     )
 
 
 class EventSentOperation(_EventOperation):
-    operation = m.Association["information.AbstractEventOperation"](
+    operation = _descriptors.Association["information.AbstractEventOperation"](
         (ns.INFORMATION, "AbstractEventOperation"), "operation"
     )
 
@@ -247,98 +248,98 @@ class AbstractCapability(
     fa.AbstractFunctionalChainContainer,
     abstract=True,
 ):
-    precondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
+    precondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "preCondition")
     )
-    postcondition = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
+    postcondition = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "postCondition")
     )
-    scenarios = m.Containment["Scenario"]("ownedScenarios", (NS, "Scenario"))
-    extends = m.Containment["AbstractCapabilityExtend"](
+    scenarios = _descriptors.Containment["Scenario"]("ownedScenarios", (NS, "Scenario"))
+    extends = _descriptors.Containment["AbstractCapabilityExtend"](
         "extends", (NS, "AbstractCapabilityExtend")
     )
-    extended_by = m.Backref["AbstractCapabilityExtend"](
+    extended_by = _descriptors.Backref["AbstractCapabilityExtend"](
         (NS, "AbstractCapabilityExtend"), "target"
     )
-    extension_points = m.Containment["AbstractCapabilityExtensionPoint"](
+    extension_points = _descriptors.Containment["AbstractCapabilityExtensionPoint"](
         "abstractCapabilityExtensionPoints",
         (NS, "AbstractCapabilityExtensionPoint"),
     )
-    generalizations = m.Containment["AbstractCapabilityGeneralization"](
+    generalizations = _descriptors.Containment["AbstractCapabilityGeneralization"](
         "superGeneralizations", (NS, "AbstractCapabilityGeneralization")
     )
-    generalized_by = m.Backref["AbstractCapability"](
+    generalized_by = _descriptors.Backref["AbstractCapability"](
         (NS, "AbstractCapability"), "target"
     )
-    includes = m.Containment["AbstractCapabilityInclude"](
+    includes = _descriptors.Containment["AbstractCapabilityInclude"](
         "includes", (NS, "AbstractCapabilityInclude")
     )
-    included_by = m.Backref["AbstractCapabilityInclude"](
+    included_by = _descriptors.Backref["AbstractCapabilityInclude"](
         (NS, "AbstractCapabilityInclude"), "included"
     )
-    chain_involvements = m.Containment[
+    chain_involvements = _descriptors.Containment[
         "FunctionalChainAbstractCapabilityInvolvement"
     ](
         "ownedFunctionalChainAbstractCapabilityInvolvements",
         (NS, "FunctionalChainAbstractCapabilityInvolvement"),
     )
-    involved_chains = m.Allocation["fa.FunctionalChain"](
+    involved_chains = _descriptors.Allocation["fa.FunctionalChain"](
         "ownedFunctionalChainAbstractCapabilityInvolvements",
         (NS, "FunctionalChainAbstractCapabilityInvolvement"),
         (ns.FA, "AbstractFunction"),
         attr="involved",
     )
-    function_involvements = m.Containment[
+    function_involvements = _descriptors.Containment[
         "AbstractFunctionAbstractCapabilityInvolvement"
     ](
         "ownedAbstractFunctionAbstractCapabilityInvolvements",
         (NS, "AbstractFunctionAbstractCapabilityInvolvement"),
     )
-    involved_functions = m.Allocation["fa.AbstractFunction"](
+    involved_functions = _descriptors.Allocation["fa.AbstractFunction"](
         "ownedAbstractFunctionAbstractCapabilityInvolvements",
         (NS, "AbstractFunctionAbstractCapabilityInvolvement"),
         (ns.FA, "AbstractFunction"),
         attr="involved",
     )
-    available_in_states = m.Association["capellacommon.State"](
+    available_in_states = _descriptors.Association["capellacommon.State"](
         (ns.CAPELLACOMMON, "State"), "availableInStates"
     )
-    capability_realizations = m.Containment["AbstractCapabilityRealization"](
+    capability_realizations = _descriptors.Containment["AbstractCapabilityRealization"](
         "ownedAbstractCapabilityRealizations",
         (NS, "AbstractCapabilityRealization"),
     )
-    realized_capabilities = m.Allocation["AbstractCapability"](
+    realized_capabilities = _descriptors.Allocation["AbstractCapability"](
         "ownedAbstractCapabilityRealizations",
         (NS, "AbstractCapabilityRealization"),
         (NS, "AbstractCapability"),
         attr="targetElement",
     )
-    realizing_capabilities = m.Backref["AbstractCapability"](
+    realizing_capabilities = _descriptors.Backref["AbstractCapability"](
         (NS, "AbstractCapability"), "realized_capabilities"
     )
 
     if not t.TYPE_CHECKING:
-        generalizes = m.DeprecatedAccessor("generalizations")
-        states = m.DeprecatedAccessor("available_in_states")
+        generalizes = _descriptors.DeprecatedAccessor("generalizations")
+        states = _descriptors.DeprecatedAccessor("available_in_states")
 
 
 class AbstractCapabilityExtend(capellacore.Relationship):
     _xmltag = "extends"
 
-    source = m.Alias["m.ModelElement"]("parent")
-    extended = m.Single["AbstractCapability"](
-        m.Association((NS, "AbstractCapability"), "extended")
+    source = _descriptors.Alias["m.ModelElement"]("parent")
+    extended = _descriptors.Single["AbstractCapability"](
+        _descriptors.Association((NS, "AbstractCapability"), "extended")
     )
-    target = m.Alias["AbstractCapability"]("extended")
-    extension_location = m.Single["AbstractCapabilityExtensionPoint"](
-        m.Association(
+    target = _descriptors.Alias["AbstractCapability"]("extended")
+    extension_location = _descriptors.Single["AbstractCapabilityExtensionPoint"](
+        _descriptors.Association(
             (NS, "AbstractCapabilityExtensionPoint"), "extensionLocation"
         )
     )
 
 
 class AbstractCapabilityExtensionPoint(capellacore.NamedRelationship):
-    extend_links = m.Association["AbstractCapabilityExtend"](
+    extend_links = _descriptors.Association["AbstractCapabilityExtend"](
         (NS, "AbstractCapabilityExtend"), "extendLinks"
     )
 
@@ -346,47 +347,47 @@ class AbstractCapabilityExtensionPoint(capellacore.NamedRelationship):
 class AbstractCapabilityGeneralization(capellacore.Relationship):
     _xmltag = "superGeneralizations"
 
-    source = m.Alias["m.ModelElement"]("parent")
-    super = m.Single["AbstractCapability"](
-        m.Association((NS, "AbstractCapability"), "super")
+    source = _descriptors.Alias["m.ModelElement"]("parent")
+    super = _descriptors.Single["AbstractCapability"](
+        _descriptors.Association((NS, "AbstractCapability"), "super")
     )
-    target = m.Alias["AbstractCapability"]("super")
+    target = _descriptors.Alias["AbstractCapability"]("super")
 
 
 class AbstractCapabilityInclude(capellacore.Relationship):
     _xmltag = "includes"
 
-    source = m.Alias["m.ModelElement"]("parent")
-    included = m.Single["AbstractCapability"](
-        m.Association((NS, "AbstractCapability"), "included")
+    source = _descriptors.Alias["m.ModelElement"]("parent")
+    included = _descriptors.Single["AbstractCapability"](
+        _descriptors.Association((NS, "AbstractCapability"), "included")
     )
-    target = m.Alias["AbstractCapability"]("included")
+    target = _descriptors.Alias["AbstractCapability"]("included")
 
 
 class InteractionState(InteractionFragment):
-    state = m.Single["capellacommon.AbstractState"](
-        m.Association(
+    state = _descriptors.Single["capellacommon.AbstractState"](
+        _descriptors.Association(
             (ns.CAPELLACOMMON, "AbstractState"), "relatedAbstractState"
         )
     )
-    function = m.Single["fa.AbstractFunction"](
-        m.Association((ns.FA, "AbstractFunction"), "relatedAbstractFunction")
+    function = _descriptors.Single["fa.AbstractFunction"](
+        _descriptors.Association((ns.FA, "AbstractFunction"), "relatedAbstractFunction")
     )
 
 
 class AbstractFragment(TimeLapse, abstract=True):
-    gates = m.Containment["Gate"]("ownedGates", (NS, "Gate"))
+    gates = _descriptors.Containment["Gate"]("ownedGates", (NS, "Gate"))
 
 
 class InteractionUse(AbstractFragment):
-    referenced_scenario = m.Single["Scenario"](
-        m.Association((NS, "Scenario"), "referencedScenario")
+    referenced_scenario = _descriptors.Single["Scenario"](
+        _descriptors.Association((NS, "Scenario"), "referencedScenario")
     )
 
 
 class CombinedFragment(AbstractFragment):
-    operator = m.EnumPOD("operator", InteractionOperatorKind)
-    operands = m.Association["InteractionOperand"](
+    operator = _pods.EnumPOD("operator", InteractionOperatorKind)
+    operands = _descriptors.Association["InteractionOperand"](
         (NS, "InteractionOperand"), "referencedOperands"
     )
 
@@ -396,11 +397,11 @@ class Gate(MessageEnd):
 
 
 class InteractionOperand(InteractionFragment):
-    fragments = m.Association["InteractionFragment"](
+    fragments = _descriptors.Association["InteractionFragment"](
         (NS, "InteractionFragment"), "referencedInteractionFragments"
     )
-    guard = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "guard")
+    guard = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "guard")
     )
 
 
@@ -421,13 +422,13 @@ class ScenarioRealization(capellacore.Allocation):
 
 
 class StateFragment(TimeLapse):
-    state = m.Single["capellacommon.AbstractState"](
-        m.Association(
+    state = _descriptors.Single["capellacommon.AbstractState"](
+        _descriptors.Association(
             (ns.CAPELLACOMMON, "AbstractState"), "relatedAbstractState"
         )
     )
-    function = m.Single["fa.AbstractFunction"](
-        m.Association((ns.FA, "AbstractFunction"), "relatedAbstractFunction")
+    function = _descriptors.Single["fa.AbstractFunction"](
+        _descriptors.Association((ns.FA, "AbstractFunction"), "relatedAbstractFunction")
     )
 
 
@@ -440,23 +441,23 @@ class CancelTimerEvent(Event):
 
 
 class ConstraintDuration(capellacore.NamedElement):
-    duration = m.StringPOD("duration")
-    start = m.Single["InteractionFragment"](
-        m.Association((NS, "InteractionFragment"), "start")
+    duration = _pods.StringPOD("duration")
+    start = _descriptors.Single["InteractionFragment"](
+        _descriptors.Association((NS, "InteractionFragment"), "start")
     )
-    finish = m.Single["InteractionFragment"](
-        m.Association((NS, "InteractionFragment"), "finish")
+    finish = _descriptors.Single["InteractionFragment"](
+        _descriptors.Association((NS, "InteractionFragment"), "finish")
     )
 
 
 class SequenceMessageValuation(capellacore.CapellaElement):
-    element = m.Single["information.ExchangeItemElement"](
-        m.Association(
+    element = _descriptors.Single["information.ExchangeItemElement"](
+        _descriptors.Association(
             (ns.INFORMATION, "ExchangeItemElement"), "exchangeItemElement"
         )
     )
-    value = m.Single["modellingcore.ValueSpecification"](
-        m.Association((ns.MODELLINGCORE, "ValueSpecification"), "value")
+    value = _descriptors.Single["modellingcore.ValueSpecification"](
+        _descriptors.Association((ns.MODELLINGCORE, "ValueSpecification"), "value")
     )
 
 

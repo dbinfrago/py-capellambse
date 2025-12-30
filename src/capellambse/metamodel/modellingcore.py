@@ -5,6 +5,7 @@ from __future__ import annotations
 import enum
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _pods
 from capellambse.model._obj import ModelElement as ModelElement
 
 from . import namespaces as ns
@@ -40,19 +41,19 @@ class RateKind(enum.Enum):
     """The rate characterizes a discrete flow."""
 
 
-ModelElement.extensions = m.Containment["ModelElement"](
+ModelElement.extensions = _descriptors.Containment["ModelElement"](
     "ownedExtensions", (NS, "ModelElement")
 )
-ModelElement.constraints = m.Containment(
+ModelElement.constraints = _descriptors.Containment(
     "ownedConstraints", (ns.CAPELLACORE, "Constraint")
 )
-ModelElement.migrated_elements = m.Containment["ModelElement"](
+ModelElement.migrated_elements = _descriptors.Containment["ModelElement"](
     "ownedMigratedElements", (NS, "ModelElement")
 )
 
 
 class AbstractRelationship(ModelElement, abstract=True):
-    realized_flow = m.Association["AbstractInformationFlow"](
+    realized_flow = _descriptors.Association["AbstractInformationFlow"](
         (NS, "AbstractInformationFlow"), "realizedFlow"
     )
 
@@ -66,7 +67,7 @@ class AbstractNamedElement(ModelElement, abstract=True):
     a hierarchy of nested namespaces.
     """
 
-    name = m.StringPOD("name")
+    name = _pods.StringPOD("name")
 
 
 class InformationsExchanger(ModelElement, abstract=True):
@@ -78,12 +79,12 @@ class TraceableElement(ModelElement, abstract=True):
 
 
 class FinalizableElement(ModelElement, abstract=True):
-    is_final = m.BoolPOD("final")
+    is_final = _pods.BoolPOD("final")
 
 
 class PublishableElement(ModelElement, abstract=True):
-    is_visible_in_doc = m.BoolPOD("visibleInDoc")
-    is_visible_in_lm = m.BoolPOD("visibleInLM")
+    is_visible_in_doc = _pods.BoolPOD("visibleInDoc")
+    is_visible_in_lm = _pods.BoolPOD("visibleInLM")
 
 
 class AbstractType(AbstractNamedElement, abstract=True):
@@ -93,28 +94,28 @@ class AbstractType(AbstractNamedElement, abstract=True):
 class AbstractTypedElement(AbstractNamedElement, abstract=True):
     """A (named) model element to which a specific type is associated."""
 
-    type = m.Single["AbstractType"](
-        m.Association((NS, "AbstractType"), "abstractType")
+    type: _descriptors.Single[AbstractType] = _descriptors.Single["AbstractType"](
+        _descriptors.Association((NS, "AbstractType"), "abstractType")
     )
 
 
 class AbstractTrace(TraceableElement, abstract=True):
-    target = m.Single["TraceableElement"](
-        m.Association((NS, "TraceableElement"), "targetElement")
+    target = _descriptors.Single["TraceableElement"](
+        _descriptors.Association((NS, "TraceableElement"), "targetElement")
     )
-    source = m.Single["TraceableElement"](
-        m.Association((NS, "TraceableElement"), "sourceElement")
+    source = _descriptors.Single["TraceableElement"](
+        _descriptors.Association((NS, "TraceableElement"), "sourceElement")
     )
 
 
 class AbstractConstraint(ModelElement, abstract=True):
     """A constraint that applies to a given set of model elements."""
 
-    constrained_elements = m.Association["ModelElement"](
+    constrained_elements = _descriptors.Association["ModelElement"](
         (NS, "ModelElement"), "constrainedElements", legacy_by_type=True
     )
-    specification = m.Single["ValueSpecification"](
-        m.Containment("ownedSpecification", (NS, "ValueSpecification"))
+    specification = _descriptors.Single["ValueSpecification"](
+        _descriptors.Containment("ownedSpecification", (NS, "ValueSpecification"))
     )
     """A condition that must evaluate to true to satisfy the constraint."""
 
@@ -133,50 +134,50 @@ class AbstractParameter(AbstractTypedElement, abstract=True):
     of a behavioral feature.
     """
 
-    is_exception = m.BoolPOD("isException")
-    is_stream = m.BoolPOD("isStream")
-    is_optional = m.BoolPOD("isOptional")
-    kind_of_rate = m.EnumPOD("kindOfRate", RateKind)
-    effect = m.EnumPOD("effect", ParameterEffectKind)
-    rate = m.Single["ValueSpecification"](
-        m.Containment("rate", (NS, "ValueSpecification"))
+    is_exception = _pods.BoolPOD("isException")
+    is_stream = _pods.BoolPOD("isStream")
+    is_optional = _pods.BoolPOD("isOptional")
+    kind_of_rate = _pods.EnumPOD("kindOfRate", RateKind)
+    effect = _pods.EnumPOD("effect", ParameterEffectKind)
+    rate = _descriptors.Single["ValueSpecification"](
+        _descriptors.Containment("rate", (NS, "ValueSpecification"))
     )
-    probability = m.Single["ValueSpecification"](
-        m.Containment("probability", (NS, "ValueSpecification"))
+    probability = _descriptors.Single["ValueSpecification"](
+        _descriptors.Containment("probability", (NS, "ValueSpecification"))
     )
-    parameter_set = m.Single["AbstractParameterSet"](
-        m.Association((NS, "AbstractParameterSet"), "parameterSet")
+    parameter_set = _descriptors.Single["AbstractParameterSet"](
+        _descriptors.Association((NS, "AbstractParameterSet"), "parameterSet")
     )
 
 
 class AbstractParameterSet(AbstractNamedElement, abstract=True):
     """An alternative set of inputs or outputs that a behavior may use."""
 
-    conditions = m.Containment["AbstractConstraint"](
+    conditions = _descriptors.Containment["AbstractConstraint"](
         "ownedConditions", (NS, "AbstractConstraint")
     )
-    probability = m.Single["ValueSpecification"](
-        m.Containment("probability", (NS, "ValueSpecification"))
+    probability = _descriptors.Single["ValueSpecification"](
+        _descriptors.Containment("probability", (NS, "ValueSpecification"))
     )
-    parameters = m.Single["AbstractParameter"](
-        m.Association((NS, "AbstractParameter"), "parameters")
+    parameters = _descriptors.Single["AbstractParameter"](
+        _descriptors.Association((NS, "AbstractParameter"), "parameters")
     )
 
 
 class AbstractInformationFlow(
     AbstractNamedElement, AbstractRelationship, abstract=True
 ):
-    realizations = m.Association["AbstractRelationship"](
+    realizations = _descriptors.Association["AbstractRelationship"](
         (NS, "AbstractRelationship"), "realizations"
     )
-    convoyed_informations = m.Association["AbstractExchangeItem"](
+    convoyed_informations = _descriptors.Association["AbstractExchangeItem"](
         (NS, "AbstractExchangeItem"), "convoyedInformations"
     )
-    source = m.Single["InformationsExchanger"](
-        m.Association((NS, "InformationsExchanger"), "source")
+    source = _descriptors.Single["InformationsExchanger"](
+        _descriptors.Association((NS, "InformationsExchanger"), "source")
     )
-    target = m.Single["InformationsExchanger"](
-        m.Association((NS, "InformationsExchanger"), "target")
+    target = _descriptors.Single["InformationsExchanger"](
+        _descriptors.Association((NS, "InformationsExchanger"), "target")
     )
 
 
@@ -191,9 +192,9 @@ class IState(AbstractNamedElement, abstract=True):
     transitions.
     """
 
-    referenced_states = m.Association["IState"](
+    referenced_states = _descriptors.Association["IState"](
         (NS, "IState"), "referencedStates"
     )
-    exploited_states = m.Association["IState"](
+    exploited_states = _descriptors.Association["IState"](
         (NS, "IState"), "exploitedStates"
     )
