@@ -55,12 +55,16 @@ class GroupingElementPkg(CatalogElementPkg):
 
 
 class CatalogElementLink(ReAbstractElement):
-    source = m.Association["CatalogElement"]((NS, "CatalogElement"), "source")
-    target = m.Association["m.ModelElement"](
-        (ns.MODELLINGCORE, "ModelElement"), "target"
+    source = m.Single(m.Association["CatalogElement"]((NS, "CatalogElement"), "source"))
+    target = m.Single(
+        m.Association["m.ModelElement"](
+            (ns.MODELLINGCORE, "ModelElement"), "target"
+        )
     )
-    origin = m.Association["CatalogElementLink"](
-        (NS, "CatalogElementLink"), "origin"
+    origin = m.Single(
+        m.Association["CatalogElementLink"](
+            (NS, "CatalogElementLink"), "origin"
+        )
     )
     unsynchronized_features = m.StringPOD("unsynchronizedFeatures")
     is_suffixed = m.BoolPOD("suffixed")
