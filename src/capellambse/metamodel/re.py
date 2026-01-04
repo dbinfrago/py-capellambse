@@ -80,11 +80,15 @@ class CatalogElement(ReDescriptionElement, ReElementContainer):
             (NS, "CatalogElement"), "origin"
         )
     )
-    current_compliancy = m.Association["CompliancyDefinition"](
-        (NS, "CompliancyDefinition"), "currentCompliancy"
+    current_compliancy = m.Single(
+        m.Association["CompliancyDefinition"](
+            (NS, "CompliancyDefinition"), "currentCompliancy"
+        )
     )
-    default_replica_compliancy = m.Association["CompliancyDefinition"](
-        (NS, "CompliancyDefinition"), "defaultReplicaCompliancy"
+    default_replica_compliancy = m.Single(
+        m.Association["CompliancyDefinition"](
+            (NS, "CompliancyDefinition"), "defaultReplicaCompliancy"
+        )
     )
     links = m.Containment["CatalogElementLink"](
         "ownedLinks", (NS, "CatalogElementLink")
