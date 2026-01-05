@@ -655,7 +655,7 @@ class MelodyLoader:
                 meta_self = self.__find_metadata()
 
                 if not next(filter(lambda el: re.search(str(ref_name), el.attrib["href"]), meta_self.iterchildren("additionalResources")), None):
-                    ael = meta_self.makeelement("additionalResources", href=f"../{ref_name}#{meta_lib.attrib['id']}")
+                    ael = meta_self.makeelement("additionalMetadata", href=f"../{ref_name}#{meta_lib.attrib['id']}")
                     meta_self.append(ael)
             elif ref_name.suffix == ".capella":
                 aird_self = self.trees[pathlib.PurePosixPath(f"\x00/{self.entrypoint}")]
