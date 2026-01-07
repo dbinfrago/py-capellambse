@@ -632,21 +632,26 @@ class MelodyLoader:
         p = "..." #path to library
         model._loader._link_library(p)
 
-        lib = model.project.extensions[0].reference.library #no longer crashes, all fragments are in place
+        lib = model.project.extensions[0].reference.library no longer crashes, all fragments are in place
 
         ```
         """
         handler = self.resources[str(lib)]
         _h , filename = _derive_entrypoint(handler)
+
+        frag_path = lib.joinpath(filename)
+        if self.trees.get(frag_path) is not None:
+            # for already loaded fragments skip library loading
+            return
+
         frag = ModelFile(
             filename, handler, ignore_uuid_dups=self.__ignore_uuid_dups
         )
 
-        p = lib.joinpath(filename)
-        self.trees[p] = frag
+        self.trees[frag_path] = frag
         for ref in _find_refs(frag.root):
             ref_name = helpers.normalize_pure_path(
-                _unquote_ref(ref), base=p.parent
+                _unquote_ref(ref), base=frag_path.parent
             )
             self.__load_referenced_files(ref_name)
 
