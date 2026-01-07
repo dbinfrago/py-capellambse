@@ -414,10 +414,13 @@ class Optional(Accessor[T_co | "_obj.ElementList[T_co]" | None ], t.Generic[T_co
 
         objs: t.Any = None
         try:
+            #intentionally hide exception, at the moment FilteringExtension crashes on access to the extensions
+            #TODO: fix FilteringExtension for better matching strategy, to avoid crashes
             objs = self.wrapped.__get__(obj, type(obj))
         finally:
             self.__objs = objs
-            return objs
+
+        return objs
 
 
     def __set__(
@@ -429,7 +432,7 @@ class Optional(Accessor[T_co | "_obj.ElementList[T_co]" | None ], t.Generic[T_co
 
     def __delete__(self, obj: _obj.ModelObject) -> None:
         """Delete the attribute."""
-        if self.objs:
+        if self.__objs:
             self.wrapped.__delete__(obj)
 
     def __set_name__(self, owner: type[_obj.ModelObject], name: str) -> None:
