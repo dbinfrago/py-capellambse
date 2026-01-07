@@ -417,6 +417,10 @@ class Optional(Accessor[T_co | "_obj.ElementList[T_co]" | None ], t.Generic[T_co
             #intentionally hide exception, at the moment FilteringExtension crashes on access to the extensions
             #TODO: fix FilteringExtension for better matching strategy, to avoid crashes
             objs = self.wrapped.__get__(obj, type(obj))
+        except Exception as ex:
+            if not self.optional:
+                # for wrapper initialized as non-optional - re-throw exception
+                raise ex
         finally:
             self.__objs = objs
 
