@@ -600,7 +600,10 @@ class MelodyLoader:
         ----------
         afm
             model metadata file
-        return
+
+        Returns
+        -------
+        etree._Element
             metadata element if found
 
         Raises
