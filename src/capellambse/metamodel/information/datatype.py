@@ -6,6 +6,7 @@ import enum
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _pods
 
 from .. import capellacore, modellingcore
 from .. import namespaces as ns
@@ -32,52 +33,52 @@ class DataType(
 ):
     _xmltag = "ownedDataTypes"
 
-    is_discrete = m.BoolPOD("discrete")
+    is_discrete = _pods.BoolPOD("discrete")
     """Whether or not this data type characterizes a discrete value."""
-    is_min_inclusive = m.BoolPOD("minInclusive")
-    is_max_inclusive = m.BoolPOD("maxInclusive")
-    pattern = m.StringPOD("pattern")
+    is_min_inclusive = _pods.BoolPOD("minInclusive")
+    is_max_inclusive = _pods.BoolPOD("maxInclusive")
+    pattern = _pods.StringPOD("pattern")
     """Textual specification of a constraint associated to this data type."""
-    visibility = m.EnumPOD("visibility", capellacore.VisibilityKind)
-    information_realizations = m.Containment["InformationRealization"](
+    visibility = _pods.EnumPOD("visibility", capellacore.VisibilityKind)
+    information_realizations = _descriptors.Containment["InformationRealization"](
         "ownedInformationRealizations",
         (ns.INFORMATION, "InformationRealization"),
     )
 
     if not t.TYPE_CHECKING:
-        min_inclusive = m.DeprecatedAccessor("is_min_inclusive")
-        max_inclusive = m.DeprecatedAccessor("is_max_inclusive")
+        min_inclusive = _descriptors.DeprecatedAccessor("is_min_inclusive")
+        max_inclusive = _descriptors.DeprecatedAccessor("is_max_inclusive")
 
 
 class BooleanType(DataType):
-    literals = m.Containment["datavalue.LiteralBooleanValue"](
+    literals = _descriptors.Containment["datavalue.LiteralBooleanValue"](
         "ownedLiterals", (NS_DV, "LiteralBooleanValue"), fixed_length=2
     )
-    default_value = m.Single["datavalue.AbstractBooleanValue"](
-        m.Containment("ownedDefaultValue", (NS_DV, "AbstractBooleanValue"))
+    default_value = _descriptors.Single["datavalue.AbstractBooleanValue"](
+        _descriptors.Containment("ownedDefaultValue", (NS_DV, "AbstractBooleanValue"))
     )
     if not t.TYPE_CHECKING:
-        default = m.DeprecatedAccessor("default_value")
+        default = _descriptors.DeprecatedAccessor("default_value")
 
 
 class Enumeration(DataType):
-    owned_literals = m.Containment["datavalue.EnumerationLiteral"](
+    owned_literals = _descriptors.Containment["datavalue.EnumerationLiteral"](
         "ownedLiterals", (NS_DV, "EnumerationLiteral")
     )
-    default_value = m.Single["datavalue.AbstractEnumerationValue"](
-        m.Containment("ownedDefaultValue", (NS_DV, "AbstractEnumerationValue"))
+    default_value = _descriptors.Single["datavalue.AbstractEnumerationValue"](
+        _descriptors.Containment("ownedDefaultValue", (NS_DV, "AbstractEnumerationValue"))
     )
-    null_value = m.Single["datavalue.AbstractEnumerationValue"](
-        m.Containment("ownedNullValue", (NS_DV, "AbstractEnumerationValue"))
+    null_value = _descriptors.Single["datavalue.AbstractEnumerationValue"](
+        _descriptors.Containment("ownedNullValue", (NS_DV, "AbstractEnumerationValue"))
     )
-    min_value = m.Single["datavalue.AbstractEnumerationValue"](
-        m.Containment("ownedMinValue", (NS_DV, "AbstractEnumerationValue"))
+    min_value = _descriptors.Single["datavalue.AbstractEnumerationValue"](
+        _descriptors.Containment("ownedMinValue", (NS_DV, "AbstractEnumerationValue"))
     )
-    max_value = m.Single["datavalue.AbstractEnumerationValue"](
-        m.Containment("ownedMaxValue", (NS_DV, "AbstractEnumerationValue"))
+    max_value = _descriptors.Single["datavalue.AbstractEnumerationValue"](
+        _descriptors.Containment("ownedMaxValue", (NS_DV, "AbstractEnumerationValue"))
     )
-    domain_type = m.Single["DataType"](
-        m.Association((NS, "DataType"), "domainType")
+    domain_type = _descriptors.Single["DataType"](
+        _descriptors.Association((NS, "DataType"), "domainType")
     )
 
     @property
@@ -91,38 +92,38 @@ class Enumeration(DataType):
 
 
 class StringType(DataType):
-    default_value = m.Single["datavalue.AbstractStringValue"](
-        m.Containment("ownedDefaultValue", (NS_DV, "AbstractStringValue"))
+    default_value = _descriptors.Single["datavalue.AbstractStringValue"](
+        _descriptors.Containment("ownedDefaultValue", (NS_DV, "AbstractStringValue"))
     )
-    null_value = m.Single["datavalue.AbstractStringValue"](
-        m.Containment("ownedNullValue", (NS_DV, "AbstractStringValue"))
+    null_value = _descriptors.Single["datavalue.AbstractStringValue"](
+        _descriptors.Containment("ownedNullValue", (NS_DV, "AbstractStringValue"))
     )
-    min_length = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMinLength", (NS_DV, "NumericValue"))
+    min_length = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMinLength", (NS_DV, "NumericValue"))
     )
-    max_length = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMaxLength", (NS_DV, "NumericValue"))
+    max_length = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMaxLength", (NS_DV, "NumericValue"))
     )
 
 
 class NumericType(DataType):
-    kind = m.EnumPOD("kind", NumericTypeKind)
-    default_value = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedDefaultValue", (NS_DV, "NumericValue"))
+    kind = _pods.EnumPOD("kind", NumericTypeKind)
+    default_value = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedDefaultValue", (NS_DV, "NumericValue"))
     )
-    null_value = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedNullValue", (NS_DV, "NumericValue"))
+    null_value = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedNullValue", (NS_DV, "NumericValue"))
     )
-    min_value = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMinValue", (NS_DV, "NumericValue"))
+    min_value = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMinValue", (NS_DV, "NumericValue"))
     )
-    max_value = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMaxValue", (NS_DV, "NumericValue"))
+    max_value = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMaxValue", (NS_DV, "NumericValue"))
     )
 
 
 class PhysicalQuantity(NumericType):
-    unit = m.Single["Unit"](m.Association((NS, "Unit"), "unit"))
+    unit = _descriptors.Single["Unit"](_descriptors.Association((NS, "Unit"), "unit"))
 
 
 from . import InformationRealization, Unit  # noqa: F401

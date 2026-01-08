@@ -13,6 +13,7 @@ import markupsafe
 
 import capellambse.model as m
 from capellambse import helpers
+from capellambse.model import _descriptors, _obj, _pods
 
 from .. import capellacore, modellingcore
 from .. import namespaces as ns
@@ -78,7 +79,7 @@ class UnaryOperator(enum.Enum):
 class DataValue(
     capellacore.NamedElement, modellingcore.ValueSpecification, abstract=True
 ):
-    is_abstract = m.BoolPOD("abstract")
+    is_abstract = _pods.BoolPOD("abstract")
 
     if not t.TYPE_CHECKING:
 
@@ -95,12 +96,12 @@ class DataValue(
 
 
 class DataValueContainer(capellacore.Structure, abstract=True):
-    data_values = m.Containment["DataValue"](
+    data_values = _descriptors.Containment["DataValue"](
         "ownedDataValues", (NS, "DataValue")
     )
 
     @property
-    def complex_values(self) -> m.ElementList[AbstractComplexValue]:
+    def complex_values(self) -> _obj.ElementList[AbstractComplexValue]:
         warnings.warn(
             (
                 f"{type(self).__name__}.complex_values is deprecated,"
@@ -119,15 +120,15 @@ class AbstractBooleanValue(DataValue, abstract=True):
 class LiteralBooleanValue(AbstractBooleanValue):
     _xmltag = "ownedLiterals"
 
-    value = m.BoolPOD("value")
+    value = _pods.BoolPOD("value")
 
 
 class BooleanReference(AbstractBooleanValue):
-    value = m.Single["AbstractBooleanValue"](
-        m.Association((NS, "AbstractBooleanValue"), "referencedValue")
+    value = _descriptors.Single["AbstractBooleanValue"](
+        _descriptors.Association((NS, "AbstractBooleanValue"), "referencedValue")
     )
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
 
 
@@ -138,20 +139,20 @@ class AbstractEnumerationValue(DataValue, abstract=True):
 class EnumerationLiteral(AbstractEnumerationValue, eq="name"):
     _xmltag = "ownedLiterals"
 
-    value = m.Single["DataValue"](
-        m.Containment("domainValue", (NS, "DataValue"))
+    value = _descriptors.Single["DataValue"](
+        _descriptors.Containment("domainValue", (NS, "DataValue"))
     )
 
     if not t.TYPE_CHECKING:
-        owner = m.DeprecatedAccessor("parent")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class EnumerationReference(AbstractEnumerationValue):
-    value = m.Single["AbstractEnumerationValue"](
-        m.Association((NS, "AbstractEnumerationValue"), "referencedValue")
+    value = _descriptors.Single["AbstractEnumerationValue"](
+        _descriptors.Association((NS, "AbstractEnumerationValue"), "referencedValue")
     )
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
 
 
@@ -160,32 +161,32 @@ class AbstractStringValue(DataValue, abstract=True):
 
 
 class LiteralStringValue(AbstractStringValue):
-    value = m.StringPOD("value")
+    value = _pods.StringPOD("value")
 
 
 class StringReference(AbstractStringValue):
-    value = m.Single["AbstractStringValue"](
-        m.Association((NS, "AbstractStringValue"), "referencedValue")
+    value = _descriptors.Single["AbstractStringValue"](
+        _descriptors.Association((NS, "AbstractStringValue"), "referencedValue")
     )
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
 
 
 class NumericValue(DataValue, abstract=True):
-    unit = m.Single["Unit"](m.Association((ns.INFORMATION, "Unit"), "unit"))
+    unit = _descriptors.Single["Unit"](_descriptors.Association((ns.INFORMATION, "Unit"), "unit"))
 
 
 class LiteralNumericValue(NumericValue):
-    value = m.StringPOD("value")
+    value = _pods.StringPOD("value")
 
 
 class NumericReference(NumericValue):
-    value = m.Single["NumericValue"](
-        m.Association((NS, "NumericValue"), "referencedValue")
+    value = _descriptors.Single["NumericValue"](
+        _descriptors.Association((NS, "NumericValue"), "referencedValue")
     )
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
 
 
@@ -196,29 +197,29 @@ class AbstractComplexValue(DataValue, abstract=True):
 class ComplexValue(AbstractComplexValue):
     _xmltag = "ownedDataValues"
 
-    parts = m.Containment["ValuePart"]("ownedParts", (NS, "ValuePart"))
+    parts = _descriptors.Containment["ValuePart"]("ownedParts", (NS, "ValuePart"))
 
     if not t.TYPE_CHECKING:
-        value_parts = m.DeprecatedAccessor("parts")
+        value_parts = _descriptors.DeprecatedAccessor("parts")
 
 
 class ComplexValueReference(AbstractComplexValue):
-    value = m.Single["AbstractComplexValue"](
-        m.Association((NS, "AbstractComplexValue"), "referencedValue")
+    value = _descriptors.Single["AbstractComplexValue"](
+        _descriptors.Association((NS, "AbstractComplexValue"), "referencedValue")
     )
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
 
 
 class ValuePart(capellacore.CapellaElement):
     _xmltag = "ownedParts"
 
-    referenced_property = m.Single["Property"](
-        m.Association((NS, "Property"), "referencedProperty")
+    referenced_property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "referencedProperty")
     )
-    value = m.Single["DataValue"](
-        m.Containment("ownedValue", (NS, "DataValue"))
+    value = _descriptors.Single["DataValue"](
+        _descriptors.Containment("ownedValue", (NS, "DataValue"))
     )
 
 
@@ -230,23 +231,23 @@ class AbstractExpressionValue(
     AbstractStringValue,
     abstract=True,
 ):
-    expression = m.StringPOD("expression")
-    unparsed_expression = m.StringPOD("unparsedExpression")
+    expression = _pods.StringPOD("expression")
+    unparsed_expression = _pods.StringPOD("unparsedExpression")
 
 
 class BinaryExpression(AbstractExpressionValue):
-    operator = m.EnumPOD("operator", BinaryOperator)
-    left_operand = m.Containment["DataValue"](
+    operator = _pods.EnumPOD("operator", BinaryOperator)
+    left_operand = _descriptors.Containment["DataValue"](
         "ownedLeftOperand", (NS, "DataValue")
     )
-    right_operand = m.Containment["DataValue"](
+    right_operand = _descriptors.Containment["DataValue"](
         "ownedRightOperand", (NS, "DataValue")
     )
 
 
 class UnaryExpression(AbstractExpressionValue):
-    operator = m.EnumPOD("operator", UnaryOperator)
-    operand = m.Containment["DataValue"]("ownedOperand", (NS, "DataValue"))
+    operator = _pods.EnumPOD("operator", UnaryOperator)
+    operand = _descriptors.Containment["DataValue"]("ownedOperand", (NS, "DataValue"))
 
 
 class OpaqueExpression(
@@ -254,8 +255,8 @@ class OpaqueExpression(
     modellingcore.ValueSpecification,
     cabc.MutableMapping[str, str],
 ):
-    bodies = m.MultiStringPOD("bodies")
-    languages = m.MultiStringPOD("languages")
+    bodies = _pods.MultiStringPOD("bodies")
+    languages = _pods.MultiStringPOD("languages")
 
     _aliases = types.MappingProxyType({"LinkedText": "capella:linkedText"})
     _linked_text = frozenset({"capella:linkedText"})

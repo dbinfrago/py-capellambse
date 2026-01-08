@@ -9,6 +9,7 @@ import sys
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods, diagram
 
 from .. import capellacommon, cs, fa, information
 from .. import namespaces as ns
@@ -80,31 +81,31 @@ class PhysicalComponentNature(enum.Enum):
 
 
 class PhysicalArchitecturePkg(cs.BlockArchitecturePkg):
-    packages = m.Containment["PhysicalArchitecturePkg"](
+    packages = _descriptors.Containment["PhysicalArchitecturePkg"](
         "ownedPhysicalArchitecturePkgs", (NS, "PhysicalArchitecturePkg")
     )
-    architectures = m.Containment["PhysicalArchitecture"](
+    architectures = _descriptors.Containment["PhysicalArchitecture"](
         "ownedPhysicalArchitectures", (NS, "PhysicalArchitecture")
     )
 
 
 class PhysicalArchitecture(cs.ComponentArchitecture):
-    component_pkg = m.Single["PhysicalComponentPkg"](
-        m.Containment(
+    component_pkg = _descriptors.Single["PhysicalComponentPkg"](
+        _descriptors.Containment(
             "ownedPhysicalComponentPkg", (NS, "PhysicalComponentPkg")
         ),
         enforce=True,
     )
-    deployments = m.Containment["cs.AbstractDeploymentLink"](
+    deployments = _descriptors.Containment["cs.AbstractDeploymentLink"](
         "ownedDeployments", (ns.CS, "AbstractDeploymentLink")
     )
-    logical_architecture_realizations = m.Containment[
+    logical_architecture_realizations = _descriptors.Containment[
         "LogicalArchitectureRealization"
     ](
         "ownedLogicalArchitectureRealizations",
         (NS, "LogicalArchitectureRealization"),
     )
-    realized_logical_architectures = m.Allocation["la.LogicalArchitecture"](
+    realized_logical_architectures = _descriptors.Allocation["la.LogicalArchitecture"](
         "ownedLogicalArchitectureRealizations",
         (NS, "LogicalArchitectureRealization"),
         (ns.LA, "LogicalArchitecture"),
@@ -128,62 +129,62 @@ class PhysicalArchitecture(cs.ComponentArchitecture):
         return self.component_pkg.components.by_is_actor(False, single=True)
 
     @property
-    def all_functions(self) -> m.ElementList[PhysicalFunction]:  # type: ignore[override]
+    def all_functions(self) -> _obj.ElementList[PhysicalFunction]:  # type: ignore[override]
         return self._model.search((NS, "PhysicalFunction"), below=self)
 
     @property
-    def all_components(self) -> m.ElementList[PhysicalComponent]:
+    def all_components(self) -> _obj.ElementList[PhysicalComponent]:
         return self._model.search((NS, "PhysicalComponent"), below=self)
 
     @property
-    def all_actors(self) -> m.ElementList[PhysicalComponent]:
+    def all_actors(self) -> _obj.ElementList[PhysicalComponent]:
         return self._model.search((NS, "PhysicalComponent")).by_is_actor(True)
 
     @property
-    def all_function_exchanges(self) -> m.ElementList[fa.FunctionalExchange]:
+    def all_function_exchanges(self) -> _obj.ElementList[fa.FunctionalExchange]:
         return self._model.search((ns.FA, "FunctionalExchange"), below=self)
 
     @property
-    def all_physical_paths(self) -> m.ElementList[cs.PhysicalPath]:
+    def all_physical_paths(self) -> _obj.ElementList[cs.PhysicalPath]:
         return self._model.search((ns.CS, "PhysicalPath"), below=self)
 
     @property
-    def all_component_exchanges(self) -> m.ElementList[fa.ComponentExchange]:
+    def all_component_exchanges(self) -> _obj.ElementList[fa.ComponentExchange]:
         return self._model.search((ns.FA, "ComponentExchange"), below=self)
 
     @property
-    def all_physical_exchanges(self) -> m.ElementList[fa.FunctionalExchange]:
+    def all_physical_exchanges(self) -> _obj.ElementList[fa.FunctionalExchange]:
         return self._model.search((ns.FA, "FunctionalExchange"), below=self)
 
     @property
-    def all_physical_links(self) -> m.ElementList[cs.PhysicalLink]:
+    def all_physical_links(self) -> _obj.ElementList[cs.PhysicalLink]:
         return self._model.search((ns.CS, "PhysicalLink"), below=self)
 
     @property
-    def all_functional_chains(self) -> m.ElementList[fa.FunctionalChain]:
+    def all_functional_chains(self) -> _obj.ElementList[fa.FunctionalChain]:
         return self._model.search((ns.FA, "FunctionalChain"), below=self)
 
-    diagrams = m.DiagramAccessor(
+    diagrams = diagram.DiagramAccessor(
         "Physical Architecture", cacheattr="_MelodyModel__diagram_cache"
     )
 
     if not t.TYPE_CHECKING:
-        component_package = m.DeprecatedAccessor("component_pkg")
+        component_package = _descriptors.DeprecatedAccessor("component_pkg")
 
 
 class PhysicalFunction(fa.AbstractFunction):
     """A physical function on the Physical Architecture layer."""
 
-    owner = m.Single["PhysicalComponent"](
-        m.Backref((NS, "PhysicalComponent"), "allocated_functions")
+    owner = _descriptors.Single["PhysicalComponent"](
+        _descriptors.Backref((NS, "PhysicalComponent"), "allocated_functions")
     )
-    realized_logical_functions = m.Alias["la.LogicalFunction"](
+    realized_logical_functions = _descriptors.Alias["la.LogicalFunction"](
         "realized_functions"
     )
-    functions = m.Containment["PhysicalFunction"](
+    functions = _descriptors.Containment["PhysicalFunction"](
         "ownedPhysicalComponents", (NS, "PhysicalComponent")
     )
-    packages = m.Containment["PhysicalFunctionPkg"](
+    packages = _descriptors.Containment["PhysicalFunctionPkg"](
         "ownedPhysicalFunctionPkgs", (NS, "PhysicalFunctionPkg")
     )
 
@@ -193,10 +194,10 @@ class PhysicalFunctionPkg(fa.FunctionPkg):
 
     _xmltag = "ownedFunctionPkg"
 
-    functions = m.Containment["PhysicalFunction"](
+    functions = _descriptors.Containment["PhysicalFunction"](
         "ownedPhysicalFunctions", (NS, "PhysicalFunction")
     )
-    packages = m.Containment["PhysicalFunctionPkg"](
+    packages = _descriptors.Containment["PhysicalFunctionPkg"](
         "ownedPhysicalFunctionPkgs", (NS, "PhysicalFunctionPkg")
     )
 
@@ -210,32 +211,32 @@ class PhysicalComponent(
 ):
     _xmltag = "ownedPhysicalComponents"
 
-    kind = m.EnumPOD("kind", PhysicalComponentKind)
-    nature = m.EnumPOD("nature", PhysicalComponentNature)
-    deployment_links = m.Containment["cs.AbstractDeploymentLink"](
+    kind = _pods.EnumPOD("kind", PhysicalComponentKind)
+    nature = _pods.EnumPOD("nature", PhysicalComponentNature)
+    deployment_links = _descriptors.Containment["cs.AbstractDeploymentLink"](
         "ownedDeploymentLinks", (ns.CS, "AbstractDeploymentLink")
     )
 
     @property
     def deployed_components(
         self,
-    ) -> m.ElementList[PhysicalComponent]:
+    ) -> _obj.ElementList[PhysicalComponent]:
         return (
             self.representing_parts.map("deployment_links")
             .map("deployed_element")
             .map("type")
         )
 
-    owned_components = m.Containment["PhysicalComponent"](
+    owned_components = _descriptors.Containment["PhysicalComponent"](
         "ownedPhysicalComponents", (NS, "PhysicalComponent")
     )
-    component_pkgs = m.Containment["PhysicalComponentPkg"](
+    component_pkgs = _descriptors.Containment["PhysicalComponentPkg"](
         "ownedPhysicalComponentPkgs", (NS, "PhysicalComponentPkg")
     )
-    deploying_components = m.Backref["PhysicalComponent"](
+    deploying_components = _descriptors.Backref["PhysicalComponent"](
         (NS, "PhysicalComponent"), "deployed_components"
     )
-    allocated_functions = m.Allocation["PhysicalFunction"](
+    allocated_functions = _descriptors.Allocation["PhysicalFunction"](
         None, None, (NS, "PhysicalFunction")
     )
 
@@ -247,19 +248,19 @@ class PhysicalComponent(
         ),
         category=FutureWarning,
     )
-    def components(self) -> m.ElementList[PhysicalComponent]:
+    def components(self) -> _obj.ElementList[PhysicalComponent]:
         return self.related_components
 
     @property
-    def related_components(self) -> m.ElementList[PhysicalComponent]:
+    def related_components(self) -> _obj.ElementList[PhysicalComponent]:
         components = dict.fromkeys(self.deployed_components._elements)
         components.update(dict.fromkeys(self.owned_components._elements))
-        return m.ElementList(
+        return _obj.ElementList(
             self._model, list(components.keys()), PhysicalComponent
         )
 
     if not t.TYPE_CHECKING:
-        realized_logical_components = m.DeprecatedAccessor(
+        realized_logical_components = _descriptors.DeprecatedAccessor(
             "realized_components"
         )
 
@@ -267,16 +268,16 @@ class PhysicalComponent(
 class PhysicalComponentPkg(cs.ComponentPkg, information.AssociationPkg):
     _xmltag = "ownedPhysicalComponentPkg"
 
-    components = m.Containment["PhysicalComponent"](
+    components = _descriptors.Containment["PhysicalComponent"](
         "ownedPhysicalComponents", (NS, "PhysicalComponent")
     )
-    packages = m.Containment["PhysicalComponentPkg"](
+    packages = _descriptors.Containment["PhysicalComponentPkg"](
         "ownedPhysicalComponentPkgs", (NS, "PhysicalComponentPkg")
     )
-    key_parts = m.Containment["information.KeyPart"](
+    key_parts = _descriptors.Containment["information.KeyPart"](
         "ownedKeyParts", (ns.INFORMATION, "KeyPart")
     )
-    deployments = m.Containment["cs.AbstractDeploymentLink"](
+    deployments = _descriptors.Containment["cs.AbstractDeploymentLink"](
         "ownedDeployments", (ns.CS, "AbstractDeploymentLink")
     )
 

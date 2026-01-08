@@ -8,6 +8,7 @@ import enum
 import typing as t
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from .. import behavior, capellacore, modellingcore
 from .. import namespaces as ns
@@ -136,35 +137,35 @@ class UnionKind(enum.Enum):
 
 
 class MultiplicityElement(capellacore.CapellaElement, abstract=True):
-    is_ordered = m.BoolPOD("ordered")
+    is_ordered = _pods.BoolPOD("ordered")
     """Indicates if this element is ordered."""
-    is_unique = m.BoolPOD("unique")
+    is_unique = _pods.BoolPOD("unique")
     """Indicates if this element is unique."""
-    is_min_inclusive = m.BoolPOD("minInclusive")
-    is_max_inclusive = m.BoolPOD("maxInclusive")
-    default_value = m.Single["datavalue.DataValue"](
-        m.Containment("ownedDefaultValue", (NS_DV, "DataValue"))
+    is_min_inclusive = _pods.BoolPOD("minInclusive")
+    is_max_inclusive = _pods.BoolPOD("maxInclusive")
+    default_value = _descriptors.Single["datavalue.DataValue"](
+        _descriptors.Containment("ownedDefaultValue", (NS_DV, "DataValue"))
     )
-    min_value = m.Single["datavalue.DataValue"](
-        m.Containment("ownedMinValue", (NS_DV, "DataValue"))
+    min_value = _descriptors.Single["datavalue.DataValue"](
+        _descriptors.Containment("ownedMinValue", (NS_DV, "DataValue"))
     )
-    max_value = m.Single["datavalue.DataValue"](
-        m.Containment("ownedMaxValue", (NS_DV, "DataValue"))
+    max_value = _descriptors.Single["datavalue.DataValue"](
+        _descriptors.Containment("ownedMaxValue", (NS_DV, "DataValue"))
     )
-    null_value = m.Single["datavalue.DataValue"](
-        m.Containment("ownedNullValue", (NS_DV, "DataValue"))
+    null_value = _descriptors.Single["datavalue.DataValue"](
+        _descriptors.Containment("ownedNullValue", (NS_DV, "DataValue"))
     )
-    min_card = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMinCard", (NS_DV, "NumericValue"))
+    min_card = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMinCard", (NS_DV, "NumericValue"))
     )
-    min_length = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMinLength", (NS_DV, "NumericValue"))
+    min_length = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMinLength", (NS_DV, "NumericValue"))
     )
-    max_card = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMaxCard", (NS_DV, "NumericValue"))
+    max_card = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMaxCard", (NS_DV, "NumericValue"))
     )
-    max_length = m.Single["datavalue.NumericValue"](
-        m.Containment("ownedMaxLength", (NS_DV, "NumericValue"))
+    max_length = _descriptors.Single["datavalue.NumericValue"](
+        _descriptors.Containment("ownedMaxLength", (NS_DV, "NumericValue"))
     )
 
 
@@ -178,19 +179,19 @@ class Property(
 
     _xmltag = "ownedFeatures"
 
-    aggregation_kind = m.EnumPOD("aggregationKind", AggregationKind)
-    is_derived = m.BoolPOD("isDerived")
+    aggregation_kind = _pods.EnumPOD("aggregationKind", AggregationKind)
+    is_derived = _pods.BoolPOD("isDerived")
     """Indicates if property is abstract."""
-    is_read_only = m.BoolPOD("isReadOnly")
+    is_read_only = _pods.BoolPOD("isReadOnly")
     """Indicates if property is read-only."""
-    is_part_of_key = m.BoolPOD("isPartOfKey")
+    is_part_of_key = _pods.BoolPOD("isPartOfKey")
     """Indicates if property is part of key."""
-    association = m.Single["Association"](
-        m.Backref((NS, "Association"), "roles")
+    association = _descriptors.Single["Association"](
+        _descriptors.Backref((NS, "Association"), "roles")
     )
 
     if not t.TYPE_CHECKING:
-        kind = m.DeprecatedAccessor("aggregation_kind")
+        kind = _descriptors.DeprecatedAccessor("aggregation_kind")
 
 
 class AbstractInstance(Property, abstract=True):
@@ -198,8 +199,8 @@ class AbstractInstance(Property, abstract=True):
 
 
 class AssociationPkg(capellacore.Structure, abstract=True):
-    visibility = m.EnumPOD("visibility", capellacore.VisibilityKind)
-    associations = m.Containment["Association"](
+    visibility = _pods.EnumPOD("visibility", capellacore.VisibilityKind)
+    associations = _descriptors.Containment["Association"](
         "ownedAssociations", (NS, "Association")
     )
 
@@ -207,47 +208,47 @@ class AssociationPkg(capellacore.Structure, abstract=True):
 class Association(capellacore.NamedRelationship):
     _xmltag = "ownedAssociations"
 
-    members = m.Containment["Property"]("ownedMembers", (NS, "Property"))
-    navigable_members = m.Association["Property"](
+    members = _descriptors.Containment["Property"]("ownedMembers", (NS, "Property"))
+    navigable_members = _descriptors.Association["Property"](
         (NS, "Property"), "navigableMembers"
     )
 
     @property
-    def roles(self) -> m.ElementList[Property]:
-        assert isinstance(self.members, m.ElementList)
-        assert isinstance(self.navigable_members, m.ElementList)
+    def roles(self) -> _obj.ElementList[Property]:
+        assert isinstance(self.members, _obj.ElementList)
+        assert isinstance(self.navigable_members, _obj.ElementList)
         roles = [i._element for i in self.members + self.navigable_members]
-        return m.ElementList(self._model, roles, Property)
+        return _obj.ElementList(self._model, roles, Property)
 
 
 class Class(capellacore.GeneralClass):
     _xmltag = "ownedClasses"
 
-    is_primitive = m.BoolPOD("isPrimitive")
+    is_primitive = _pods.BoolPOD("isPrimitive")
     """Indicates if class is primitive."""
-    key_parts = m.Association["KeyPart"]((NS, "KeyPart"), "keyParts")
-    state_machines = m.Containment["capellacommon.StateMachine"](
+    key_parts = _descriptors.Association["KeyPart"]((NS, "KeyPart"), "keyParts")
+    state_machines = _descriptors.Containment["capellacommon.StateMachine"](
         "ownedStateMachines", (ns.CAPELLACOMMON, "StateMachine")
     )
-    data_values = m.Containment["datavalue.DataValue"](
+    data_values = _descriptors.Containment["datavalue.DataValue"](
         "ownedDataValues", (NS_DV, "DataValue")
     )
-    information_realizations = m.Containment["InformationRealization"](
+    information_realizations = _descriptors.Containment["InformationRealization"](
         "ownedInformationRealizations", (NS, "InformationRealization")
     )
-    realized_classes = m.Allocation["Class"](
+    realized_classes = _descriptors.Allocation["Class"](
         "ownedInformationRealizations",
         (NS, "InformationRealization"),
         (NS, "Class"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realized_by = m.Backref["Class"]((NS, "Class"), "realized_classes")
+    realized_by = _descriptors.Backref["Class"]((NS, "Class"), "realized_classes")
 
-    owned_properties = m.Filter["Property"]("owned_features", (NS, "Property"))
+    owned_properties = _descriptors.Filter["Property"]("owned_features", (NS, "Property"))
 
     @property
-    def properties(self) -> m.ElementList[Property]:
+    def properties(self) -> _obj.ElementList[Property]:
         """Return all owned and inherited properties."""
         return (
             self.owned_properties + self.super.properties
@@ -256,7 +257,7 @@ class Class(capellacore.GeneralClass):
         )
 
     if not t.TYPE_CHECKING:
-        realizations = m.DeprecatedAccessor("information_realizations")
+        realizations = _descriptors.DeprecatedAccessor("information_realizations")
 
 
 from . import datavalue as datavalue
@@ -272,12 +273,12 @@ class Collection(
 
     _xmltag = "ownedCollections"
 
-    is_primitive = m.BoolPOD("isPrimitive")
-    visibility = m.EnumPOD("visibility", capellacore.VisibilityKind)
-    kind = m.EnumPOD("kind", CollectionKind)
-    aggregation_kind = m.EnumPOD("aggregationKind", AggregationKind)
-    type = m.Association["capellacore.Type"]((ns.CAPELLACORE, "Type"), "type")
-    index = m.Association["datatype.DataType"]((NS_DT, "DataType"), "index")
+    is_primitive = _pods.BoolPOD("isPrimitive")
+    visibility = _pods.EnumPOD("visibility", capellacore.VisibilityKind)
+    kind = _pods.EnumPOD("kind", CollectionKind)
+    aggregation_kind = _pods.EnumPOD("aggregationKind", AggregationKind)
+    type = _descriptors.Association["capellacore.Type"]((ns.CAPELLACORE, "Type"), "type")
+    index = _descriptors.Association["datatype.DataType"]((NS_DT, "DataType"), "index")
 
 
 class AbstractCollectionValue(datavalue.DataValue, abstract=True):
@@ -285,19 +286,19 @@ class AbstractCollectionValue(datavalue.DataValue, abstract=True):
 
 
 class CollectionValue(AbstractCollectionValue):
-    elements = m.Containment["datavalue.DataValue"](
+    elements = _descriptors.Containment["datavalue.DataValue"](
         "ownedElements", (NS_DV, "DataValue")
     )
-    default_element = m.Containment["datavalue.DataValue"](
+    default_element = _descriptors.Containment["datavalue.DataValue"](
         "ownedDefaultElement", (NS_DV, "DataValue")
     )
 
 
 class CollectionValueReference(AbstractCollectionValue):
-    value = m.Association["AbstractCollectionValue"](
+    value = _descriptors.Association["AbstractCollectionValue"](
         (NS, "AbstractCollectionValue"), "referencedValue"
     )
-    property = m.Association["Property"](
+    property = _descriptors.Association["Property"](
         (NS, "Property"), "referencedProperty"
     )
 
@@ -316,36 +317,36 @@ class DataPkg(
 
     _xmltag = "ownedDataPkgs"
 
-    packages = m.Containment["DataPkg"]("ownedDataPkgs", (NS, "DataPkg"))
-    classes = m.Containment["Class"]("ownedClasses", (NS, "Class"))
-    unions = m.Filter["Union"]("classes", (NS, "Union"))
-    key_parts = m.Containment["KeyPart"]("ownedKeyParts", (NS, "KeyPart"))
-    collections = m.Containment["Collection"](
+    packages = _descriptors.Containment["DataPkg"]("ownedDataPkgs", (NS, "DataPkg"))
+    classes = _descriptors.Containment["Class"]("ownedClasses", (NS, "Class"))
+    unions = _descriptors.Filter["Union"]("classes", (NS, "Union"))
+    key_parts = _descriptors.Containment["KeyPart"]("ownedKeyParts", (NS, "KeyPart"))
+    collections = _descriptors.Containment["Collection"](
         "ownedCollections", (NS, "Collection")
     )
-    units = m.Containment["Unit"]("ownedUnits", (NS, "Unit"))
-    data_types = m.Containment["datatype.DataType"](
+    units = _descriptors.Containment["Unit"]("ownedUnits", (NS, "Unit"))
+    data_types = _descriptors.Containment["datatype.DataType"](
         "ownedDataTypes", (NS_DT, "DataType")
     )
-    enumerations = m.Filter["datatype.Enumeration"](
+    enumerations = _descriptors.Filter["datatype.Enumeration"](
         "data_types", (NS_DT, "Enumeration")
     )
-    signals = m.Containment["communication.Signal"](
+    signals = _descriptors.Containment["communication.Signal"](
         "ownedSignals", (NS_COMM, "Signal")
     )
-    messages = m.Containment["communication.Message"](
+    messages = _descriptors.Containment["communication.Message"](
         "ownedMessages", (NS_COMM, "Message")
     )
-    exceptions = m.Containment["communication.Exception"](
+    exceptions = _descriptors.Containment["communication.Exception"](
         "ownedExceptions", (NS_COMM, "Exception")
     )
-    state_events = m.Containment["capellacommon.StateEvent"](
+    state_events = _descriptors.Containment["capellacommon.StateEvent"](
         "ownedStateEvents", (ns.CAPELLACOMMON, "StateEvent")
     )
 
     if not t.TYPE_CHECKING:
-        datatypes = m.DeprecatedAccessor("data_types")
-        owned_associations = m.DeprecatedAccessor("associations")
+        datatypes = _descriptors.DeprecatedAccessor("data_types")
+        owned_associations = _descriptors.DeprecatedAccessor("associations")
 
 
 class DomainElement(Class):
@@ -353,8 +354,8 @@ class DomainElement(Class):
 
 
 class KeyPart(capellacore.Relationship):
-    property = m.Single["Property"](
-        m.Association((NS, "Property"), "property")
+    property = _descriptors.Single["Property"](
+        _descriptors.Association((NS, "Property"), "property")
     )
 
 
@@ -368,26 +369,26 @@ class Operation(
     AbstractEventOperation,
     abstract=True,
 ):
-    parameters = m.Containment["Parameter"](
+    parameters = _descriptors.Containment["Parameter"](
         "ownedParameters", (NS, "Parameter")
     )
-    operation_allocations = m.Containment["OperationAllocation"](
+    operation_allocations = _descriptors.Containment["OperationAllocation"](
         "ownedOperationAllocation", (NS, "OperationAllocation")
     )
-    allocated_operations = m.Allocation["Operation"](
+    allocated_operations = _descriptors.Allocation["Operation"](
         "ownedOperationAllocation",
         (NS, "OperationAllocation"),
         (NS, "Operation"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    allocating_operations = m.Backref["Operation"](
+    allocating_operations = _descriptors.Backref["Operation"](
         (NS, "Operation"), "allocated_operations"
     )
-    exchange_item_realizations = m.Containment["ExchangeItemRealization"](
+    exchange_item_realizations = _descriptors.Containment["ExchangeItemRealization"](
         "ownedExchangeItemRealizations", (NS, "ExchangeItemRealization")
     )
-    realized_exchange_items = m.Allocation["ExchangeItem"](
+    realized_exchange_items = _descriptors.Allocation["ExchangeItem"](
         "ownedExchangeItemRealizations",
         (NS, "ExchangeItemRealization"),
         (NS, "ExchangeItem"),
@@ -405,16 +406,16 @@ class Parameter(
     MultiplicityElement,
     modellingcore.AbstractParameter,
 ):
-    direction = m.EnumPOD("direction", ParameterDirection)
-    passing_mode = m.EnumPOD("passingMode", PassingMode)
+    direction = _pods.EnumPOD("direction", ParameterDirection)
+    passing_mode = _pods.EnumPOD("passingMode", PassingMode)
 
 
 class Service(Operation):
-    synchronism_kind = m.EnumPOD("synchronismKind", SynchronismKind)
-    thrown_exceptions = m.Association["communication.Exception"](
+    synchronism_kind = _pods.EnumPOD("synchronismKind", SynchronismKind)
+    thrown_exceptions = _descriptors.Association["communication.Exception"](
         (NS_COMM, "Exception"), "thrownExceptions"
     )
-    message_references = m.Association["communication.MessageReference"](
+    message_references = _descriptors.Association["communication.MessageReference"](
         (NS_COMM, "MessageReference"), "messageReferences"
     )
 
@@ -424,17 +425,17 @@ class Union(Class):
 
     _xmltag = "ownedClasses"
 
-    kind = m.EnumPOD("kind", UnionKind)
-    discriminant = m.Association["UnionProperty"](
+    kind = _pods.EnumPOD("kind", UnionKind)
+    discriminant = _descriptors.Association["UnionProperty"](
         (NS, "UnionProperty"), "discriminant"
     )
-    default_property = m.Association["UnionProperty"](
+    default_property = _descriptors.Association["UnionProperty"](
         (NS, "UnionProperty"), "defaultProperty"
     )
 
 
 class UnionProperty(Property):
-    qualifier = m.Association["datavalue.DataValue"](
+    qualifier = _descriptors.Association["datavalue.DataValue"](
         (NS_DV, "DataValue"), "qualifier"
     )
 
@@ -444,29 +445,29 @@ class Unit(capellacore.NamedElement):
 
 
 class Port(capellacore.NamedElement, abstract=True):
-    protocols = m.Containment["capellacommon.StateMachine"](
+    protocols = _descriptors.Containment["capellacommon.StateMachine"](
         "ownedProtocols", (ns.CAPELLACOMMON, "StateMachine")
     )
-    provided_interfaces = m.Association["cs.Interface"](
+    provided_interfaces = _descriptors.Association["cs.Interface"](
         (ns.CS, "Interface"), "providedInterfaces"
     )
-    required_interfaces = m.Association["cs.Interface"](
+    required_interfaces = _descriptors.Association["cs.Interface"](
         (ns.CS, "Interface"), "requiredInterfaces"
     )
-    port_realizations = m.Containment["PortRealization"](
+    port_realizations = _descriptors.Containment["PortRealization"](
         "ownedPortRealizations", (NS, "PortRealization")
     )
-    realized_ports = m.Allocation["Port"](
+    realized_ports = _descriptors.Allocation["Port"](
         "ownedPortRealizations",
         (NS, "PortRealization"),
         (NS, "Port"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    port_allocations = m.Containment["PortAllocation"](
+    port_allocations = _descriptors.Containment["PortAllocation"](
         "ownedPortAllocations", (NS, "PortAllocation")
     )
-    allocated_ports = m.Allocation["Port"](
+    allocated_ports = _descriptors.Allocation["Port"](
         "ownedPortRealizations",
         (NS, "PortRealization"),
         (NS, "Port"),
@@ -475,7 +476,7 @@ class Port(capellacore.NamedElement, abstract=True):
     )
 
     if not t.TYPE_CHECKING:
-        state_machines = m.DeprecatedAccessor("protocols")
+        state_machines = _descriptors.DeprecatedAccessor("protocols")
 
 
 class PortRealization(capellacore.Allocation):
@@ -495,21 +496,21 @@ class ExchangeItem(
 ):
     _xmltag = "ownedExchangeItems"
 
-    exchange_mechanism = m.EnumPOD("exchangeMechanism", ExchangeMechanism)
-    elements = m.Containment["ExchangeItemElement"](
+    exchange_mechanism = _pods.EnumPOD("exchangeMechanism", ExchangeMechanism)
+    elements = _descriptors.Containment["ExchangeItemElement"](
         "ownedElements", (NS, "ExchangeItemElement")
     )
-    information_realizations = m.Containment["InformationRealization"](
+    information_realizations = _descriptors.Containment["InformationRealization"](
         "ownedInformationRealizations", (NS, "InformationRealization")
     )
-    instances = m.Containment["ExchangeItemInstance"](
+    instances = _descriptors.Containment["ExchangeItemInstance"](
         "ownedExchangeItemInstances", (NS, "ExchangeItemInstance")
     )
 
     @property
     def exchanges(
         self,
-    ) -> m.ElementList[fa.ComponentExchange | fa.FunctionalExchange]:
+    ) -> _obj.ElementList[fa.ComponentExchange | fa.FunctionalExchange]:
         """Exchanges using this ExchangeItem."""
         CX = (ns.FA, "ComponentExchange")
         FX = (ns.FA, "FunctionalExchange")
@@ -518,7 +519,7 @@ class ExchangeItem(
         return cxs + fxs
 
     if not t.TYPE_CHECKING:
-        type = m.DeprecatedAccessor("exchange_mechanism")
+        type = _descriptors.DeprecatedAccessor("exchange_mechanism")
 
 
 class ExchangeItemElement(
@@ -526,16 +527,16 @@ class ExchangeItemElement(
 ):
     _xmltag = "ownedElements"
 
-    kind = m.EnumPOD("kind", ElementKind)
-    direction = m.EnumPOD("direction", ParameterDirection)
-    is_composite = m.BoolPOD("composite")
-    referenced_properties = m.Association["Property"](
+    kind = _pods.EnumPOD("kind", ElementKind)
+    direction = _pods.EnumPOD("direction", ParameterDirection)
+    is_composite = _pods.BoolPOD("composite")
+    referenced_properties = _descriptors.Association["Property"](
         (NS, "Property"), "referencedProperties"
     )
 
     if not t.TYPE_CHECKING:
-        abstract_type = m.DeprecatedAccessor("type")
-        owner = m.DeprecatedAccessor("parent")
+        abstract_type = _descriptors.DeprecatedAccessor("type")
+        owner = _descriptors.DeprecatedAccessor("parent")
 
 
 class ExchangeItemInstance(AbstractInstance):

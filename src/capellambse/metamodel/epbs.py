@@ -7,6 +7,7 @@ from __future__ import annotations
 import enum
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods, diagram
 
 from . import capellacommon, capellacore, cs
 from . import namespaces as ns
@@ -35,25 +36,25 @@ class ConfigurationItemKind(enum.Enum):
 
 
 class EPBSArchitecturePkg(cs.BlockArchitecturePkg):
-    architectures = m.Containment["EPBSArchitecture"](
+    architectures = _descriptors.Containment["EPBSArchitecture"](
         "ownedEPBSArchitectures", (NS, "EPBSArchitecture")
     )
 
 
 class EPBSArchitecture(cs.ComponentArchitecture):
-    configuration_item_pkg = m.Single["ConfigurationItemPkg"](
-        m.Containment(
+    configuration_item_pkg = _descriptors.Single["ConfigurationItemPkg"](
+        _descriptors.Containment(
             "ownedConfigurationItemPkg", (NS, "ConfigurationItemPkg")
         )
     )
-    physical_architecture_realizations = m.Containment[
+    physical_architecture_realizations = _descriptors.Containment[
         "PhysicalArchitectureRealization"
     ](
         "ownedPhysicalArchitectureRealizations",
         (NS, "PhysicalArchitectureRealization"),
     )
-    realized_physical_architecture = m.Single(
-        m.Allocation["pa.PhysicalArchitecture"](
+    realized_physical_architecture = _descriptors.Single(
+        _descriptors.Allocation["pa.PhysicalArchitecture"](
             "ownedPhysicalArchitectureRealizations",
             (NS, "PhysicalArchitectureRealization"),
             (ns.PA, "PhysicalArchitecture"),
@@ -63,19 +64,19 @@ class EPBSArchitecture(cs.ComponentArchitecture):
     )
 
     @property
-    def all_configuration_items(self) -> m.ElementList[ConfigurationItem]:
+    def all_configuration_items(self) -> _obj.ElementList[ConfigurationItem]:
         return self._model.search((NS, "ConfigurationItem"), below=self)
 
-    diagrams = m.DiagramAccessor(
+    diagrams = diagram.DiagramAccessor(
         "EPBS architecture", cacheattr="_MelodyModel__diagram_cache"
     )
 
 
 class ConfigurationItemPkg(cs.ComponentPkg):
-    configuration_items = m.Containment["ConfigurationItem"](
+    configuration_items = _descriptors.Containment["ConfigurationItem"](
         "ownedConfigurationItems", (NS, "ConfigurationItem")
     )
-    configuration_item_pkgs = m.Containment["ConfigurationItemPkg"](
+    configuration_item_pkgs = _descriptors.Containment["ConfigurationItemPkg"](
         "ownedConfigurationItemPkgs", (NS, "ConfigurationItemPkg")
     )
 
@@ -83,18 +84,18 @@ class ConfigurationItemPkg(cs.ComponentPkg):
 class ConfigurationItem(
     capellacommon.CapabilityRealizationInvolvedElement, cs.Component
 ):
-    identifier = m.StringPOD("itemIdentifier")
-    kind = m.EnumPOD("kind", ConfigurationItemKind)
-    configuration_items = m.Containment["ConfigurationItem"](
+    identifier = _pods.StringPOD("itemIdentifier")
+    kind = _pods.EnumPOD("kind", ConfigurationItemKind)
+    configuration_items = _descriptors.Containment["ConfigurationItem"](
         "ownedConfigurationItems", (NS, "ConfigurationItem")
     )
-    configuration_item_pkgs = m.Containment["ConfigurationItemPkg"](
+    configuration_item_pkgs: _descriptors.Containment[ConfigurationItemPkg] = _descriptors.Containment["ConfigurationItemPkg"](
         "ownedConfigurationItemPkgs", (NS, "ConfigurationItemPkg")
     )
-    physical_artifact_realizations = m.Containment[
+    physical_artifact_realizations = _descriptors.Containment[
         "PhysicalArtifactRealization"
     ]("ownedPhysicalArtifactRealizations", (NS, "PhysicalArtifactRealization"))
-    realized_physical_artifacts = m.Allocation["cs.AbstractPhysicalArtifact"](
+    realized_physical_artifacts = _descriptors.Allocation["cs.AbstractPhysicalArtifact"](
         "ownedPhysicalArtifactRealizations",
         (NS, "PhysicalArtifactRealization"),
         (ns.CS, "AbstractPhysicalArtifact"),

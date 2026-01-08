@@ -5,6 +5,7 @@ from __future__ import annotations
 import enum
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from . import namespaces as ns
 
@@ -20,32 +21,32 @@ class CatalogElementKind(enum.Enum):
     GROUPING = "GROUPING"
 
 
-class ReAbstractElement(m.ModelElement, abstract=True):
+class ReAbstractElement(_obj.ModelElement, abstract=True):
     pass
 
 
 class ReNamedElement(ReAbstractElement, abstract=True):
-    name = m.StringPOD("name")
+    name = _pods.StringPOD("name")
 
 
 class ReDescriptionElement(ReNamedElement, abstract=True):
-    description = m.StringPOD("description")
+    description = _pods.StringPOD("description")
 
 
-class ReElementContainer(m.ModelElement, abstract=True):
-    elements = m.Containment["CatalogElement"](
+class ReElementContainer(_obj.ModelElement, abstract=True):
+    elements = _descriptors.Containment["CatalogElement"](
         "ownedElements", (NS, "CatalogElement")
     )
 
 
 class CatalogElementPkg(ReNamedElement, ReElementContainer):
-    element_pkgs = m.Containment["CatalogElementPkg"](
+    element_pkgs = _descriptors.Containment["CatalogElementPkg"](
         "ownedElementPkgs", (NS, "CatalogElementPkg")
     )
 
 
 class RecCatalog(CatalogElementPkg):
-    compliancy_definition_pkg = m.Containment["CompliancyDefinitionPkg"](
+    compliancy_definition_pkg = _descriptors.Containment["CompliancyDefinitionPkg"](
         "ownedCompliancyDefinitionPkg", (NS, "CompliancyDefinitionPkg")
     )
 
@@ -55,40 +56,45 @@ class GroupingElementPkg(CatalogElementPkg):
 
 
 class CatalogElementLink(ReAbstractElement):
-    source = m.Association["CatalogElement"]((NS, "CatalogElement"), "source")
-    target = m.Association["m.ModelElement"](
+    source = _descriptors.Association["CatalogElement"]((NS, "CatalogElement"), "source")
+    target = _descriptors.Association["_obj.ModelElement"](
         (ns.MODELLINGCORE, "ModelElement"), "target"
     )
-    origin = m.Association["CatalogElementLink"](
+    origin = _descriptors.Association["CatalogElementLink"](
         (NS, "CatalogElementLink"), "origin"
     )
-    unsynchronized_features = m.StringPOD("unsynchronizedFeatures")
-    is_suffixed = m.BoolPOD("suffixed")
+    unsynchronized_features = _pods.StringPOD("unsynchronizedFeatures")
+    is_suffixed = _pods.BoolPOD("suffixed")
 
 
 class CatalogElement(ReDescriptionElement, ReElementContainer):
-    kind = m.EnumPOD("kind", CatalogElementKind)
-    author = m.StringPOD("author")
-    environment = m.StringPOD("environment")
-    suffix = m.StringPOD("suffix")
-    purpose = m.StringPOD("purpose")
-    is_read_only = m.BoolPOD("readOnly")
-    version = m.StringPOD("version")
-    tags = m.StringPOD("tags")
-    origin = m.Association["CatalogElement"]((NS, "CatalogElement"), "origin")
-    current_compliancy = m.Association["CompliancyDefinition"](
+
+    kind = _pods.EnumPOD("kind", CatalogElementKind)
+    author = _pods.StringPOD("author")
+    environment = _pods.StringPOD("environment")
+    suffix = _pods.StringPOD("suffix")
+    purpose = _pods.StringPOD("purpose")
+    is_read_only = _pods.BoolPOD("readOnly")
+    version = _pods.StringPOD("version")
+    tags = _pods.StringPOD("tags")
+    origin = _descriptors.Single(
+        _descriptors.Association["CatalogElement"](
+            (NS, "CatalogElement"), "origin"
+        )
+    )
+    current_compliancy = _descriptors.Association["CompliancyDefinition"](
         (NS, "CompliancyDefinition"), "currentCompliancy"
     )
-    default_replica_compliancy = m.Association["CompliancyDefinition"](
+    default_replica_compliancy = _descriptors.Association["CompliancyDefinition"](
         (NS, "CompliancyDefinition"), "defaultReplicaCompliancy"
     )
-    links = m.Containment["CatalogElementLink"](
+    links = _descriptors.Containment["CatalogElementLink"](
         "ownedLinks", (NS, "CatalogElementLink")
     )
 
 
 class CompliancyDefinitionPkg(ReNamedElement):
-    definitions = m.Containment["CompliancyDefinition"](
+    definitions = _descriptors.Containment["CompliancyDefinition"](
         "ownedDefinitions", (NS, "CompliancyDefinition")
     )
 

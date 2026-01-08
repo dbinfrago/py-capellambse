@@ -8,6 +8,7 @@ import typing as t
 import warnings
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _obj, _pods
 
 from . import behavior, capellacore, modellingcore
 from . import namespaces as ns
@@ -58,7 +59,7 @@ class AbstractCapabilityPkg(capellacore.Structure, abstract=True):
 
 
 class GenericTrace(capellacore.Trace):
-    key_value_pairs = m.Containment["capellacore.KeyValue"](
+    key_value_pairs = _descriptors.Containment["capellacore.KeyValue"](
         "keyValuePairs", (ns.CAPELLACORE, "KeyValue")
     )
 
@@ -93,8 +94,8 @@ class CapabilityRealizationInvolvedElement(
 
 
 class StateMachine(capellacore.CapellaElement, behavior.AbstractBehavior):
-    regions = m.Containment["Region"]("ownedRegions", (NS, "Region"))
-    connection_points = m.Containment["Pseudostate"](
+    regions = _descriptors.Containment["Region"]("ownedRegions", (NS, "Region"))
+    connection_points = _descriptors.Containment["Pseudostate"](
         "ownedConnectionPoints", (NS, "Pseudostate")
     )
 
@@ -102,20 +103,20 @@ class StateMachine(capellacore.CapellaElement, behavior.AbstractBehavior):
 class Region(capellacore.NamedElement):
     _xmltag = "ownedRegions"
 
-    states = m.Containment["AbstractState"](
+    states = _descriptors.Containment["AbstractState"](
         "ownedStates", (NS, "AbstractState")
     )
-    transitions = m.Containment["StateTransition"](
+    transitions = _descriptors.Containment["StateTransition"](
         "ownedTransitions", (NS, "StateTransition")
     )
-    involved_states = m.Association["AbstractState"](
+    involved_states = _descriptors.Association["AbstractState"](
         (NS, "AbstractState"), "involvedStates"
     )
 
-    __modes = m.Filter["Mode"]("states", (NS, "Mode"))
+    __modes = _descriptors.Filter["Mode"]("states", (NS, "Mode"))
 
     @property
-    def modes(self) -> m.ElementList[Mode]:
+    def modes(self) -> _obj.ElementList[Mode]:
         warnings.warn(
             (
                 "Region.modes is deprecated, use states instead"
@@ -132,30 +133,30 @@ class AbstractState(
 ):
     _xmltag = "ownedStates"
 
-    state_realizations = m.Containment["AbstractStateRealization"](
+    state_realizations = _descriptors.Containment["AbstractStateRealization"](
         "ownedAbstractStateRealizations", (NS, "AbstractStateRealization")
     )
-    realized_states = m.Allocation["AbstractState"](
+    realized_states = _descriptors.Allocation["AbstractState"](
         "ownedAbstractStateRealizations",
         (NS, "AbstractStateRealization"),
         (NS, "AbstractState"),
         attr="targetElement",
         backattr="sourceElement",
     )
-    realizing_states = m.Backref["AbstractState"](
+    realizing_states = _descriptors.Backref["AbstractState"](
         (NS, "AbstractState"), "realized_states"
     )
-    incoming_transitions = m.Backref["StateTransition"](
+    incoming_transitions = _descriptors.Backref["StateTransition"](
         (NS, "StateTransition"), "target"
     )
-    outgoing_transitions = m.Backref["StateTransition"](
+    outgoing_transitions = _descriptors.Backref["StateTransition"](
         (NS, "StateTransition"), "source"
     )
 
     if not t.TYPE_CHECKING:
 
         @property
-        def regions(self) -> m.ElementList[Region]:
+        def regions(self) -> _obj.ElementList[Region]:
             myname = AbstractState.__name__
             if type(self) is not AbstractState:
                 myname = f"{type(self).__name__}, a subclass of {AbstractState.__name__},"
@@ -167,7 +168,7 @@ class AbstractState(
                 category=FutureWarning,
                 stacklevel=2,
             )
-            return m.ElementList(self._model, [], Region)
+            return _obj.ElementList(self._model, [], Region)
 
 
 class State(AbstractState):
@@ -182,29 +183,29 @@ class State(AbstractState):
     state may be dependent on one or more previous states.
     """
 
-    regions = m.Containment["Region"]("ownedRegions", (NS, "Region"))
-    connection_points = m.Containment["Pseudostate"](
+    regions = _descriptors.Containment["Region"]("ownedRegions", (NS, "Region"))
+    connection_points = _descriptors.Containment["Pseudostate"](
         "ownedConnectionPoints", (NS, "Pseudostate")
     )
-    entry = m.Association["behavior.AbstractEvent"](
+    entry = _descriptors.Association["behavior.AbstractEvent"](
         (ns.BEHAVIOR, "AbstractEvent"), "entry", legacy_by_type=True
     )
-    do_activity = m.Association["behavior.AbstractEvent"](
+    do_activity = _descriptors.Association["behavior.AbstractEvent"](
         (ns.BEHAVIOR, "AbstractEvent"), "doActivity", legacy_by_type=True
     )
-    exit = m.Association["behavior.AbstractEvent"](
+    exit = _descriptors.Association["behavior.AbstractEvent"](
         (ns.BEHAVIOR, "AbstractEvent"), "exit", legacy_by_type=True
     )
-    state_invariant = m.Containment["modellingcore.AbstractConstraint"](
+    state_invariant = _descriptors.Containment["modellingcore.AbstractConstraint"](
         "stateInvariant", (ns.MODELLINGCORE, "AbstractConstraint")
     )
-    functions = m.Backref["fa.AbstractFunction"](
+    functions = _descriptors.Backref["fa.AbstractFunction"](
         (ns.FA, "AbstractFunction"), "available_in_states"
     )
 
     if not t.TYPE_CHECKING:
-        entries = m.DeprecatedAccessor("entry")
-        exits = m.DeprecatedAccessor("exit")
+        entries = _descriptors.DeprecatedAccessor("entry")
+        exits = _descriptors.DeprecatedAccessor("exit")
 
 
 class Mode(State):
@@ -235,27 +236,27 @@ class StateTransition(capellacore.NamedElement, capellacore.Relationship):
 
     _xmltag = "ownedTransitions"
 
-    kind = m.EnumPOD("kind", TransitionKind)
-    trigger_description = m.StringPOD("triggerDescription")
-    guard = m.Single["capellacore.Constraint"](
-        m.Association((ns.CAPELLACORE, "Constraint"), "guard")
+    kind = _pods.EnumPOD("kind", TransitionKind)
+    trigger_description = _pods.StringPOD("triggerDescription")
+    guard = _descriptors.Single["capellacore.Constraint"](
+        _descriptors.Association((ns.CAPELLACORE, "Constraint"), "guard")
     )
-    source = m.Single["AbstractState"](
-        m.Association((NS, "AbstractState"), "source")
+    source = _descriptors.Single["AbstractState"](
+        _descriptors.Association((NS, "AbstractState"), "source")
     )
-    target = m.Single["AbstractState"](
-        m.Association((NS, "AbstractState"), "target")
+    target = _descriptors.Single["AbstractState"](
+        _descriptors.Association((NS, "AbstractState"), "target")
     )
-    effect = m.Association["behavior.AbstractEvent"](
+    effect = _descriptors.Association["behavior.AbstractEvent"](
         (ns.BEHAVIOR, "AbstractEvent"), "effect", legacy_by_type=True
     )
-    triggers = m.Association["behavior.AbstractEvent"](
+    triggers = _descriptors.Association["behavior.AbstractEvent"](
         (ns.BEHAVIOR, "AbstractEvent"), "triggers", legacy_by_type=True
     )
-    state_transition_realizations = m.Containment[
+    state_transition_realizations = _descriptors.Containment[
         "StateTransitionRealization"
     ]("ownedStateTransitionRealizations", (NS, "StateTransitionRealization"))
-    realized_transitions = m.Allocation["StateTransition"](
+    realized_transitions = _descriptors.Allocation["StateTransition"](
         "ownedStateTransitionRealizations",
         (NS, "StateTransitionRealization"),
         (NS, "StateTransition"),
@@ -264,8 +265,8 @@ class StateTransition(capellacore.NamedElement, capellacore.Relationship):
     )
 
     if not t.TYPE_CHECKING:
-        destination = m.DeprecatedAccessor("target")
-        effects = m.DeprecatedAccessor("effect")
+        destination = _descriptors.DeprecatedAccessor("target")
+        effects = _descriptors.DeprecatedAccessor("effect")
 
 
 class Pseudostate(AbstractState, abstract=True):
@@ -323,13 +324,13 @@ class StateEventRealization(capellacore.Allocation):
 class StateEvent(
     capellacore.NamedElement, behavior.AbstractEvent, abstract=True
 ):
-    expression = m.Association["capellacore.Constraint"](
+    expression = _descriptors.Association["capellacore.Constraint"](
         (ns.CAPELLACORE, "Constraint"), "expression"
     )
-    state_event_realizations = m.Containment["StateEventRealization"](
+    state_event_realizations = _descriptors.Containment["StateEventRealization"](
         "ownedStateEventRealizations", (NS, "StateEventRealization")
     )
-    realized_events = m.Allocation["StateEvent"](
+    realized_events = _descriptors.Allocation["StateEvent"](
         "ownedStateEventRealizations",
         (NS, "StateEventRealization"),
         (NS, "StateEvent"),
@@ -339,11 +340,11 @@ class StateEvent(
 
 
 class ChangeEvent(StateEvent):
-    kind = m.EnumPOD("kind", ChangeEventKind)
+    kind = _pods.EnumPOD("kind", ChangeEventKind)
 
 
 class TimeEvent(StateEvent):
-    kind = m.EnumPOD("kind", TimeEventKind)
+    kind = _pods.EnumPOD("kind", TimeEventKind)
 
 
 if not t.TYPE_CHECKING:

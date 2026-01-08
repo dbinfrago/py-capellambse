@@ -26,6 +26,7 @@ import typing as t
 import typing_extensions as te
 
 from capellambse import diagram, helpers
+from capellambse.diagram import _vector2d, capstyle
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ SNAPPING = "AIRD_NOSNAP" not in os.environ
 DiagramElement = t.Union["Box", "Edge", "Circle"]
 StyleOverrides = t.MutableMapping[
     str,
-    str | diagram.RGB | t.MutableSequence[str | diagram.RGB],
+    str | capstyle.RGB | t.MutableSequence[str | capstyle.RGB],
 ]
 
 
@@ -56,16 +57,16 @@ class Box:
 
     JSON_TYPE = "box"
 
-    pos = diagram.Vec2Property()
-    minsize = diagram.Vec2Property()
-    maxsize = diagram.Vec2Property()
+    pos = _vector2d.Vec2Property()
+    minsize = _vector2d.Vec2Property()
+    maxsize = _vector2d.Vec2Property()
 
     context: set[str]
 
     def __init__(
         self,
-        pos: diagram.Vec2ish,
-        size: diagram.Vec2ish,
+        pos: _vector2d.Vec2ish,
+        size: _vector2d.Vec2ish,
         *,
         label: str = "",
         floating_labels: cabc.MutableSequence[Box] | None = None,
@@ -73,8 +74,8 @@ class Box:
         uuid: str | None = None,
         parent: Box | None = None,
         collapsed: bool = False,
-        minsize: diagram.Vec2ish = diagram.Vector2D(0, 0),
-        maxsize: diagram.Vec2ish = diagram.Vector2D(math.inf, math.inf),
+        minsize: _vector2d.Vec2ish = _vector2d.Vector2D(0, 0),
+        maxsize: _vector2d.Vec2ish = _vector2d.Vector2D(math.inf, math.inf),
         context: cabc.Iterable[str] | None = None,
         port: bool = False,
         features: cabc.MutableSequence[str] | None = None,
@@ -132,7 +133,7 @@ class Box:
         """
         self.uuid = uuid
         self.pos = pos
-        self.size = diagram.Vector2D(*size)
+        self.size = _vector2d.Vector2D(*size)
         self.minsize = minsize
         self.maxsize = maxsize
         self.label = label
@@ -180,7 +181,7 @@ class Box:
 
         leftside = self.pos.x < self.parent.pos.x
 
-        text_extent = diagram.Vector2D(*helpers.get_text_extent(labeltext)) + (
+        text_extent = _vector2d.Vector2D(*helpers.get_text_extent(labeltext)) + (
             2 * margin,
             2 * margin,
         )
@@ -224,21 +225,21 @@ class Box:
         else:
             padding = (self.parent.CHILD_MARGIN, self.parent.CHILD_MARGIN)
             minpos = self.parent.pos + padding
-            self.pos = diagram.Vector2D(
+            self.pos = _vector2d.Vector2D(
                 max(self.pos.x, minpos.x), max(self.pos.y, minpos.y)
             )
             maxsize = self.parent.pos + self.parent.size - self.pos - padding
-            newsize = diagram.Vector2D(
+            newsize = _vector2d.Vector2D(
                 min(self.size.x, maxsize.x), min(self.size.y, maxsize.y)
             )
             if newsize <= (0, 0):
-                newsize = diagram.Vector2D(0, 0)
+                newsize = _vector2d.Vector2D(0, 0)
                 LOGGER.warning(
                     "Box %r (%s) has zero size after snapping",
                     self.floating_labels,
                     self.uuid,
                 )
-            self.size = diagram.Vector2D(
+            self.size = _vector2d.Vector2D(
                 newsize.x if self._size.x > 0 else 0,
                 newsize.y if self._size.y > 0 else 0,
             )
@@ -255,22 +256,22 @@ class Box:
 
     def vector_snap(
         self,
-        point: diagram.Vec2ish,
+        point: _vector2d.Vec2ish,
         *,
-        source: diagram.Vec2ish | None = None,
+        source: _vector2d.Vec2ish | None = None,
         style: RoutingStyle = RoutingStyle.OBLIQUE,
-    ) -> diagram.Vector2D:
+    ) -> _vector2d.Vector2D:
         """Snap the ``point`` into this Box, coming from ``source``."""
-        if not isinstance(point, diagram.Vector2D):
-            point = diagram.Vector2D(*point)
+        if not isinstance(point, _vector2d.Vector2D):
+            point = _vector2d.Vector2D(*point)
 
         if not SNAPPING:
             return point
 
         if source is None:
             source = point
-        elif not isinstance(source, diagram.Vector2D):
-            source = diagram.Vector2D(*source)
+        elif not isinstance(source, _vector2d.Vector2D):
+            source = _vector2d.Vector2D(*source)
 
         if style is RoutingStyle.OBLIQUE:
             if point == source:
@@ -283,8 +284,8 @@ class Box:
         raise ValueError(f"Unsupported routing style: {style}")
 
     def __vector_snap_closest(
-        self, source: diagram.Vector2D
-    ) -> diagram.Vector2D:
+        self, source: _vector2d.Vector2D
+    ) -> _vector2d.Vector2D:
         if source == self.center:
             return self.pos + self.size @ (0, 0.5)
 
@@ -314,8 +315,8 @@ class Box:
         )
 
     def __vector_snap_oblique(
-        self, point: diagram.Vector2D, source: diagram.Vector2D
-    ) -> diagram.Vector2D:
+        self, point: _vector2d.Vector2D, source: _vector2d.Vector2D
+    ) -> _vector2d.Vector2D:
         assert point != source
         if not (
             self.pos.x <= point.x <= self.pos.x + self.size.x
@@ -338,7 +339,7 @@ class Box:
             edges.add("bottom")
         assert len(edges) in (1, 2), f"{edge} doesn't have a direction"
 
-        intersections: list[diagram.Vector2D] = []
+        intersections: list[_vector2d.Vector2D] = []
         if "top" in edges:
             border = (self.pos, self.pos + self.size @ (1, 0))
             with contextlib.suppress(ValueError):
@@ -368,8 +369,8 @@ class Box:
         return intersections[0]
 
     def __vector_snap_manhattan(
-        self, point: diagram.Vector2D, direction: diagram.Vector2D
-    ) -> diagram.Vector2D:
+        self, point: _vector2d.Vector2D, direction: _vector2d.Vector2D
+    ) -> _vector2d.Vector2D:
         axis = direction.closestaxis()
 
         if axis.x:
@@ -379,7 +380,7 @@ class Box:
                 return self.pos + self.size @ (0.5, 1)
             if self.port:
                 return self.pos + self.size @ (axis.x < 0, 0.5)
-            return diagram.Vector2D(
+            return _vector2d.Vector2D(
                 self.pos.x + self.size.x * (axis.x < 0),
                 point.y,
             )
@@ -391,7 +392,7 @@ class Box:
                 return self.pos + self.size @ (1, 0.5)
             if self.port:
                 return self.pos + self.size @ (0.5, axis.y < 0)
-            return diagram.Vector2D(
+            return _vector2d.Vector2D(
                 point.x,
                 self.pos.y + self.size.y * (axis.y < 0),
             )
@@ -399,12 +400,12 @@ class Box:
         raise AssertionError(f"closestaxis({axis!r}) returned (0,0)")
 
     def __vector_snap_tree(
-        self, point: diagram.Vector2D, direction: diagram.Vector2D
-    ) -> diagram.Vector2D:
-        if direction == diagram.Vector2D(0.0, 0.0):
+        self, point: _vector2d.Vector2D, direction: _vector2d.Vector2D
+    ) -> _vector2d.Vector2D:
+        if direction == _vector2d.Vector2D(0.0, 0.0):
             if self.center.x < point.x:
-                return diagram.Vector2D(point.x - 1, point.y)
-            return diagram.Vector2D(point.x + 1, point.y)
+                return _vector2d.Vector2D(point.x - 1, point.y)
+            return _vector2d.Vector2D(point.x + 1, point.y)
 
         if self.port:
             if direction.y < 0.0 or (
@@ -416,11 +417,11 @@ class Box:
         if direction.y < 0.0 or (
             math.isclose(direction.y, 0.0) and point.y != self.pos.y
         ):
-            return diagram.Vector2D(point.x, self.pos.y + self.size.y)
+            return _vector2d.Vector2D(point.x, self.pos.y + self.size.y)
 
-        return diagram.Vector2D(point.x, self.pos.y)
+        return _vector2d.Vector2D(point.x, self.pos.y)
 
-    def move(self, offset: diagram.Vector2D, *, children: bool = True) -> None:
+    def move(self, offset: _vector2d.Vector2D, *, children: bool = True) -> None:
         """Move the box by the specified offset.
 
         Parameters
@@ -440,7 +441,7 @@ class Box:
                 child.move(offset, children=True)
 
     @property
-    def size(self) -> diagram.Vector2D:
+    def size(self) -> _vector2d.Vector2D:
         """Return the size of this Box."""
         width, height = self._size
         needwidth = width <= 0
@@ -497,14 +498,14 @@ class Box:
             width = max(self.minsize.x, width)
         if needheight:
             height = max(self.minsize.y, height)
-        return diagram.Vector2D(width, height)
+        return _vector2d.Vector2D(width, height)
 
     @size.setter
-    def size(self, new_size: diagram.Vec2ish) -> None:
-        if isinstance(new_size, diagram.Vector2D):
+    def size(self, new_size: _vector2d.Vec2ish) -> None:
+        if isinstance(new_size, _vector2d.Vector2D):
             self._size = new_size
         else:
-            self._size = diagram.Vector2D(*new_size)
+            self._size = _vector2d.Vector2D(*new_size)
 
     @property
     def bounds(self) -> Box:
@@ -530,11 +531,11 @@ class Box:
         return Box((minx, miny), (maxx - minx, maxy - miny))
 
     @property
-    def padding(self) -> diagram.Vector2D:
+    def padding(self) -> _vector2d.Vector2D:
         """Return the horizontal and vertical padding of label text."""
         if self.styleclass and self.styleclass.endswith("Annotation"):
-            return diagram.Vector2D(0, 0)
-        return diagram.Vector2D(10, 5)
+            return _vector2d.Vector2D(0, 0)
+        return _vector2d.Vector2D(10, 5)
 
     @property
     def hidden(self) -> bool:
@@ -549,7 +550,7 @@ class Box:
         self._hidden = hide
 
     @property
-    def center(self) -> diagram.Vector2D:
+    def center(self) -> _vector2d.Vector2D:
         """Return the center point of this Box."""
         return self.pos + self.size / 2
 
@@ -605,7 +606,7 @@ class Box:
         )
 
 
-class Edge(diagram.Vec2List):
+class Edge(_vector2d.Vec2List):
     """An edge in the diagram.
 
     An Edge consists of a series of points that are traversed in order.
@@ -623,7 +624,7 @@ class Edge(diagram.Vec2List):
 
     def __init__(
         self,
-        points: cabc.Iterable[diagram.Vec2ish],
+        points: cabc.Iterable[_vector2d.Vec2ish],
         *,
         labels: cabc.MutableSequence[Box] | None = None,
         uuid: str | None = None,
@@ -685,21 +686,21 @@ class Edge(diagram.Vec2List):
 
     def vector_snap(
         self,
-        vector: diagram.Vec2ish,
+        vector: _vector2d.Vec2ish,
         *,
-        source: diagram.Vec2ish,
+        source: _vector2d.Vec2ish,
         style: RoutingStyle = RoutingStyle.OBLIQUE,
-    ) -> diagram.Vector2D:
+    ) -> _vector2d.Vector2D:
         """Snap the ``vector`` onto this Edge."""
         del source, style
 
-        if not isinstance(vector, diagram.Vector2D):
-            vector = diagram.Vector2D(*vector)
+        if not isinstance(vector, _vector2d.Vector2D):
+            vector = _vector2d.Vector2D(*vector)
 
         if not SNAPPING:
             return vector
 
-        epoint: diagram.Vector2D  # Point on this Edge
+        epoint: _vector2d.Vector2D  # Point on this Edge
         edist = math.inf  # Squared distance to that point
 
         for i in range(len(self.points) - 1):
@@ -723,7 +724,7 @@ class Edge(diagram.Vec2List):
 
         return epoint
 
-    def move(self, offset: diagram.Vector2D, *, children: bool = True) -> None:
+    def move(self, offset: _vector2d.Vector2D, *, children: bool = True) -> None:
         """Move all points of this edge by the specified offset."""
         del children
         for i, _ in enumerate(self):
@@ -748,8 +749,8 @@ class Edge(diagram.Vec2List):
             maxx = max(maxx, point.x)
             maxy = max(maxy, point.y)
 
-        topleft = diagram.Vector2D(minx, miny)
-        bottomright = diagram.Vector2D(maxx, maxy)
+        topleft = _vector2d.Vector2D(minx, miny)
+        bottomright = _vector2d.Vector2D(maxx, maxy)
         return Box(topleft, bottomright - topleft)
 
     @property
@@ -766,12 +767,12 @@ class Edge(diagram.Vec2List):
         self._hidden = hide
 
     @property
-    def points(self) -> diagram.Vec2List:
+    def points(self) -> _vector2d.Vec2List:
         """Return an iterable over this edge's points."""
         return self
 
     @points.setter
-    def points(self, newpoints: cabc.Iterable[diagram.Vec2ish]) -> None:
+    def points(self, newpoints: cabc.Iterable[_vector2d.Vec2ish]) -> None:
         self[:] = newpoints
 
     @property
@@ -780,7 +781,7 @@ class Edge(diagram.Vec2List):
         return sum((self[i - 1] - self[i]).length for i in range(1, len(self)))
 
     @property
-    def center(self) -> diagram.Vector2D:
+    def center(self) -> _vector2d.Vector2D:
         """Calculate the point in the middle of this edge."""
         half_length = self.length / 2
         distance = 0.0
@@ -834,13 +835,13 @@ class Circle:
     label = None
     port = False
 
-    center = diagram.Vec2Property()
+    center = _vector2d.Vec2Property()
 
     context: set[str]
 
     def __init__(
         self,
-        center: diagram.Vec2ish,
+        center: _vector2d.Vec2ish,
         radius: float,
         *,
         uuid: str | None = None,
@@ -890,26 +891,26 @@ class Circle:
             (self.radius * 2, self.radius * 2),
         )
 
-    def move(self, offset: diagram.Vec2ish, *, children: bool = True) -> None:
+    def move(self, offset: _vector2d.Vec2ish, *, children: bool = True) -> None:
         """Move this Circle on the 2-dimensional plane."""
         del children
         self.center += offset
 
     def vector_snap(
         self,
-        vector: diagram.Vec2ish,
+        vector: _vector2d.Vec2ish,
         *,
-        source: diagram.Vec2ish,
+        source: _vector2d.Vec2ish,
         style: RoutingStyle = RoutingStyle.OBLIQUE,
-    ) -> diagram.Vector2D:
+    ) -> _vector2d.Vector2D:
         """Snap the vector onto this Circle, preferably in direction."""
         del style
         # TODO implement different routing styles than OBLIQUE
 
-        if not isinstance(vector, diagram.Vector2D):
-            vector = diagram.Vector2D(*vector)
-        if not isinstance(source, diagram.Vector2D):
-            source = diagram.Vector2D(*source)
+        if not isinstance(vector, _vector2d.Vector2D):
+            vector = _vector2d.Vector2D(*vector)
+        if not isinstance(source, _vector2d.Vector2D):
+            source = _vector2d.Vector2D(*source)
         direction = source - vector
         if vector == self.center:
             vector = direction
@@ -1046,13 +1047,13 @@ class Diagram:
             maxx = max(maxx, bounds.pos.x + bounds.size.x)
             maxy = max(maxy, bounds.pos.y + bounds.size.y)
 
-        top_left = diagram.Vector2D(minx, miny)
-        bottom_right = diagram.Vector2D(maxx, maxy)
+        top_left = _vector2d.Vector2D(minx, miny)
+        bottom_right = _vector2d.Vector2D(maxx, maxy)
         self.viewport = Box(
             top_left, bottom_right - top_left, styleclass="Viewport"
         )
 
-    def normalize_viewport(self, offset: float | diagram.Vec2ish = 0) -> None:
+    def normalize_viewport(self, offset: float | _vector2d.Vec2ish = 0) -> None:
         """Normalize the viewport.
 
         This function moves all elements contained within this diagram
@@ -1062,12 +1063,12 @@ class Diagram:
         If a single value is given as offset, it is applied to both X
         and Y coordinates.
         """
-        if isinstance(offset, diagram.Vector2D):
+        if isinstance(offset, _vector2d.Vector2D):
             offsetvec = offset
         elif isinstance(offset, cabc.Sequence):
-            offsetvec = diagram.Vector2D(*offset)
+            offsetvec = _vector2d.Vector2D(*offset)
         else:
-            offsetvec = diagram.Vector2D(offset, offset)
+            offsetvec = _vector2d.Vector2D(offset, offset)
         del offset
 
         if self.viewport is None:
@@ -1090,11 +1091,11 @@ class Diagram:
         if self.viewport is None:
             self.viewport = Box(bounds.pos, bounds.size, styleclass="Viewport")
         else:
-            top_left = diagram.Vector2D(
+            top_left = _vector2d.Vector2D(
                 min(self.viewport.pos.x, bounds.pos.x),
                 min(self.viewport.pos[1], bounds.pos[1]),
             )
-            bottom_right = diagram.Vector2D(
+            bottom_right = _vector2d.Vector2D(
                 max(
                     self.viewport.pos.x + self.viewport.size.x,
                     bounds.pos.x + bounds.size.x,

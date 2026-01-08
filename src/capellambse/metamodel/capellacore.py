@@ -9,6 +9,7 @@ import typing as t
 import warnings
 
 import capellambse.model as m
+from capellambse.model import _descriptors, _pods
 
 from . import modellingcore
 from . import namespaces as ns
@@ -43,38 +44,38 @@ class CapellaElement(
     modellingcore.PublishableElement,
     abstract=True,
 ):
-    summary = m.StringPOD("summary")
+    summary = _pods.StringPOD("summary")
     """Summary of the element."""
-    description = m.HTMLStringPOD("description")
+    description = _pods.HTMLStringPOD("description")
     """Description of the Capella element."""
-    review = m.StringPOD("review")
+    review = _pods.StringPOD("review")
     """Review description on the Capella element."""
 
-    property_values = m.Containment["AbstractPropertyValue"](
+    property_values = _descriptors.Containment["AbstractPropertyValue"](
         "ownedPropertyValues",
         (NS, "AbstractPropertyValue"),
         mapkey="name",
         mapvalue="value",
     )
-    enumeration_property_types = m.Containment["EnumerationPropertyType"](
+    enumeration_property_types = _descriptors.Containment["EnumerationPropertyType"](
         "ownedEnumerationPropertyTypes", (NS, "EnumerationPropertyType")
     )
-    applied_property_values = m.Association["AbstractPropertyValue"](
+    applied_property_values = _descriptors.Association["AbstractPropertyValue"](
         (NS, "AbstractPropertyValue"), "appliedPropertyValues"
     )
-    property_value_groups = m.Containment["PropertyValueGroup"](
+    property_value_groups = _descriptors.Containment["PropertyValueGroup"](
         "ownedPropertyValueGroups",
         (NS, "PropertyValueGroup"),
         mapkey="name",
         mapvalue="property_values",
     )
-    applied_property_value_groups = m.Association["PropertyValueGroup"](
+    applied_property_value_groups = _descriptors.Association["PropertyValueGroup"](
         (NS, "PropertyValueGroup"), "appliedPropertyValueGroups"
     )
-    status = m.Single["EnumerationPropertyLiteral"](
-        m.Association((NS, "EnumerationPropertyLiteral"), "status")
+    status = _descriptors.Single["EnumerationPropertyLiteral"](
+        _descriptors.Association((NS, "EnumerationPropertyLiteral"), "status")
     )
-    features = m.Association["EnumerationPropertyLiteral"](
+    features = _descriptors.Association["EnumerationPropertyLiteral"](
         (NS, "EnumerationPropertyLiteral"), "features"
     )
 
@@ -92,41 +93,41 @@ class Relationship(
 
 
 class Namespace(NamedElement, abstract=True):
-    traces = m.Containment["Trace"]("ownedTraces", (NS, "Trace"))
-    naming_rules = m.Containment["NamingRule"](
+    traces = _descriptors.Containment["Trace"]("ownedTraces", (NS, "Trace"))
+    naming_rules = _descriptors.Containment["NamingRule"](
         "namingRules", (NS, "NamingRule")
     )
 
 
 class NamedRelationship(Relationship, NamedElement, abstract=True):
-    naming_rules = m.Containment["NamingRule"](
+    naming_rules = _descriptors.Containment["NamingRule"](
         "namingRules", (NS, "NamingRule")
     )
 
 
 class Structure(Namespace, abstract=True):
-    property_value_pkgs = m.Containment["PropertyValuePkg"](
+    property_value_pkgs = _descriptors.Containment["PropertyValuePkg"](
         "ownedPropertyValuePkgs",
         (NS, "PropertyValuePkg"),
         mapkey="name",
     )
 
     if not t.TYPE_CHECKING:
-        property_value_packages = m.DeprecatedAccessor("property_value_pkgs")
+        property_value_packages = _descriptors.DeprecatedAccessor("property_value_pkgs")
 
 
 class ReuserStructure(Structure, abstract=True):
-    reuse_links = m.Association["ReuseLink"]((NS, "ReuseLink"), "reuseLinks")
-    owned_reuse_links = m.Containment["ReuseLink"](
+    reuse_links = _descriptors.Association["ReuseLink"]((NS, "ReuseLink"), "reuseLinks")
+    owned_reuse_links = _descriptors.Containment["ReuseLink"](
         "ownedReuseLinks", (NS, "ReuseLink")
     )
 
 
 class AbstractModellingStructure(ReuserStructure, abstract=True):
-    architectures = m.Containment["ModellingArchitecture"](
+    architectures = _descriptors.Containment["ModellingArchitecture"](
         "ownedArchitectures", (NS, "ModellingArchitecture")
     )
-    architecture_pkgs = m.Containment["ModellingArchitecturePkg"](
+    architecture_pkgs = _descriptors.Containment["ModellingArchitecturePkg"](
         "ownedArchitecturePkgs", (NS, "ModellingArchitecturePkg")
     )
 
@@ -166,11 +167,11 @@ class Trace(Relationship, modellingcore.AbstractTrace, abstract=True):
 
 
 class AbstractAnnotation(CapellaElement, abstract=True):
-    content = m.StringPOD("content")
+    content = _pods.StringPOD("content")
 
 
 class NamingRule(AbstractAnnotation):
-    target_type = m.StringPOD("targetType")
+    target_type = _pods.StringPOD("targetType")
     """Type to whose instances the naming rule has to be applied."""
 
 
@@ -186,37 +187,37 @@ class Constraint(NamedElement, modellingcore.AbstractConstraint):
 
 
 class KeyValue(CapellaElement):
-    key = m.StringPOD("key")
-    value = m.StringPOD("value")
+    key = _pods.StringPOD("key")
+    value = _pods.StringPOD("value")
 
 
 class ReuseLink(Relationship):
-    reused = m.Single["ReuseableStructure"](
-        m.Association((NS, "ReuseableStructure"), "reused")
+    reused = _descriptors.Single["ReuseableStructure"](
+        _descriptors.Association((NS, "ReuseableStructure"), "reused")
     )
-    reuser = m.Single["ReuserStructure"](
-        m.Association((NS, "ReuserStructure"), "reuser")
+    reuser = _descriptors.Single["ReuserStructure"](
+        _descriptors.Association((NS, "ReuserStructure"), "reuser")
     )
 
 
 class ReuseableStructure(Structure, abstract=True):
     """A structure intended to be reused across various architectures."""
 
-    reuse_links = m.Association["ReuseLink"]((NS, "ReuseLink"), "reuseLinks")
+    reuse_links = _descriptors.Association["ReuseLink"]((NS, "ReuseLink"), "reuseLinks")
 
 
 class GeneralizableElement(Type, abstract=True):
     """A type than can be generalized."""
 
-    is_abstract = m.BoolPOD("abstract")
-    generalizations = m.Containment["Generalization"](
+    is_abstract = _pods.BoolPOD("abstract")
+    generalizations = _descriptors.Containment["Generalization"](
         "ownedGeneralizations", (NS, "Generalization")
     )
-    sub = m.Backref["GeneralizableElement"](
+    sub = _descriptors.Backref["GeneralizableElement"](
         (NS, "GeneralizableElement"), "super", legacy_by_type=True
     )
-    super = m.Single["GeneralizableElement"](
-        m.Allocation(
+    super = _descriptors.Single["GeneralizableElement"](
+        _descriptors.Allocation(
             "ownedGeneralizations",
             (NS, "Generalization"),
             (NS, "GeneralizableElement"),
@@ -227,14 +228,14 @@ class GeneralizableElement(Type, abstract=True):
 
 
 class Classifier(GeneralizableElement, abstract=True):
-    owned_features = m.Containment["Feature"]("ownedFeatures", (NS, "Feature"))
+    owned_features = _descriptors.Containment["Feature"]("ownedFeatures", (NS, "Feature"))
 
 
 class GeneralClass(
     Classifier, modellingcore.FinalizableElement, abstract=True
 ):
-    visibility = m.EnumPOD("visibility", VisibilityKind)
-    nested_classes = m.Containment["GeneralClass"](
+    visibility = _pods.EnumPOD("visibility", VisibilityKind)
+    nested_classes = _descriptors.Containment["GeneralClass"](
         "nestedGeneralClasses", (NS, "GeneralClass")
     )
 
@@ -242,22 +243,22 @@ class GeneralClass(
 class Generalization(Relationship):
     _xmltag = "ownedGeneralizations"
 
-    super = m.Single["GeneralizableElement"](
-        m.Association((NS, "GeneralizableElement"), "super")
+    super = _descriptors.Single["GeneralizableElement"](
+        _descriptors.Association((NS, "GeneralizableElement"), "super")
     )
-    sub = m.Single["GeneralizableElement"](
-        m.Association((NS, "GeneralizableElement"), "sub")
+    sub = _descriptors.Single["GeneralizableElement"](
+        _descriptors.Association((NS, "GeneralizableElement"), "sub")
     )
 
 
 class Feature(NamedElement, abstract=True):
-    is_abstract = m.BoolPOD("isAbstract")
-    is_static = m.BoolPOD("isStatic")
-    visibility = m.EnumPOD("visibility", VisibilityKind)
+    is_abstract = _pods.BoolPOD("isAbstract")
+    is_static = _pods.BoolPOD("isStatic")
+    visibility = _pods.EnumPOD("visibility", VisibilityKind)
 
 
 class AbstractExchangeItemPkg(Structure, abstract=True):
-    exchange_items = m.Containment["information.ExchangeItem"](
+    exchange_items = _descriptors.Containment["information.ExchangeItem"](
         "ownedExchangeItems", (ns.INFORMATION, "ExchangeItem")
     )
 
@@ -267,8 +268,8 @@ class Allocation(Relationship, modellingcore.AbstractTrace, abstract=True):
 
 
 class Involvement(Relationship, abstract=True):
-    involved = m.Single["InvolvedElement"](
-        m.Association((NS, "InvolvedElement"), "involved")
+    involved = _descriptors.Single["InvolvedElement"](
+        _descriptors.Association((NS, "InvolvedElement"), "involved")
     )
 
     @property
@@ -285,8 +286,8 @@ class Involvement(Relationship, abstract=True):
         return f"[{self.__class__.__name__}]{direction}"
 
     if not t.TYPE_CHECKING:
-        source = m.DeprecatedAccessor("parent")
-        target = m.DeprecatedAccessor("involved")
+        source = _descriptors.DeprecatedAccessor("parent")
+        target = _descriptors.DeprecatedAccessor("involved")
 
 
 class InvolverElement(CapellaElement, abstract=True):
@@ -300,51 +301,51 @@ class InvolvedElement(CapellaElement, abstract=True):
 class AbstractPropertyValue(NamedElement, abstract=True):
     _xmltag = "ownedPropertyValues"
 
-    involved_elements = m.Association["CapellaElement"](
+    involved_elements = _descriptors.Association["CapellaElement"](
         (NS, "CapellaElement"), "involvedElements"
     )
 
     if not t.TYPE_CHECKING:
-        enumerations = m.DeprecatedAccessor("enumeration_property_types")
+        enumerations = _descriptors.DeprecatedAccessor("enumeration_property_types")
 
 
 class StringPropertyValue(AbstractPropertyValue):
     """A string property value."""
 
-    value = m.StringPOD("value")
+    value = _pods.StringPOD("value")
 
 
 class IntegerPropertyValue(AbstractPropertyValue):
     """An integer property value."""
 
-    value = m.IntPOD("value")
+    value = _pods.IntPOD("value")
 
 
 class BooleanPropertyValue(AbstractPropertyValue):
     """A boolean property value."""
 
-    value = m.BoolPOD("value")
+    value = _pods.BoolPOD("value")
 
 
 class FloatPropertyValue(AbstractPropertyValue):
     """A floating point property value."""
 
-    value = m.FloatPOD("value")
+    value = _pods.FloatPOD("value")
 
 
 class EnumerationPropertyValue(AbstractPropertyValue):
-    type = m.Single["EnumerationPropertyType"](
-        m.Association((NS, "EnumerationPropertyType"), "type")
+    type = _descriptors.Single["EnumerationPropertyType"](
+        _descriptors.Association((NS, "EnumerationPropertyType"), "type")
     )
-    value = m.Single["EnumerationPropertyLiteral"](
-        m.Association((NS, "EnumerationPropertyLiteral"), "value")
+    value = _descriptors.Single["EnumerationPropertyLiteral"](
+        _descriptors.Association((NS, "EnumerationPropertyLiteral"), "value")
     )
 
 
 class EnumerationPropertyType(NamedElement):
     _xmltag = "ownedEnumerationPropertyTypes"
 
-    literals = m.Containment["EnumerationPropertyLiteral"](
+    literals = _descriptors.Containment["EnumerationPropertyLiteral"](
         "ownedLiterals", (NS, "EnumerationPropertyLiteral")
     )
 
@@ -377,7 +378,7 @@ class PropertyValueGroup(Namespace, cabc.MutableMapping[str, str]):
         return sum(1 for _ in self)
 
     if not t.TYPE_CHECKING:
-        values = m.DeprecatedAccessor("property_values")
+        values = _descriptors.DeprecatedAccessor("property_values")
 
 
 class PropertyValuePkg(Structure):
@@ -385,13 +386,13 @@ class PropertyValuePkg(Structure):
 
     _xmltag = "ownedPropertyValuePkgs"
 
-    packages = m.Alias["m.ElementList[PropertyValuePkg]"](
+    packages = _descriptors.Alias["m.ElementList[PropertyValuePkg]"](
         "property_value_pkgs", dirhide=False
     )
-    groups = m.Alias["m.ElementList[PropertyValueGroup]"](
+    groups = _descriptors.Alias["m.ElementList[PropertyValueGroup]"](
         "property_value_groups", dirhide=False
     )
-    values = m.Alias["m.ElementList[AbstractPropertyValue]"](
+    values = _descriptors.Alias["m.ElementList[AbstractPropertyValue]"](
         "property_values", dirhide=False
     )
 

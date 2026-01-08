@@ -44,7 +44,8 @@ import typing_extensions as te
 from lxml import etree
 
 import capellambse
-from capellambse import aird, diagram, helpers, svg
+from capellambse import aird, helpers, svg
+from capellambse import diagram as _diagram
 
 from . import _descriptors, _obj, _pods, stringy_enum
 
@@ -169,7 +170,7 @@ class PrettyDiagramFormat(DiagramFormat, t.Protocol):
     def convert_pretty(cls, dg: t.Any) -> t.Any: ...
 
 
-DiagramConverter = t.Callable[[diagram.Diagram], t.Any] | DiagramFormat
+DiagramConverter = t.Callable[[_diagram.Diagram], t.Any] | DiagramFormat
 
 LOGGER = logging.getLogger(__name__)
 REPR_DRAW: bool
@@ -237,7 +238,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         :meta public:
         """
     _model: capellambse.MelodyModel
-    _render: diagram.Diagram
+    _render: _diagram.Diagram
     _error: BaseException
     _last_render_params: dict[str, t.Any]
     """Additional rendering parameters for the cached rendered diagram.
@@ -380,7 +381,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         return _obj.ElementList(self._model, elems, legacy_by_type=True)
 
     @t.overload
-    def render(self, fmt: None, /, **params: t.Any) -> diagram.Diagram: ...
+    def render(self, fmt: None, /, **params: t.Any) -> _diagram.Diagram: ...
     @t.overload
     def render(
         self,
@@ -405,7 +406,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         fmt
             The output format to use.
 
-            If ``None``, the :class:`~capellambse.diagram.Diagram` is returned
+            If ``None``, the :class:`~capellambse._diagram.Diagram` is returned
             without format conversion.
         pretty_print
             Whether to pretty-print the output. Only applies to
@@ -503,7 +504,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
                 f.write(data)
 
     @abc.abstractmethod
-    def _create_diagram(self, params: dict[str, t.Any]) -> diagram.Diagram:
+    def _create_diagram(self, params: dict[str, t.Any]) -> _diagram.Diagram:
         """Perform the actual rendering of the diagram.
 
         This method is called by :meth:`.render` to perform the actual
@@ -520,7 +521,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
 
     def __create_error_image(
         self, stage: str, error: Exception
-    ) -> diagram.Diagram:
+    ) -> _diagram.Diagram:
         err_name = (
             "An error occured while rendering diagram\n"
             f"{self.name!r}\n"
@@ -534,20 +535,20 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             traceback.format_exception(None, error, error.__traceback__)
         )
 
-        diag = diagram.Diagram("An error occured! :(")
-        err_box = diagram.Box(
+        diag = _diagram.Diagram("An error occured! :(")
+        err_box = _diagram.Box(
             (200, 0),
             (350, 0),
             label=err_name,
             uuid="error",
             styleclass="Note",
             styleoverrides={
-                "fill": diagram.RGB(255, 0, 0),
-                "text_fill": diagram.RGB(255, 255, 255),
+                "fill": _diagram.RGB(255, 0, 0),
+                "text_fill": _diagram.RGB(255, 255, 255),
             },
         )
         diag.add_element(err_box, extend_viewport=False)
-        info_box = diagram.Box(
+        info_box = _diagram.Box(
             (200, err_box.pos.y + err_box.size.y + 10),
             (350, 0),
             label=err_msg,
@@ -555,7 +556,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             styleclass="Note",
         )
         diag.add_element(info_box, extend_viewport=False)
-        trace_box = diagram.Box(
+        trace_box = _diagram.Box(
             (0, info_box.pos.y + info_box.size.y + 10),
             (750, 0),
             label=err_trace,
@@ -632,7 +633,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
                 data = cv(data)
         return data
 
-    def __render_fresh(self, params: dict[str, t.Any]) -> diagram.Diagram:
+    def __render_fresh(self, params: dict[str, t.Any]) -> _diagram.Diagram:
         if (
             not hasattr(self, "_render")
             or getattr(self, "_last_render_params", {}) != params
@@ -787,7 +788,7 @@ class DRepresentationDescriptor(AbstractDiagram):
         for filter in filters:
             self.filters.add(filter)
 
-    def _create_diagram(self, params: dict[str, t.Any]) -> diagram.Diagram:
+    def _create_diagram(self, params: dict[str, t.Any]) -> _diagram.Diagram:
         return aird.parse_diagram(self._model._loader, self._element, **params)
 
     def invalidate_cache(self) -> None:
@@ -853,10 +854,10 @@ class DiagramAccessor(_descriptors.Accessor):
 
 
 def convert_svgdiagram(
-    dg: diagram.Diagram,
+    dg: _diagram.Diagram,
 ) -> svg.generate.SVGDiagram:
     """Convert the diagram to a SVGDiagram."""
-    jsondata = diagram.DiagramJSONEncoder().encode(dg)
+    jsondata = _diagram.DiagramJSONEncoder().encode(dg)
     return svg.generate.SVGDiagram.from_json(jsondata)
 
 
@@ -1001,7 +1002,7 @@ def convert_format(
     ----------
     sourcefmt
         Name of the current format. If None, the current format is a
-        :class:`capellambse.diagram.Diagram` object.
+        :class:`capellambse._diagram.Diagram` object.
     targetfmt
         Name of the target format.
     data
