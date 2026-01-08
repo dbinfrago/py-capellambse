@@ -12,7 +12,7 @@ updates:
       github-actions:
         patterns: ["*"]
     commit-message:
-      prefix: chore
+      prefix: ci
   - package-ecosystem: uv
     directory: /
     schedule:
@@ -20,11 +20,13 @@ updates:
       day: wednesday
     allow:
       - dependency-type: development
+    ignore:
+      - dependency-name: mypy
     groups:
       python-packages:
         patterns: ["*"]
     commit-message:
-      prefix: chore
+      prefix: build(python)
   - package-ecosystem: cargo
     directory: /
     schedule:
