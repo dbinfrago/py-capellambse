@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import capellambse.model as m
+from capellambse.metamodel import re
 
 from . import capellacore
 from . import namespaces as ns
@@ -56,6 +57,10 @@ class SystemEngineering(capellacore.AbstractModellingStructure, ModelRoot):
 
     [source:MIL-STD 499B standard]
     """
+
+    extensions = m._descriptors.Containment[re.ReElementContainer](
+        "ownedExtensions", (ns.RE, "RecCatalog")
+    )
 
     @property
     def oa(self) -> oa.OperationalAnalysis:
