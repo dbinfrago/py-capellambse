@@ -122,9 +122,10 @@ def _main(
 
     if not pathlib.Path(".git").exists():
         raise SystemExit("This script must be run in the repository root")
+    jj = pathlib.Path(".jj").exists() and shutil.which("jj") is not None
 
     if not head:
-        head = _latest_commit()
+        head = _latest_commit(jj=jj)
     else:
         head = _exec("git", "log", "-1", "--format=%H", head)
 
@@ -148,22 +149,20 @@ def _main(
 
     changelog = _format_changelog(commit_log)
     _create_git_tag(head, version, changelog)
+    _update_release_branch(head, version, jj=jj)
     changelog = _read_tag_message(version) or changelog
     _copy_to_clipboard(changelog)
 
 
-def _latest_commit() -> str:
-    if (
-        pathlib.Path(".jj").exists()
-        and shutil.which("jj") is not None
-        and not _exec(
-            "jj",
-            "log",
-            "--no-graph",
-            "-r@",
-            "-Tif(empty && parents.len() < 2, 'empty')",
-        )
+def _latest_commit(*, jj: bool) -> str:
+    if jj and not _exec(
+        "jj",
+        "log",
+        "--no-graph",
+        "-r@",
+        "-Tif(empty && parents.len() < 2, 'empty')",
     ):
+        _exec("jj", "sign", "-r", "::@ & ~signed() & ~immutable()")
         return _exec("jj", "log", "--no-graph", "-r@", "-Tcommit_id")
     return _exec("git", "log", "-1", "--format=%H")
 
@@ -322,6 +321,16 @@ def _create_git_tag(
             raise SystemExit(
                 f"Failed to create tag: git exited with code {e.returncode}"
             ) from None
+
+
+def _update_release_branch(head: str, version: str, *, jj: bool) -> None:
+    releasever = re.search(r"(?<=^v)(?:0\.)?[1-9][0-9]*(?=\..*$)", version)
+    assert releasever is not None
+    releasebranch = f"release-{releasever.group(0)}.x"
+    if jj:
+        _exec("jj", "bookmark", "set", releasebranch, "-r", head)
+    else:
+        _exec("git", "branch", "-f", releasebranch, head)
 
 
 def _read_tag_message(version: awesomeversion.AwesomeVersion) -> str:
