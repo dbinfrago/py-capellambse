@@ -28,7 +28,7 @@ repos:
       - id: fix-byte-order-marker
       - id: trailing-whitespace
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
+    rev: v1.5.6
     hooks:
       - id: insert-license
         name: Insert Apache license headers (shell-style comments)
@@ -113,7 +113,7 @@ repos:
         args: [--extend-ignore=FIX, --fix]
         require_serial: true
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.9
+    rev: v1.7.10
     hooks:
       - id: actionlint-docker
   - repo: local # mypy
