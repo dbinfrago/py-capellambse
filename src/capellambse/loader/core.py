@@ -32,7 +32,6 @@ from lxml import builder, etree
 
 import capellambse._namespaces as _n
 from capellambse import filehandler, helpers
-from capellambse.aird._common import XP_SEMANTIC_RESOURCES
 from capellambse.loader import exs
 from capellambse.loader.modelinfo import ModelInfo
 
@@ -80,6 +79,11 @@ RE_VALID_ID = re.compile(
 CAP_VERSION = re.compile(r"Capella_Version_([\d.]+)")
 METADATA_TAG = f"{{{_n.NAMESPACES['metadata']}}}Metadata"
 _ROOT_NS = "org.polarsys.capella.core.data.capellamodeller"
+
+XP_SEMANTIC_RESOURCES = etree.XPath(
+    "/viewpoint:DAnalysis/semanticResources",
+    namespaces=_n.NAMESPACES,
+)
 
 
 def _derive_entrypoint(
