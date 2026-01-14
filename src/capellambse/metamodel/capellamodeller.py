@@ -58,10 +58,6 @@ class SystemEngineering(capellacore.AbstractModellingStructure, ModelRoot):
     [source:MIL-STD 499B standard]
     """
 
-    extensions = m._descriptors.Containment[re.ReElementContainer](
-        "ownedExtensions", (ns.RE, "RecCatalog")
-    )
-
     @property
     def oa(self) -> oa.OperationalAnalysis:
         from . import oa  # noqa: PLC0415
