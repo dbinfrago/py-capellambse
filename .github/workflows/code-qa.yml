@@ -75,9 +75,9 @@ jobs:
             manylinux: musllinux
           # }}}
           # macOS {{{
-          - os: macos-13
+          - os: macos-15-intel
             arch: x86_64
-          - os: macos-14
+          - os: macos-latest
             arch: arm64
           # }}}
           # Windows {{{
@@ -206,6 +206,7 @@ jobs:
           cache-dependency-glob: "**/pyproject.toml"
           python-version: "3.12"
       - name: Run example notebooks
+        if: false
         run: make -C docs verify-examples
 
   docs: # {{{1

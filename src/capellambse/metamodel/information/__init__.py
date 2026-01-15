@@ -70,6 +70,8 @@ class Property(m.ModelElement):
     """Indicates if property is abstract."""
     is_read_only = m.BoolPOD("isReadOnly")
     """Indicates if property is read-only."""
+    is_min_inclusive = m.BoolPOD("minInclusive")
+    is_max_inclusive = m.BoolPOD("maxInclusive")
     visibility = m.EnumPOD(
         "visibility", modeltypes.VisibilityKind, default="UNSET"
     )
@@ -82,7 +84,9 @@ class Property(m.ModelElement):
     max_value = m.Containment("ownedMaxValue")
     null_value = m.Containment("ownedNullValue")
     min_card = m.Containment("ownedMinCard")
+    min_length = m.Containment("ownedMinLength")
     max_card = m.Containment("ownedMaxCard")
+    max_length = m.Containment("ownedMaxLength")
     association = m.Backref(Association, "roles")
 
 
