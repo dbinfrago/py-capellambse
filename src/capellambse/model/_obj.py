@@ -486,7 +486,7 @@ class _ModelElementMeta(abc.ABCMeta):
 
             def __eq__(self: t.Any, other: object) -> bool:
                 if not isinstance(other, ModelElement):
-                    value = getattr(self, eq)  # type: ignore[arg-type]
+                    value = getattr(self, eq)
                     return value.__eq__(other)
                 return super(cls, self).__eq__(other)  # type: ignore[misc]
 
@@ -1231,7 +1231,7 @@ class ElementList(cabc.MutableSequence[T], t.Generic[T]):
         else:
             objclass = self._elemclass
 
-        base: cabc.Sequence[t.Any]
+        base: cabc.Sequence[ModelObject]
         if not reflected:
             base = self
             excluded = {getattr(i, "uuid", None) for i in other}
@@ -1241,7 +1241,11 @@ class ElementList(cabc.MutableSequence[T], t.Generic[T]):
 
         return ElementList(
             self._model,
-            [i._element for i in base if i.uuid not in excluded],
+            [
+                i._element
+                for i in base
+                if getattr(i, "uuid", None) not in excluded
+            ],
             objclass,
         )
 

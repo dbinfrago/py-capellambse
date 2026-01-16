@@ -312,7 +312,7 @@ class ManagedDomain(mm.capellacore.PropertyValuePkg):
         "ownedEnumerationPropertyTypes",
         (mm.capellacore.NS, "EnumerationPropertyType"),
     )
-    groups: m.Containment[mm.capellacore.PropertyValueGroup] = m.Containment(  # type: ignore[assignment]
+    groups: m.Containment[mm.capellacore.PropertyValueGroup] = m.Containment(
         "ownedPropertyValueGroups",
         (mm.capellacore.NS, "PropertyValueGroup"),
         mapkey="name",

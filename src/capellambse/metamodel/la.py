@@ -109,7 +109,7 @@ class LogicalArchitecture(cs.ComponentArchitecture):
 
 
 class LogicalFunction(fa.AbstractFunction):
-    functions = m.Containment["LogicalFunction"](
+    functions = m.Containment["fa.AbstractFunction"](
         "ownedFunctions", (NS, "LogicalFunction")
     )
     packages = m.Containment["LogicalFunctionPkg"](
@@ -176,7 +176,7 @@ class LogicalComponentPkg(cs.ComponentPkg):
 class CapabilityRealization(interaction.AbstractCapability):
     _xmltag = "ownedCapabilityRealizations"
 
-    involved_functions = m.Allocation[LogicalFunction](
+    involved_functions = m.Allocation["fa.AbstractFunction"](
         None, None, (NS, "LogicalFunction")
     )
     capability_realization_involvements = m.Containment[
