@@ -363,7 +363,6 @@ class DeprecatedAccessor(Accessor[T_co]):
             f" use {self.alternative!r} instead>"
         )
 
-
 class Single(Accessor[T_co | None], t.Generic[T_co]):
     """An Accessor wrapper that ensures there is exactly one value.
 
