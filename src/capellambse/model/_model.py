@@ -27,6 +27,21 @@ import pathlib  # isort: skip  # noqa: F401
 LOGGER = logging.getLogger(__name__)
 
 
+class AbstractClassSearchError(ValueError):
+    """Raised when ``search()``-ing for instances of an abstract class."""
+
+    def __init__(self, cls: type[_obj.ModelObject]) -> None:
+        super().__init__(cls)
+
+    def __str__(self) -> str:
+        cls = self.args[0]
+        assert isinstance(cls, type)
+        return (
+            f"Cannot search for instances of abstract class {cls.__name__!r},"
+            " set 'subclasses=True' to include subclasses"
+        )
+
+
 class MelodyModel:
     """Provides high-level access to a model.
 
@@ -339,6 +354,7 @@ class MelodyModel:
         self,
         *clsnames: str | type[_obj.ModelObject] | _obj.UnresolvedClassName,
         below: _obj.ModelElement | None = None,
+        subclasses: bool = False,
     ) -> _obj.ElementList:
         """Search for all elements with any of the given types.
 
@@ -375,6 +391,15 @@ class MelodyModel:
             nested) children of this element. This option takes into
             account model fragmentation, but it does not treat link
             elements specially.
+        subclasses
+            Also match elements that are subclasses of the passed
+            class(es). The default is to only return exact matches.
+
+            .. note::
+
+               If an abstract class is passed with this flag set to
+               False, an exception will be raised, as abstract classes
+               cannot have any instances.
 
         Notes
         -----
@@ -415,6 +440,10 @@ class MelodyModel:
             if resolved is _obj.ModelElement:
                 classes.clear()
                 break
+
+            if resolved.__capella_abstract__ and not subclasses:
+                raise AbstractClassSearchError(resolved)
+
             classes.add(resolved)
 
         trees = [
@@ -430,15 +459,21 @@ class MelodyModel:
         else:
             matches = []
             for tree in trees:
-                for qtype in tree.iter_qtypes():
-                    try:
-                        cls = self.resolve_class(qtype)
-                    except (
-                        _obj.UnknownNamespaceError,
-                        _obj.MissingClassError,
-                    ):
-                        continue
-                    if any(issubclass(cls, i) for i in classes):
+                if subclasses:
+                    for qtype in tree.iter_qtypes():
+                        try:
+                            cls = self.resolve_class(qtype)
+                        except (
+                            _obj.UnknownNamespaceError,
+                            _obj.MissingClassError,
+                        ):
+                            continue
+                        if any(issubclass(cls, i) for i in classes):
+                            matches.extend(tree.iter_qtype(qtype))
+                else:
+                    for cls in classes:
+                        nsname = (cls.__capella_namespace__, cls.__name__)
+                        qtype = self.qualify_classname(nsname)
                         matches.extend(tree.iter_qtype(qtype))
 
         if not classes or diagram.Diagram in classes:

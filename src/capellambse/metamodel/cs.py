@@ -67,7 +67,9 @@ class BlockArchitecture(fa.AbstractFunctionalArchitecture, abstract=True):
         self,
     ) -> m.ElementList[information.datavalue.AbstractComplexValue]:
         return self._model.search(
-            (ns.INFORMATION_DATAVALUE, "AbstractComplexValue"), below=self
+            (ns.INFORMATION_DATAVALUE, "AbstractComplexValue"),
+            below=self,
+            subclasses=True,
         )
 
     @property
@@ -79,7 +81,7 @@ class BlockArchitecture(fa.AbstractFunctionalArchitecture, abstract=True):
         self,
     ) -> m.ElementList[interaction.AbstractCapability]:
         return self._model.search(
-            (ns.INTERACTION, "AbstractCapability"), below=self
+            (ns.INTERACTION, "AbstractCapability"), below=self, subclasses=True
         )
 
     if not t.TYPE_CHECKING:

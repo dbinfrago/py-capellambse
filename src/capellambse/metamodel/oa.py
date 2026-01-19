@@ -69,7 +69,7 @@ class OperationalAnalysis(cs.BlockArchitecture):
 
     @property
     def all_operational_processes(self) -> m.ElementList[OperationalProcess]:
-        return self._model.search(OperationalProcess, below=self)
+        return self._model.search((NS, "OperationalProcess"), below=self)
 
     @property
     @deprecated(
