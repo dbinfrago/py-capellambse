@@ -36,15 +36,17 @@ static EARLY_NAMESPACES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
 });
 
 #[pyfunction]
-#[pyo3(signature=(tree, /, *, line_length, siblings, file))]
+#[pyo3(signature=(tree, /, *, line_length, siblings, declare_encoding, file))]
 pub fn serialize<'py>(
     py: Python<'py>,
     tree: &'py Bound<PyAny>,
     line_length: usize,
     siblings: bool,
+    declare_encoding: bool,
     file: Option<Bound<PyAny>>,
 ) -> PyResult<Option<Vec<u8>>> {
     Ok(Serializer::new(py, line_length, file)?
+        .declare_encoding(declare_encoding)?
         .feed_tree(tree, siblings)?
         .finish()?)
 }
@@ -93,6 +95,14 @@ impl<'py> Serializer<'py> {
             etree_element,
             etree_comment,
         })
+    }
+
+    fn declare_encoding(mut self, declare: bool) -> PyResult<Self> {
+        if declare {
+            self.emit_raw_string(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>")?;
+            self.emit_linebreak(0)?;
+        }
+        Ok(self)
     }
 
     fn feed_tree(mut self, tree: &Bound<PyAny>, siblings: bool) -> PyResult<Self> {

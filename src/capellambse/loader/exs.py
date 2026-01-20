@@ -39,6 +39,12 @@ except ImportError:
 else:
     HAS_NATIVE = True
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
+
+
 _UnspecifiedType = t.NewType("_UnspecifiedType", object)
 _NOT_SPECIFIED = _UnspecifiedType(object())
 
@@ -78,10 +84,11 @@ def to_string(tree: lxml.etree._Element, /) -> str:
     str
         The serialized XML.
     """
-    payload = serialize(tree, encoding="utf-8", errors="surrogateescape")
-    return payload.decode("utf-8", errors="surrogateescape")
+    payload = serialize(tree, declare_encoding=False)
+    return payload.decode("utf-8")
 
 
+@deprecated("use serialize() with `declare_encoding=True` instead")
 def to_bytes(
     tree: lxml.etree._Element,
     /,
@@ -105,6 +112,9 @@ def to_bytes(
         inserted which declares the used encoding.
     errors
         How to handle errors during encoding.
+    declare_encoding
+        Whether to include an XML processing instruction declaring the
+        encoding at the start of the document.
 
     Returns
     -------
@@ -121,11 +131,7 @@ def to_bytes(
         assert isinstance(errors, str)
         args["errors"] = errors
 
-    if declare_encoding:
-        declaration = _declare(encoding)
-    else:
-        declaration = b""
-    return declaration + serialize(tree, **args)  # type: ignore[call-overload]
+    return serialize(tree, **args, declare_encoding=declare_encoding)  # type: ignore[call-overload]
 
 
 def write(
@@ -137,6 +143,7 @@ def write(
     errors: str | _UnspecifiedType = _NOT_SPECIFIED,
     line_length: float = LINE_LENGTH,
     siblings: bool = False,
+    declare_encoding: bool = True,
 ) -> None:
     """Write the XML tree to ``file``.
 
@@ -154,13 +161,14 @@ def write(
         The number of characters after which to force a line break.
     siblings
         Also include siblings of the given subtree.
+    declare_encoding
+        Whether to include an XML processing instruction declaring the
+        encoding at the start of the document.
     """
     args = {}
     if encoding is not _NOT_SPECIFIED:
         assert isinstance(encoding, str)
         args["encoding"] = encoding
-    else:
-        encoding = "utf-8"
     if errors is not _NOT_SPECIFIED:
         assert isinstance(errors, str)
         args["errors"] = errors
@@ -172,12 +180,12 @@ def write(
         ctx = open(file, "wb")  # noqa: SIM115
 
     with ctx as f:
-        f.write(_declare(encoding))
         serialize(
             tree,
             **args,
             line_length=line_length,
             siblings=siblings,
+            declare_encoding=declare_encoding,
             file=f,
         )
 
@@ -191,6 +199,7 @@ def serialize(
     errors: str = ...,
     line_length: float = ...,
     siblings: bool | None = ...,
+    declare_encoding: bool = ...,
     file: None = ...,
 ) -> bytes: ...
 @t.overload
@@ -202,6 +211,7 @@ def serialize(
     errors: str = ...,
     line_length: float = ...,
     siblings: bool | None = ...,
+    declare_encoding: bool = ...,
     file: HasWrite,
 ) -> None: ...
 def serialize(
@@ -212,6 +222,7 @@ def serialize(
     errors: str | _UnspecifiedType = _NOT_SPECIFIED,
     line_length: float = LINE_LENGTH,
     siblings: bool | None = None,
+    declare_encoding: bool = False,
     file: HasWrite | None = None,
 ) -> bytes | None:
     """Serialize an XML tree.
@@ -232,6 +243,9 @@ def serialize(
     siblings
         Also include siblings of the given subtree. Defaults to yes if
         'tree' is an element tree, no if it's a single element.
+    declare_encoding
+        Whether to include an XML processing instruction declaring the
+        encoding at the start of the document.
     file
         A file-like object to write the serialized tree to. If None, the
         serialized tree will be returned as bytes instead.
@@ -272,16 +286,23 @@ def serialize(
     if HAS_NATIVE and encoding == "utf-8" and errors == "strict":
         line_length = min(line_length, sys.maxsize)
         return _native_serialize(
-            root, line_length=int(line_length), siblings=siblings, file=file
+            root,
+            line_length=int(line_length),
+            siblings=siblings,
+            declare_encoding=declare_encoding,
+            file=file,
         )
-    return _python_serialize(
+
+    _python_serialize(
         root,
         encoding=encoding,
         errors=errors,
         line_length=line_length,
         siblings=siblings,
+        declare_encoding=declare_encoding,
         file=file,
     )
+    return None
 
 
 def _python_serialize(
@@ -291,9 +312,14 @@ def _python_serialize(
     errors: str,
     line_length: float,
     siblings: bool,
+    declare_encoding: bool,
     file: HasWrite | None,
 ) -> bytes | None:
     buffer = io.BytesIO()
+
+    if declare_encoding:
+        buffer.write(_declare(encoding))
+
     preceding_siblings: cabc.Iterable[lxml.etree._Element]
     following_siblings: cabc.Iterable[lxml.etree._Element]
 
