@@ -1141,7 +1141,7 @@ def ntuples(
             break
 
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 13):
     from itertools import batched
 else:
 
