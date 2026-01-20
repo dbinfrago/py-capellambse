@@ -11,6 +11,9 @@ on:
     tags: ["v*.*.*"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.ref_type == 'tag' && github.sha || '0' }}
   cancel-in-progress: true
@@ -20,8 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -35,15 +36,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Build sdist
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
         with:
-          fetch-depth: 0
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-          cache-dependency-glob: "**/pyproject.toml"
-          python-version: "3.13"
-      - name: Package the sources
-        run: make sdist
+          command: sdist
+          args: --out dist
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -52,120 +49,241 @@ jobs:
           if-no-files-found: error
 
   build: # {{{1
-    name: Build wheel for ${{matrix.os}} / ${{matrix.arch}}${{ matrix.manylinux && ' / ' || '' }}${{ matrix.manylinux || '' }}
-    runs-on: ${{matrix.os}}
+    name: Build wheels for ${{ matrix.platform.tag }} ${{ matrix.platform.target }}
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       fail-fast: false
       matrix:
-        include:
+        platform:
           # Linux manylinux {{{
-          - os: ubuntu-latest
-            arch: x86_64
-            manylinux: manylinux
-          - os: ubuntu-24.04-arm
-            arch: aarch64
-            manylinux: manylinux
+          - runner: ubuntu-22.04
+            target: x86_64
+            tag: manylinux
+            manylinux: auto
+            unittests: true
+          - runner: ubuntu-22.04
+            target: x86
+            tag: manylinux
+            manylinux: auto
+          - runner: ubuntu-22.04
+            target: aarch64
+            tag: manylinux
+            manylinux: auto
+          - runner: ubuntu-22.04
+            target: armv7
+            tag: manylinux
+            manylinux: auto
+          - runner: ubuntu-22.04
+            target: s390x
+            tag: manylinux
+            manylinux: auto
+          - runner: ubuntu-22.04
+            target: ppc64le
+            tag: manylinux
+            manylinux: auto
           # }}}
           # Linux musllinux {{{
-          - os: ubuntu-latest
-            arch: x86_64
-            manylinux: musllinux
-          - os: ubuntu-24.04-arm
-            arch: aarch64
-            manylinux: musllinux
+          - runner: ubuntu-22.04
+            target: x86_64
+            tag: musllinux
+            manylinux: musllinux_1_2
+          - runner: ubuntu-22.04
+            target: x86
+            tag: musllinux
+            manylinux: musllinux_1_2
+          - runner: ubuntu-22.04
+            target: aarch64
+            tag: musllinux
+            manylinux: musllinux_1_2
+          - runner: ubuntu-22.04
+            target: armv7
+            tag: musllinux
+            manylinux: musllinux_1_2
           # }}}
           # macOS {{{
-          - os: macos-15-intel
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
+          - runner: macos-15-intel
+            target: x86_64
+            tag: macos
+          - runner: macos-latest
+            target: aarch64
+            tag: macos
+            unittests: true
           # }}}
-          # Windows {{{
-          - os: windows-latest
-            arch: x86
-          - os: windows-latest
-            arch: AMD64
-          # }}}
-    env:
-      CIBW_ARCHS: ${{matrix.arch}}
-      CIBW_ENVIRONMENT: 'PATH="$HOME/.cargo/bin:$PATH"'
-      CIBW_ENVIRONMENT_WINDOWS: 'PATH="$UserProfile\.cargo\bin;$PATH"'
-      MACOSX_DEPLOYMENT_TARGET: "11.0"
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
-          fetch-depth: 0
-      - name: Determine which Python versions to test against
-        shell: bash
-        env:
-          ENV_TAG: ${{runner.os}}-${{matrix.arch}}-${{matrix.manylinux}}
-          MANYLINUX: ${{matrix.manylinux}}
-        run: |-
-          if [[ "$ENV_TAG" == "Linux-x86_64-manylinux" || "$ENV_TAG" == "macOS-arm64-" ]]; then
-            echo "CIBW_BUILD=cp*-$MANYLINUX*" >> "$GITHUB_ENV"
-            echo "CIBW_SKIP=cp*t-*" >> "$GITHUB_ENV"
-          else
-            echo "CIBW_BUILD=cp310-$MANYLINUX* cp314-$MANYLINUX*" >> "$GITHUB_ENV"
-          fi
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.1
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: wheel-${{runner.os}}-${{matrix.arch}}${{ matrix.manylinux && '-' || '' }}${{ matrix.manylinux || '' }}
-          path: wheelhouse/
-          if-no-files-found: error
-
-  build-pure: # {{{1
-    name: Build pure-Python wheel
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+          python-version: "3.10"
       - uses: astral-sh/setup-uv@v7
+        if: matrix.platform.unittests
         with:
-          enable-cache: true
-          cache-dependency-glob: "**/pyproject.toml"
-          python-version: "3.13"
-      - name: Build the wheel
-        run: |-
-          SETUPTOOLS_SCM_PRETEND_VERSION="$(
-            uvx --with setuptools_scm python -c \
-              "import setuptools_scm as scm; print(scm.get_version())"
-          )"
-          export SETUPTOOLS_SCM_PRETEND_VERSION
-
-          uvx --with tomli_w python <<EOF
-          import tomllib, tomli_w
-          with open("pyproject.toml", "rb") as f:
-            metadata = tomllib.load(f)
-          del metadata["tool"]["setuptools-rust"]
-          with open("pyproject.toml", "wb") as f:
-            tomli_w.dump(metadata, f)
-          EOF
-
-          make wheel
-      - name: Run unittests
+          python-version: "3.10"
+          cache-python: "true"
+          ignore-nothing-to-cache: "true"
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.10
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: ${{ matrix.platform.manylinux }}
+      - name: Run unittests with Python 3.10
+        if: matrix.platform.unittests
+        env:
+          UV_PYTHON: cp310
+        shell: bash
         run: |-
           echo "::group::Prepare test environment"
           uv sync --group test --no-install-project
           . .venv/bin/activate
-          uv pip install dist/*.whl
+          uv pip install dist/*-"$UV_PYTHON"-*.whl
           echo "::endgroup::"
 
-          coverage run
+          make test
+      - name: Build 3.13t wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: ${{ matrix.platform.manylinux }}
+      - name: Build 3.14t wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: ${{ matrix.platform.manylinux }}
+      - name: Run unittests with Python 3.14t
+        if: matrix.platform.unittests
+        env:
+          UV_PYTHON: cp314t
+        shell: bash
+        run: |-
+          echo "::group::Prepare test environment"
+          uv sync --group test --no-install-project
+          . .venv/bin/activate
+          uv pip install dist/*-"$UV_PYTHON"-*.whl
+          echo "::endgroup::"
+
+          make test
+      - name: Assert that exactly one abi3 wheel exists
+        shell: bash
+        run: |-
+          wheels=(dist/*-abi3-*.whl)
+          if [[ "${#wheels[@]}" -eq 1 ]] && [[ -e "${wheels[0]}" ]]; then
+            echo "OK"
+          else
+            echo "Expected exactly one abi3 wheel, found ${#wheels[@]}:"
+            printf ' - %s\n' "${wheels[@]}"
+            exit 1
+          fi
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: wheel-${{runner.os}}-pure
+          name: wheels-${{ matrix.platform.tag }}-${{ matrix.platform.target }}
+          path: dist/
+          if-no-files-found: error
+
+  build-windows: # {{{1
+    name: Build wheels for windows ${{ matrix.platform.target }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - target: x64
+            unittests: true
+          - target: x86
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python 3.10
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.10"
+          architecture: ${{ matrix.platform.target }}
+      - name: Set up Python 3.13t
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.13t"
+          architecture: ${{ matrix.platform.target }}
+      - name: Set up Python 3.14t
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: "3.14t"
+          architecture: ${{ matrix.platform.target }}
+      - uses: astral-sh/setup-uv@v7
+        if: matrix.platform.unittests
+        with:
+          python-version: "3.10"
+          cache-python: "true"
+          ignore-nothing-to-cache: "true"
+      - name: Build abi3 wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.10
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Run unittests with Python 3.10
+        if: matrix.platform.unittests
+        env:
+          UV_PYTHON: cp310
+        shell: bash
+        run: |-
+          echo "::group::Prepare test environment"
+          uv sync --group test --no-install-project
+          . .venv/Scripts/activate
+          uv pip install dist/*-"$UV_PYTHON"-*.whl
+          echo "::endgroup::"
+
+          make test
+      - name: Build 3.13t wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Build 3.14t wheel
+        uses: PyO3/maturin-action@86b9d133d34bc1b40018696f782949dac11bd380 # v1.49.4
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Run unittests with Python 3.14t
+        if: matrix.platform.unittests
+        env:
+          UV_PYTHON: cp314t
+        shell: bash
+        run: |-
+          echo "::group::Prepare test environment"
+          uv sync --group test --no-install-project
+          . .venv/Scripts/activate
+          uv pip install dist/*-"$UV_PYTHON"-*.whl
+          echo "::endgroup::"
+
+          make test
+      - name: Assert that exactly one abi3 wheel exists
+        shell: bash
+        run: |-
+          wheels=(dist/*-abi3-*.whl)
+          if [[ "${#wheels[@]}" -eq 1 ]] && [[ -e "${wheels[0]}" ]]; then
+            echo "OK"
+          else
+            echo "Expected exactly one abi3 wheel, found ${#wheels[@]}:"
+            printf ' - %s\n' "${wheels[@]}"
+            exit 1
+          fi
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: wheels-windows-${{ matrix.platform.target }}
           path: dist/
           if-no-files-found: error
 
   publish: # {{{1
     name: Publish release
     runs-on: ubuntu-latest
-    needs: [build, build-pure, example-notebooks]
+    needs: [build, build-windows, sdist, example-notebooks]
     if: startsWith(github.ref, 'refs/tags/v')
     environment:
       name: pypi
@@ -200,8 +318,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -217,8 +333,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -261,7 +375,7 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           path: dist/
-          name: wheel-Linux-x86_64-manylinux
+          name: wheels-manylinux-x86_64
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -277,5 +391,5 @@ jobs:
             uvx --with setuptools_scm python -c \
               "import setuptools_scm as scm; print(scm.get_version())"
           )" >> "$GITHUB_ENV"
-      - run: uv add --dev ./dist/*.whl pytest pytest-xdist && uv sync
+      - run: uv add --dev ./dist/*-abi3-*.whl pytest pytest-xdist && uv sync
       - run: uv run pytest -n auto
