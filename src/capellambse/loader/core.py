@@ -1288,7 +1288,7 @@ class MelodyLoader:
         for part in helpers.split_links(links):
             try:
                 targets.append(self.follow_link(from_element, part))
-            except (KeyError, ValueError):  # noqa: PERF203
+            except (KeyError, ValueError):
                 if not ignore_broken:
                     raise
         return targets

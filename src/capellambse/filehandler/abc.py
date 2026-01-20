@@ -16,20 +16,14 @@ import abc
 import collections.abc as cabc
 import dataclasses
 import fnmatch
+import importlib.resources.abc as ira
 import os
 import pathlib
-import sys
 import typing as t
 
 import typing_extensions as te
 
 from capellambse import helpers
-
-if sys.version_info >= (3, 11):
-    import importlib.resources.abc as ira
-else:
-    import importlib.abc as ira
-
 
 _F = t.TypeVar("_F", bound="FileHandler")
 
@@ -282,7 +276,8 @@ class FilePath(os.PathLike[str], ira.Traversable, t.Generic[_F]):
     def __fspath__(self) -> str:
         return str(self._path)
 
-    def joinpath(self, path: str | pathlib.PurePosixPath) -> te.Self:
+    def joinpath(self, *descendants: str | pathlib.PurePosixPath) -> te.Self:
+        path = pathlib.PurePosixPath(*descendants)
         newpath = helpers.normalize_pure_path(path, base=self._path)
         return type(self)(self._parent, newpath)
 

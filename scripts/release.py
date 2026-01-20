@@ -15,17 +15,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import typing as t
 
 import awesomeversion
 import click
 
 from capellambse import helpers
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
 
 CONCOM = re.compile(
     r"^(?P<type>\w+)(?:\((?P<scope>[A-Za-z0-9_-]+)\))?(?P<breaking>\!)?: (?P<subject>.*)$"

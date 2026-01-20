@@ -584,7 +584,7 @@ class TestReqIFModification:
             ),
             pytest.param(
                 "Date",
-                datetime.datetime(1987, 7, 27, tzinfo=datetime.timezone.utc),
+                datetime.datetime(1987, 7, 27, tzinfo=datetime.UTC),
                 "1987-07-27T00:00:00.000+0000",
             ),
             pytest.param("Bool", False, None),
@@ -704,9 +704,7 @@ class TestReqIFModification:
             pytest.param(False, id="Boolean Attribute"),
             pytest.param(1, id="Integer Attribute"),
             pytest.param(
-                datetime.datetime(
-                    2021, 7, 23, 13, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                datetime.datetime(2021, 7, 23, 13, 0, 0, tzinfo=datetime.UTC),
                 id="DateValue Attribute",
             ),
             pytest.param(1.9, id="Float/Real Attribute"),

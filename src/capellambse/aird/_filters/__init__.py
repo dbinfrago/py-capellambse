@@ -359,7 +359,7 @@ class ActiveFilters(t.MutableSet[str]):
 for module in ("composite", "global"):
     try:
         importlib.import_module(f"{__name__}.{module}")
-    except Exception as _err:  # noqa: BLE001, PERF203
+    except Exception as _err:  # noqa: BLE001
         c.LOGGER.error(
             "Cannot load filters from %s: %s: %s",
             module,
