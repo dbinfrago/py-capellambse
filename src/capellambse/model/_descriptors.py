@@ -2333,7 +2333,7 @@ class AttributeMatcherAccessor(DirectProxyAccessor[T_co]):
                     getattr(elm, k) == v for k, v in self.attributes.items()
                 ):
                     matches.append(elm._element)
-            except AttributeError:  # noqa: PERF203
+            except AttributeError:
                 pass
 
         if self.__aslist is None:

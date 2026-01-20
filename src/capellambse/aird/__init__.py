@@ -121,7 +121,7 @@ def parse_diagrams(
     for descriptor in enumerate_descriptors(model):
         try:
             d = parse_diagram(model, descriptor, **params)
-        except Exception as err:  # noqa: BLE001, PERF203
+        except Exception as err:  # noqa: BLE001
             C.LOGGER.warning(
                 "Ignoring invalid diagram %r: %s", descriptor, err
             )

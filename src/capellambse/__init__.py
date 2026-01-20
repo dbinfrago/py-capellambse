@@ -48,7 +48,7 @@ def load_model_extensions() -> None:
         try:
             initfunc = entrypoint.load()
             initfunc()
-        except Exception:  # noqa: PERF203
+        except Exception:
             logging.getLogger(__name__).exception(
                 "Cannot load model extension %r from %r",
                 entrypoint.name,

@@ -347,7 +347,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             try:
                 chain = list(_walk_converters(conv))
                 bundle[mime] = _run_converter_chain(chain, render)
-            except Exception:  # noqa: PERF203
+            except Exception:
                 LOGGER.exception("Failed converting diagram with %r", conv)
         if not bundle:
             LOGGER.error("Failed converting diagram for MIME bundle")
@@ -1063,7 +1063,7 @@ def _iter_format_converters() -> t.Iterator[tuple[str, DiagramConverter]]:
     for ep in imm.entry_points(group="capellambse.diagram.formats"):
         try:
             conv = ep.load()
-        except ImportError:  # noqa: PERF203
+        except ImportError:
             pass
         else:
             yield (ep.name, conv)
