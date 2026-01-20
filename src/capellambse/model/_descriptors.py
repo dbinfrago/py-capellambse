@@ -2480,6 +2480,7 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             | _obj.UnresolvedClassName
         ),
         *attrs: str,
+        subclasses: bool = True,
         aslist: t.Any = _NOT_SPECIFIED,
         mapkey: str | None = None,
         mapvalue: str | None = None,
@@ -2496,6 +2497,8 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             The type of class to search for references on.
         attrs
             The attributes of the target classes to search through.
+        subclasses
+            Include objects that are subclasses of the target class.
         aslist
             If None, only a single element must match, which will be
             returned directly. If not None, must be a subclass of
@@ -2562,6 +2565,7 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
                 raise TypeError(f"Class does not have a namespace: {class_!r}")
             self.class_ = (class_.__capella_namespace__, class_.__name__)
         self.attrs = tuple(operator.attrgetter(i) for i in attrs)
+        self.subclasses = subclasses
         self.list_extra_args = {
             "legacy_by_type": legacy_by_type,
             "mapkey": mapkey,
@@ -2584,7 +2588,9 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             return self
 
         matches: list[etree._Element] = []
-        for candidate in obj._model.search(self.class_):
+        for candidate in obj._model.search(
+            self.class_, subclasses=self.subclasses
+        ):
             for attr in self.attrs:
                 try:
                     value = attr(candidate)

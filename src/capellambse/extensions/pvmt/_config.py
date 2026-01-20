@@ -236,6 +236,7 @@ class ManagedGroup(mm.capellacore.PropertyValueGroup):
 
     def find_applicable(self) -> m.ElementList:
         """Find all elements in the model that this group applies to."""
+        # FIXME should this search find subclasses?
         objs = self._model.search(*self.selector.classes)
         if layers := self.selector.layers:
             objs = objs.filter(

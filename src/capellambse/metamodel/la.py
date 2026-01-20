@@ -61,7 +61,7 @@ class LogicalArchitecture(cs.ComponentArchitecture):
 
     @property
     def all_actors(self) -> m.ElementList[LogicalComponent]:
-        return self._model.search(LogicalComponent).by_is_actor(True)
+        return self._model.search((NS, "LogicalComponent")).by_is_actor(True)
 
     @property
     def all_actor_exchanges(self) -> m.ElementList[fa.ComponentExchange]:

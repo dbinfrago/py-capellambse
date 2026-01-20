@@ -24,7 +24,9 @@ def init() -> None:
     )
 
     cs.BlockArchitecture.all_requirements = property(
-        lambda self: self._model.search((rq.NS, "Requirement"), below=self)
+        lambda self: self._model.search(
+            (rq.NS, "Requirement"), below=self, subclasses=True
+        )
     )
     cs.BlockArchitecture.all_requirement_types = property(
         lambda self: self._model.search((rq.NS, "RequirementType"), below=self)
