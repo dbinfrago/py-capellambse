@@ -1781,7 +1781,7 @@ class Allocation(Relationship[T_co]):
             else:
                 self.__insert_refobj(elmlist._parent, refobj, before=None)
         elmlist._elements = list(self.__find_refs(elmlist._parent))
-        return t.cast("T_co", value)
+        return value
 
     def delete(
         self,
@@ -2054,7 +2054,7 @@ class Association(Relationship[T_co]):
 
         objs = [*elmlist[:index], value, *elmlist[index:]]
         self.__set_links(elmlist._parent, objs)
-        return t.cast("T_co", value)
+        return value
 
     def delete(
         self, elmlist: _obj.ElementListCouplingMixin, obj: _obj.ModelObject
@@ -3022,7 +3022,7 @@ class Containment(Relationship[T_co]):
             and isinstance(class_[1], str)
         ):
             self.class_ = _obj.resolve_class_name(class_)
-        elif isinstance(class_, cabc.Iterable) and not isinstance(class_, str):
+        elif isinstance(class_, cabc.Iterable):
             warnings.warn(
                 (
                     "Multiple classes for Containment are deprecated,"
