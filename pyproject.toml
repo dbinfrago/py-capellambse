@@ -143,7 +143,7 @@ dev = [
   "pytest-cov>=7.0.0",
   "python-lsp-server[rope]==1.14.0",
   "reuse==6.2.0",
-  "ruff==0.14.11",
+  "ruff==0.14.13",
   "xlsxwriter>=3.2.5",
 ]
 
@@ -158,7 +158,7 @@ typecheck = [
   "pillow==12.1.0",
   "platformdirs==4.5.1",
   "requests-mock==1.12.1",
-  "sphinx==8.1.3",
+  "sphinx==9.0.4",
   "types-colorama==0.4.15.20250801",
   "types-docutils==0.22.3.20251115",
   "types-lxml==2026.1.1",
@@ -172,11 +172,11 @@ typecheck = [
 
 docs = [
   "furo==2025.12.19",
-  "ipython==8.38.0",
+  "ipython==9.9.0",
   "jinja2==3.1.6",
   "nbsphinx==0.9.8",
-  "sphinx==8.1.3",
-  "sphinx-autodoc-typehints==3.0.1",
+  "sphinx==9.0.4",
+  "sphinx-autodoc-typehints==3.6.1",
   "sphinx-click==6.2.0",
 ]
 
