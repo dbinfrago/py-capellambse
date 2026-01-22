@@ -105,7 +105,7 @@ def _build_header(
     title = metadata.get("title", module.long_name)
     creation_time = (
         metadata.get("creation_time", datetime.datetime.now())
-        .astimezone(datetime.timezone.utc)
+        .astimezone(datetime.UTC)
         .strftime(REQIF_UTC_DATEFORMAT)
     )
     header = etree.Element("REQ-IF-HEADER")
@@ -466,7 +466,7 @@ def _build_attribute_value_simple(attr: rq.Attribute) -> etree._Element:
         if value is None:
             obj.set("THE-VALUE", "1990-01-01T00:00:00Z")
         elif isinstance(value, datetime.datetime):
-            utcval = value.astimezone(datetime.timezone.utc)
+            utcval = value.astimezone(datetime.UTC)
             obj.set("THE-VALUE", utcval.strftime(REQIF_UTC_DATEFORMAT))
         else:
             raise TypeError(f"Expected datetime, got {type(value).__name__}")

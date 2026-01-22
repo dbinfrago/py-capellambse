@@ -708,7 +708,6 @@ def test_model_search_finds_elements(
     session_shared_model: m.MelodyModel, searchkey: type | str
 ) -> None:
     expected = {
-        # Classes
         "0fef2887-04ce-4406-b1a1-a1b35e1ce0f3",
         "1adf8097-18f9-474e-b136-6c845fc6d9e9",
         "2a923851-a4ca-4fd2-a4b3-302edb8ac178",
@@ -728,11 +727,6 @@ def test_model_search_finds_elements(
         "ca79bf38-5e82-4104-8c49-e6e16b3748e9",
         "d2b4a93c-73ef-4f01-8b59-f86c074ec521",
         "ed272baf-43f2-4fa1-ad50-49c00563258b",
-        # Unions
-        "246ab250-2a80-487f-b022-1123c02e33ff",
-        "2f34192f-088b-4511-95ea-b1a29fb6028b",
-        "31c5c280-64e1-4d11-b874-412966aa547c",
-        "be06f4a0-aff2-4475-a8a8-766e5fa26006",
     }
 
     found = session_shared_model.search(searchkey)

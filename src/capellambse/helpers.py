@@ -268,7 +268,7 @@ if sys.platform.startswith("win"):
             while True:
                 try:
                     msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
-                except OSError as err:  # noqa: PERF203
+                except OSError as err:
                     if err.errno == errno.EDEADLOCK:
                         if not logged:
                             LOGGER.debug("Waiting for lock file %s", file)
@@ -1141,7 +1141,7 @@ def ntuples(
             break
 
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 13):
     from itertools import batched
 else:
 

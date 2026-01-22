@@ -10,7 +10,6 @@ import enum
 import logging
 import operator
 import re
-import sys
 import textwrap
 import typing as t
 
@@ -19,11 +18,6 @@ from lxml import etree
 
 from capellambse import model
 from capellambse.helpers import qtype_of
-
-if sys.version_info >= (3, 11):
-    from typing import assert_never
-else:
-    from typing_extensions import assert_never
 
 LOGGER = logging.getLogger(__name__)
 
@@ -283,7 +277,7 @@ def write_relationship(
         case RelationshipType.Association:
             f.write(f"{clsname}, {member.xmlname!r}")
         case _:
-            assert_never(f"Unhandled relationship type: {member.type.name}")
+            t.assert_never(f"Unhandled relationship type: {member.type.name}")
 
     if member.single:
         f.write(")")

@@ -36,15 +36,17 @@ static EARLY_NAMESPACES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
 });
 
 #[pyfunction]
-#[pyo3(signature=(tree, /, *, line_length, siblings, file))]
+#[pyo3(signature=(tree, /, *, line_length, siblings, declare_encoding, file))]
 pub fn serialize<'py>(
     py: Python<'py>,
     tree: &'py Bound<PyAny>,
     line_length: usize,
     siblings: bool,
+    declare_encoding: bool,
     file: Option<Bound<PyAny>>,
 ) -> PyResult<Option<Vec<u8>>> {
     Ok(Serializer::new(py, line_length, file)?
+        .declare_encoding(declare_encoding)?
         .feed_tree(tree, siblings)?
         .finish()?)
 }
@@ -93,6 +95,14 @@ impl<'py> Serializer<'py> {
             etree_element,
             etree_comment,
         })
+    }
+
+    fn declare_encoding(mut self, declare: bool) -> PyResult<Self> {
+        if declare {
+            self.emit_raw_string(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>")?;
+            self.emit_linebreak(0)?;
+        }
+        Ok(self)
     }
 
     fn feed_tree(mut self, tree: &Bound<PyAny>, siblings: bool) -> PyResult<Self> {
@@ -147,7 +157,19 @@ impl<'py> Serializer<'py> {
             check_has_no_tail(tree)?;
         }
 
-        self.eat_element(tree, 0, &HashMap::default())?;
+        let parent = tree
+            .call_method0(intern!(py, "getparent"))
+            .expect("passed element has no 'getparent' method");
+        let nsmap = if parent.is_instance(&self.etree_element).unwrap_or(false) {
+            extract_nsmap(&parent)
+        } else {
+            Vec::new()
+        };
+        let nsmap = nsmap
+            .iter()
+            .map(|(k, v)| -> PyResult<_> { Ok((v.to_cow()?, k.to_cow()?)) })
+            .collect::<PyResult<_>>()?;
+        self.eat_element(tree, 0, &nsmap)?;
 
         if siblings {
             for i in tree
@@ -210,19 +232,7 @@ impl<'py> Serializer<'py> {
         let py = e.py();
         assert!(e.is_instance(&self.etree_element).unwrap_or(false));
 
-        let mut nsmap_alias2uri = e
-            .getattr("nsmap")
-            .expect("element has no nsmap")
-            .cast::<PyDict>()
-            .expect("nsmap is not a dict")
-            .iter()
-            .map(|(k, v)| {
-                (
-                    k.cast().expect("nsmap alias is not a string").clone(),
-                    v.cast().expect("nsmap uri is not a string").clone(),
-                )
-            })
-            .collect::<Vec<(Bound<PyString>, Bound<PyString>)>>();
+        let mut nsmap_alias2uri = extract_nsmap(e);
         nsmap_alias2uri.sort_unstable_by(namespaces_sort);
         let nsmap_uri2alias = nsmap_alias2uri
             .iter()
@@ -545,4 +555,19 @@ fn namespaces_sort(
         (false, true) => Ordering::Greater,
         _ => left.0.to_string_lossy().cmp(&right.0.to_string_lossy()),
     }
+}
+
+fn extract_nsmap<'py>(e: &Bound<'py, PyAny>) -> Vec<(Bound<'py, PyString>, Bound<'py, PyString>)> {
+    e.getattr("nsmap")
+        .expect("element has no nsmap")
+        .cast::<PyDict>()
+        .expect("nsmap is not a dict")
+        .iter()
+        .map(|(k, v)| {
+            (
+                k.cast_into().expect("nsmap alias is not a string"),
+                v.cast_into().expect("nsmap uri is not a string"),
+            )
+        })
+        .collect()
 }

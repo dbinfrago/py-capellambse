@@ -102,7 +102,7 @@ class StackingBox(diagram.Box):
             **kw,
         )
         self.children = self._StackingChildren(self)
-        self.stacking_mode = stacking_mode  # type: ignore[assignment]
+        self.stacking_mode = stacking_mode
 
     def _topsection_size(self) -> diagram.Vector2D:
         """Calculate the size of the top section (this Box' own label).
@@ -310,8 +310,8 @@ class StackingBox(diagram.Box):
 class CenterAnchoredBox(diagram.Box):
     """A special Box subclass that uses its center as reference point."""
 
-    center: diagram.Vec2Property  # type: ignore[assignment]
-    center = diagram.Vec2Property()  # type: ignore[assignment]
+    center: diagram.Vec2Property
+    center = diagram.Vec2Property()
 
     def __init__(
         self,
@@ -336,7 +336,7 @@ class CenterAnchoredBox(diagram.Box):
         super().__init__((math.inf, math.inf), size, **kwargs)
         self.center = center
 
-    @property  # type: ignore[override]
+    @property
     def pos(self) -> diagram.Vector2D:
         """Return the top left corner position of this Box."""
         return self.center - self.size / 2

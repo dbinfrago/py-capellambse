@@ -273,7 +273,7 @@ class SystemComponent(cs.Component, capellacore.InvolvedElement):
     data_type = m.Single["capellacore.Classifier"](
         m.Association((ns.CAPELLACORE, "Classifier"), "dataType")
     )
-    allocated_functions = m.Allocation["SystemFunction"](
+    allocated_functions = m.Allocation["fa.AbstractFunction"](
         None, None, (NS, "SystemFunction")
     )
     realized_entities = m.Alias["m.ElementList[oa.Entity]"](

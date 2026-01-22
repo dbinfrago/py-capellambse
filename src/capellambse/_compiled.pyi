@@ -14,5 +14,6 @@ def serialize(
     *,
     line_length: int,
     siblings: bool,
+    declare_encoding: bool,
     file: _HasWrite | None,
 ) -> bytes: ...

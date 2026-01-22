@@ -69,7 +69,7 @@ class OperationalAnalysis(cs.BlockArchitecture):
 
     @property
     def all_operational_processes(self) -> m.ElementList[OperationalProcess]:
-        return self._model.search(OperationalProcess, below=self)
+        return self._model.search((NS, "OperationalProcess"), below=self)
 
     @property
     @deprecated(
@@ -317,7 +317,7 @@ class Entity(
     capabilities = m.Backref["OperationalCapability"](
         (NS, "OperationalCapability"), "involved_entities"
     )
-    related_exchanges = m.Backref["CommunicationMean"](
+    related_exchanges = m.Backref["fa.ComponentExchange"](
         (NS, "CommunicationMean"), "source", "target"
     )
     realizing_system_components = m.Backref["sa.SystemComponent"](

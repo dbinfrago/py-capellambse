@@ -460,7 +460,7 @@ class ObjectValidation:
     """Basic class for access to validation rules and results."""
 
     __capella_abstract__: t.ClassVar = True
-    __capella_namespace__: t.ClassVar = ""
+    __capella_namespace__: t.ClassVar = NS
 
     _model: capellambse.MelodyModel
     _element: etree._Element

@@ -464,7 +464,7 @@ class ModelFile:
         exs.write(
             self.root,
             file,
-            **args,
+            **args,  # type: ignore[arg-type]
             line_length=line_length,
             siblings=True,
         )
@@ -595,9 +595,7 @@ class MelodyLoader:
                 " - check the 'resources' for duplicate models"
             )
 
-    def __get_metadata(
-        self, afm: ModelFile
-    ) -> etree._Element:
+    def __get_metadata(self, afm: ModelFile) -> etree._Element:
         """Return metadata from given model.
 
         Parameters
@@ -621,30 +619,28 @@ class MelodyLoader:
         LOGGER.debug("Found <Metadata> with ID %s", metadata.get("id"))
         return metadata
 
-    def _link_library(
-        self, lib: pathlib.PurePosixPath
-    ) -> None:
-        """Link library into the project tree, updates .aird, .capella, .afm to correcrly reflect library in target model.
+    def _link_library(self, lib: pathlib.PurePosixPath) -> None:
+        """Link library into the project tree.
 
         Parameters
         ----------
         lib
             path to a library .aird file
 
-
         Description
         -----------
+        Method updates .aird, .capella, .afm to correcrly reflect library in target model
+
         When you need to refere to external library (or reuse one in a project)
         ```
         p = "..." #path to library
         model._loader._link_library(p)
 
         lib = model.project.extensions[0].reference.library no longer crashes, all fragments are in place
-
         ```
         """
         handler = self.resources[str(lib)]
-        _h , filename = _derive_entrypoint(handler)
+        _h, filename = _derive_entrypoint(handler)
 
         frag_path = lib.joinpath(filename)
         if self.trees.get(frag_path) is not None:
@@ -666,13 +662,30 @@ class MelodyLoader:
                 meta_lib = self.__get_metadata(self.trees[ref_name])
                 meta_self = self.__find_metadata()
 
-                if not next(filter(lambda el: re.search(str(ref_name), el.attrib["href"]), meta_self.iterchildren("additionalResources")), None):
-                    ael = meta_self.makeelement("additionalMetadata", href=f"../{ref_name}#{meta_lib.attrib['id']}")
+                if not next(
+                    filter(
+                        lambda el: re.search(str(ref_name), el.attrib["href"]),
+                        meta_self.iterchildren("additionalResources"),
+                    ),
+                    None,
+                ):
+                    ael = meta_self.makeelement(
+                        "additionalMetadata",
+                        href=f"../{ref_name}#{meta_lib.attrib['id']}",
+                    )
                     meta_self.append(ael)
             elif ref_name.suffix == ".capella":
-                aird_self = self.trees[pathlib.PurePosixPath(f"\x00/{self.entrypoint}")]
+                aird_self = self.trees[
+                    pathlib.PurePosixPath(f"\x00/{self.entrypoint}")
+                ]
 
-                last = next(filter(lambda el: re.search(str(ref_name), el.text), XP_SEMANTIC_RESOURCES(aird_self.root)), None)
+                last = next(
+                    filter(
+                        lambda el: re.search(str(ref_name), el.text),
+                        XP_SEMANTIC_RESOURCES(aird_self.root),
+                    ),
+                    None,
+                )
                 if not last:
                     for r in XP_SEMANTIC_RESOURCES(aird_self.root):
                         last = r
@@ -1380,7 +1393,7 @@ class MelodyLoader:
         for part in helpers.split_links(links):
             try:
                 targets.append(self.follow_link(from_element, part))
-            except (KeyError, ValueError):  # noqa: PERF203
+            except (KeyError, ValueError):
                 if not ignore_broken:
                     raise
         return targets

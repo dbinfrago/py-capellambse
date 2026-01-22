@@ -146,7 +146,9 @@ class AbstractFunctionalArchitecture(
 
     @property
     def all_functions(self) -> m.ElementList[AbstractFunction]:
-        return self._model.search((NS, "AbstractFunction"), below=self)
+        return self._model.search(
+            (NS, "AbstractFunction"), below=self, subclasses=True
+        )
 
     @property
     def all_functional_chains(self) -> m.ElementList[FunctionalChain]:

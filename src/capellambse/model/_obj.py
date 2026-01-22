@@ -486,7 +486,7 @@ class _ModelElementMeta(abc.ABCMeta):
 
             def __eq__(self: t.Any, other: object) -> bool:
                 if not isinstance(other, ModelElement):
-                    value = getattr(self, eq)  # type: ignore[arg-type]
+                    value = getattr(self, eq)
                     return value.__eq__(other)
                 return super(cls, self).__eq__(other)  # type: ignore[misc]
 
@@ -671,9 +671,7 @@ class ModelElement(metaclass=_ModelElementMeta):
         """
         import capellambse.metamodel as mm  # noqa: PLC0415
 
-        obj: ModelElement | None = self
-        assert obj is not None
-        while obj := getattr(obj, "parent", None):
+        for obj in self.iter_ancestors():
             if isinstance(obj, mm.cs.BlockArchitecture):
                 return obj
         raise AttributeError(
@@ -1055,6 +1053,17 @@ class ModelElement(metaclass=_ModelElementMeta):
 
             yield (attr, acc)
 
+    def iter_ancestors(self) -> cabc.Iterator[ModelElement]:
+        """Iterate over the ancestors of this element.
+
+        The iteration starts with the direct parent, and continues up
+        the containment hierarchy until there are no more parents.
+        """
+        obj: ModelElement | None = self
+        assert obj is not None
+        while obj := getattr(obj, "parent", None):
+            yield obj
+
     if t.TYPE_CHECKING:
 
         def __getattr__(self, attr: str) -> t.Any:
@@ -1231,7 +1240,7 @@ class ElementList(cabc.MutableSequence[T], t.Generic[T]):
         else:
             objclass = self._elemclass
 
-        base: cabc.Sequence[t.Any]
+        base: cabc.Sequence[ModelObject]
         if not reflected:
             base = self
             excluded = {getattr(i, "uuid", None) for i in other}
@@ -1241,7 +1250,11 @@ class ElementList(cabc.MutableSequence[T], t.Generic[T]):
 
         return ElementList(
             self._model,
-            [i._element for i in base if i.uuid not in excluded],
+            [
+                i._element
+                for i in base
+                if getattr(i, "uuid", None) not in excluded
+            ],
             objclass,
         )
 

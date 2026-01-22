@@ -180,8 +180,8 @@ class PhysicalFunction(fa.AbstractFunction):
     realized_logical_functions = m.Alias["la.LogicalFunction"](
         "realized_functions"
     )
-    functions = m.Containment["PhysicalFunction"](
-        "ownedFunctions", (NS, "PhysicalFunction")
+    functions = m.Containment["fa.AbstractFunction"](
+        "ownedPhysicalComponents", (NS, "PhysicalComponent")
     )
     packages = m.Containment["PhysicalFunctionPkg"](
         "ownedPhysicalFunctionPkgs", (NS, "PhysicalFunctionPkg")
@@ -235,7 +235,7 @@ class PhysicalComponent(
     deploying_components = m.Backref["PhysicalComponent"](
         (NS, "PhysicalComponent"), "deployed_components"
     )
-    allocated_functions = m.Allocation["PhysicalFunction"](
+    allocated_functions = m.Allocation["fa.AbstractFunction"](
         None, None, (NS, "PhysicalFunction")
     )
 

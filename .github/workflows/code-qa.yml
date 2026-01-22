@@ -105,10 +105,10 @@ jobs:
             echo "CIBW_BUILD=cp*-$MANYLINUX*" >> "$GITHUB_ENV"
             echo "CIBW_SKIP=cp*t-*" >> "$GITHUB_ENV"
           else
-            echo "CIBW_BUILD=cp310-$MANYLINUX* cp314-$MANYLINUX*" >> "$GITHUB_ENV"
+            echo "CIBW_BUILD=cp311-$MANYLINUX* cp314-$MANYLINUX*" >> "$GITHUB_ENV"
           fi
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@v3.3.1
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:

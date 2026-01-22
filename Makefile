@@ -24,8 +24,8 @@ dev: .venv  #: Set up development environment
 
 .PHONY: install-hooks
 install-hooks: dev .venv #: Install pre-commit hooks
-	.venv/bin/pre-commit install || :
-	.venv/bin/pre-commit install-hooks
+	uv run --no-sync pre-commit install || :
+	uv run --no-sync pre-commit install-hooks
 
 .PHONY: rebuild
 rebuild: #: Rebuild native Rust module
@@ -34,35 +34,35 @@ rebuild: #: Rebuild native Rust module
 .PHONY: clean
 clean: docs-clean #: Clean all build artifacts
 	find . -type d \( -name __pycache__ -o -name target \) -execdir rm -rf {} \; 2>/dev/null || true
-	find src -type f -name '*.so' -o -name '*.pyd' -delete || true
+	find src \( -type f -name '*.so' -o -name '*.pyd' \) -delete || true
 	rm -rf .*cache .coverage .venv build dist htmlcov src/*.egg-info
 
 # Testing {{{1
 
 .PHONY: test
 test: .venv #: Run unit tests
-	.venv/bin/pytest -n auto
+	uv run --no-sync pytest -n auto
 
 .PHONY: coverage
 coverage: .venv #: Run unit tests with coverage reporting
-	.venv/bin/pytest --cov=capellambse --cov-report=term
+	uv run --no-sync pytest --cov=capellambse --cov-report=term
 .coverage: $(shell find src tests -name "*.py")
-	.venv/bin/pytest --cov=capellambse --cov-report=term
+	uv run --no-sync pytest --cov=capellambse --cov-report=term
 htmlcov: .coverage #: Export coverage data as HTML
-	.venv/bin/coverage html -d $@
+	uv run --no-sync coverage html -d $@
 	touch -c $@
 coverage.json: .coverage #: Export coverage data as JSON
-	.venv/bin/coverage json -o $@
+	uv run --no-sync coverage json -o $@
 coverage.lcov: .coverage #: Export coverage data as LCOV
-	.venv/bin/coverage lcov -o $@
+	uv run --no-sync coverage lcov -o $@
 
 .PHONY: lint
 lint: .venv #: Run pre-commit checks on all files
-	.venv/bin/pre-commit run --all-files
+	uv run --no-sync pre-commit run --all-files
 
 .PHONY: verify-examples
 verify-examples: #: Verify example notebooks
-	./scripts/verify-examples.sh
+	uv run --no-sync ./scripts/verify-examples.sh
 
 # Documentation {{{1
 

@@ -363,6 +363,7 @@ class DeprecatedAccessor(Accessor[T_co]):
             f" use {self.alternative!r} instead>"
         )
 
+
 class Single(Accessor[T_co | None], t.Generic[T_co]):
     """An Accessor wrapper that ensures there is exactly one value.
 
@@ -1780,7 +1781,7 @@ class Allocation(Relationship[T_co]):
             else:
                 self.__insert_refobj(elmlist._parent, refobj, before=None)
         elmlist._elements = list(self.__find_refs(elmlist._parent))
-        return t.cast("T_co", value)
+        return value
 
     def delete(
         self,
@@ -2053,7 +2054,7 @@ class Association(Relationship[T_co]):
 
         objs = [*elmlist[:index], value, *elmlist[index:]]
         self.__set_links(elmlist._parent, objs)
-        return t.cast("T_co", value)
+        return value
 
     def delete(
         self, elmlist: _obj.ElementListCouplingMixin, obj: _obj.ModelObject
@@ -2332,7 +2333,7 @@ class AttributeMatcherAccessor(DirectProxyAccessor[T_co]):
                     getattr(elm, k) == v for k, v in self.attributes.items()
                 ):
                     matches.append(elm._element)
-            except AttributeError:  # noqa: PERF203
+            except AttributeError:
                 pass
 
         if self.__aslist is None:
@@ -2479,6 +2480,7 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             | _obj.UnresolvedClassName
         ),
         *attrs: str,
+        subclasses: bool = True,
         aslist: t.Any = _NOT_SPECIFIED,
         mapkey: str | None = None,
         mapvalue: str | None = None,
@@ -2495,6 +2497,8 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             The type of class to search for references on.
         attrs
             The attributes of the target classes to search through.
+        subclasses
+            Include objects that are subclasses of the target class.
         aslist
             If None, only a single element must match, which will be
             returned directly. If not None, must be a subclass of
@@ -2561,6 +2565,7 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
                 raise TypeError(f"Class does not have a namespace: {class_!r}")
             self.class_ = (class_.__capella_namespace__, class_.__name__)
         self.attrs = tuple(operator.attrgetter(i) for i in attrs)
+        self.subclasses = subclasses
         self.list_extra_args = {
             "legacy_by_type": legacy_by_type,
             "mapkey": mapkey,
@@ -2583,7 +2588,9 @@ class Backref(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             return self
 
         matches: list[etree._Element] = []
-        for candidate in obj._model.search(self.class_):
+        for candidate in obj._model.search(
+            self.class_, subclasses=self.subclasses
+        ):
             for attr in self.attrs:
                 try:
                     value = attr(candidate)
@@ -3021,7 +3028,7 @@ class Containment(Relationship[T_co]):
             and isinstance(class_[1], str)
         ):
             self.class_ = _obj.resolve_class_name(class_)
-        elif isinstance(class_, cabc.Iterable) and not isinstance(class_, str):
+        elif isinstance(class_, cabc.Iterable):
             warnings.warn(
                 (
                     "Multiple classes for Containment are deprecated,"

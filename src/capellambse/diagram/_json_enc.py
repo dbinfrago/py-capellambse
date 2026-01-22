@@ -67,7 +67,7 @@ class DiagramJSONEncoder(json.JSONEncoder):
             "y": _intround(o.pos.y),
             "width": _intround(o.size.x),
             "height": _intround(o.size.y),
-            "label": o.label,  # type: ignore[has-type]
+            "label": o.label,
             "context": sorted(o.context),
         }
         if o.floating_labels is not None and not o.hidelabel:
@@ -127,7 +127,7 @@ def _encode_label(o: diagram.Box | str) -> object:
         "y": _intround(o.pos.y),
         "width": _intround(o.size.x),
         "height": _intround(o.size.y),
-        "text": o.label,  # type: ignore[has-type]
+        "text": o.label,
     }
 
 

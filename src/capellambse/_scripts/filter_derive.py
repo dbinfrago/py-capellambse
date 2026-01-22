@@ -122,7 +122,9 @@ def _find_results(
     loaded_model: capellambse.MelodyModel, result_strings: list[str]
 ) -> cabc.Sequence[filtering.AbstractFilteringResult]:
     all_results: m.ElementList[filtering.AbstractFilteringResult]
-    all_results = loaded_model.search(filtering.AbstractFilteringResult)
+    all_results = loaded_model.search(
+        filtering.AbstractFilteringResult, subclasses=True
+    )
     if not result_strings:
         return all_results
 
