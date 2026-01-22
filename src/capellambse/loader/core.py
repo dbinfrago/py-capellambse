@@ -619,7 +619,7 @@ class MelodyLoader:
         LOGGER.debug("Found <Metadata> with ID %s", metadata.get("id"))
         return metadata
 
-    def _link_library(self, lib: pathlib.PurePosixPath) -> None:
+    def link_library(self, lib: pathlib.PurePosixPath) -> None:
         """Link library into the project tree.
 
         Parameters
@@ -634,9 +634,9 @@ class MelodyLoader:
         When you need to refere to external library (or reuse one in a project)
         ```
         p = "..." #path to library
-        model._loader._link_library(p)
+        model._loader.link_library(p)
 
-        lib = model.project.extensions[0].reference.library no longer crashes, all fragments are in place
+        lib = model.project.extensions[0].reference.library
         ```
         """
         handler = self.resources[str(lib)]
