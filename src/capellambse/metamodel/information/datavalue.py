@@ -237,10 +237,10 @@ class AbstractExpressionValue(
 class BinaryExpression(AbstractExpressionValue):
     operator = m.EnumPOD("operator", BinaryOperator)
     left_operand = m.Single["DataValue"](
-        m.Containment["DataValue"]("ownedLeftOperand", (NS, "DataValue"))
+        m.Containment("ownedLeftOperand", (NS, "DataValue"))
     )
     right_operand = m.Single["DataValue"](
-        m.Containment["DataValue"]("ownedRightOperand", (NS, "DataValue"))
+        m.Containment("ownedRightOperand", (NS, "DataValue"))
     )
 
 

@@ -55,11 +55,11 @@ class GroupingElementPkg(CatalogElementPkg):
 
 
 class CatalogElementLink(ReAbstractElement):
-    source = m.Single(m.Association["CatalogElement"]((NS, "CatalogElement"), "source"))
-    target = m.Single(
-        m.Association["m.ModelElement"](
-            (ns.MODELLINGCORE, "ModelElement"), "target"
-        )
+    source = m.Single["CatalogElement"](
+        m.Association((NS, "CatalogElement"), "source")
+    )
+    target = m.Single["m.ModelElement"](
+        m.Association((ns.MODELLINGCORE, "ModelElement"), "target")
     )
     origin = m.Single(
         m.Association["CatalogElementLink"](
@@ -80,9 +80,7 @@ class CatalogElement(ReDescriptionElement, ReElementContainer):
     version = m.StringPOD("version")
     tags = m.StringPOD("tags")
     origin = m.Single(
-        m.Association["CatalogElement"](
-            (NS, "CatalogElement"), "origin"
-        )
+        m.Association["CatalogElement"]((NS, "CatalogElement"), "origin")
     )
     current_compliancy = m.Single(
         m.Association["CompliancyDefinition"](
