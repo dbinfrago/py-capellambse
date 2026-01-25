@@ -55,12 +55,16 @@ class GroupingElementPkg(CatalogElementPkg):
 
 
 class CatalogElementLink(ReAbstractElement):
-    source = m.Association["CatalogElement"]((NS, "CatalogElement"), "source")
-    target = m.Association["m.ModelElement"](
-        (ns.MODELLINGCORE, "ModelElement"), "target"
+    source = m.Single["CatalogElement"](
+        m.Association((NS, "CatalogElement"), "source")
     )
-    origin = m.Association["CatalogElementLink"](
-        (NS, "CatalogElementLink"), "origin"
+    target = m.Single["m.ModelElement"](
+        m.Association((ns.MODELLINGCORE, "ModelElement"), "target")
+    )
+    origin = m.Single(
+        m.Association["CatalogElementLink"](
+            (NS, "CatalogElementLink"), "origin"
+        )
     )
     unsynchronized_features = m.StringPOD("unsynchronizedFeatures")
     is_suffixed = m.BoolPOD("suffixed")
@@ -75,12 +79,18 @@ class CatalogElement(ReDescriptionElement, ReElementContainer):
     is_read_only = m.BoolPOD("readOnly")
     version = m.StringPOD("version")
     tags = m.StringPOD("tags")
-    origin = m.Association["CatalogElement"]((NS, "CatalogElement"), "origin")
-    current_compliancy = m.Association["CompliancyDefinition"](
-        (NS, "CompliancyDefinition"), "currentCompliancy"
+    origin = m.Single(
+        m.Association["CatalogElement"]((NS, "CatalogElement"), "origin")
     )
-    default_replica_compliancy = m.Association["CompliancyDefinition"](
-        (NS, "CompliancyDefinition"), "defaultReplicaCompliancy"
+    current_compliancy = m.Single(
+        m.Association["CompliancyDefinition"](
+            (NS, "CompliancyDefinition"), "currentCompliancy"
+        )
+    )
+    default_replica_compliancy = m.Single(
+        m.Association["CompliancyDefinition"](
+            (NS, "CompliancyDefinition"), "defaultReplicaCompliancy"
+        )
     )
     links = m.Containment["CatalogElementLink"](
         "ownedLinks", (NS, "CatalogElementLink")

@@ -181,7 +181,7 @@ class PhysicalFunction(fa.AbstractFunction):
         "realized_functions"
     )
     functions = m.Containment["fa.AbstractFunction"](
-        "ownedPhysicalComponents", (NS, "PhysicalComponent")
+        "ownedFunctions", (NS, "PhysicalFunction")
     )
     packages = m.Containment["PhysicalFunctionPkg"](
         "ownedPhysicalFunctionPkgs", (NS, "PhysicalFunctionPkg")
