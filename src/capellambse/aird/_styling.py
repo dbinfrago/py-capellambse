@@ -124,8 +124,8 @@ def _filter_default_styles(
         for dia_lookup, elm_lookup in [
             (diagram_class, element_class),
             ("__GLOBAL__", element_class),
-            (diagram_class, element_class.split(".")[0]),
-            ("__GLOBAL__", element_class.split(".")[0]),
+            (diagram_class, element_class.split(".", 1)[0]),
+            ("__GLOBAL__", element_class.split(".", 1)[0]),
         ]:
             defstyle = diagram.STYLES.get(dia_lookup, {}).get(elm_lookup, {})
             try:

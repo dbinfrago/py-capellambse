@@ -128,7 +128,7 @@ def _port_allocation(obj: _obj.ModelObject) -> str:
     return f"{'_'.join(sorted(styleclasses))}Allocation"
 
 
-_STYLECLASSES: dict[str, cabc.Callable[..., str]] = {
+_STYLECLASSES: dict[str, cabc.Callable[[t.Any], str]] = {
     "Association": _association,
     "CapellaIncomingRelation": lambda _: "RequirementRelation",
     "CapellaOutgoingRelation": lambda _: "RequirementRelation",
@@ -136,7 +136,7 @@ _STYLECLASSES: dict[str, cabc.Callable[..., str]] = {
     "ComponentPort": lambda o: f"CP_{o.orientation or 'UNSET'}",
     "ControlNode": lambda o: o.kind.name.capitalize() + _default(o),
     "Entity": lambda o: (
-        ("Entity", "OperationalActor")[o.is_actor and o.is_human]
+        "OperationalActor" if o.is_actor and o.is_human else "Entity"
     ),
     "FunctionalChainInvolvementFunction": _functional_chain_involvement,
     "FunctionalChainInvolvementLink": _functional_chain_involvement,
