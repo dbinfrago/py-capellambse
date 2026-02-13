@@ -591,8 +591,7 @@ class ModelElement(metaclass=_ModelElementMeta):
 
     diagrams: _descriptors.Accessor[
         ElementList[capellambse.model.diagram.Diagram]
-    ]
-    diagrams = property(  # type: ignore[assignment]
+    ] = property(  # type: ignore[assignment]
         lambda self: self._model.diagrams.by_target(self)
     )
     visible_on_diagrams = property(

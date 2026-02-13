@@ -73,6 +73,10 @@ nitpick_ignore_regex = [
     # Sometimes autodoc_typehints doesn't properly resolve aliases
     ("py:class", r"(?:cabc|etree|m|t|_obj)\..*"),
 ]
+# Suppress "more than one target found" for Python domain cross-references.
+# This happens with 'type[T]' return annotations, which Sphinx resolves to
+# multiple '.type' class attributes instead of the Python builtin 'type'.
+suppress_warnings = ["ref.python"]
 
 
 # Add any paths that contain templates here, relative to this directory.
