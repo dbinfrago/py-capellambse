@@ -686,7 +686,7 @@ class MelodyLoader:
                     ),
                     None,
                 )
-                if not last:
+                if last is not None:
                     for r in XP_SEMANTIC_RESOURCES(aird_self.root):
                         last = r
 
