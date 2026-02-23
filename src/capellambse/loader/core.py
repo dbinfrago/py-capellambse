@@ -1407,6 +1407,15 @@ class MelodyLoader:
         for fragment, tree in self.trees.items():
             if tree.root is root:
                 return (fragment, tree)
+        # fallback here is necessary because
+        # working with root collections, i.e. key_value_pairs,
+        # causes project root being represented by two entities, i.e.
+        # <Element {http://www.polarsys.org/capella/core/modeller/7.0.0}Project at 0x7feced455dc0>
+        # <Element {http://www.polarsys.org/capella/core/modeller/7.0.0}Project at 0x7fecee0f6640>
+        # they do not pass "is" check but have the same IDs
+        for fragment, tree in self.trees.items():
+            if tree.root.attrib.get("id") == root.attrib.get("id"):
+                return (fragment, tree)
         raise ValueError("Element is not contained in any fragment")
 
     def _follow_href(self, element: etree._Element) -> etree._Element:
