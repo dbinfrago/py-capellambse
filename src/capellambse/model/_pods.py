@@ -495,7 +495,6 @@ class _MultiPODValues(cabc.MutableSequence[str]):
             it = self._parent.iterchildren(self._tag)
             elems = list(itertools.islice(it, idx.start, idx.stop, idx.step))
             values = [i.text for i in elems]
-            values[idx] = value
             for e, v in zip(elems, values, strict=True):
                 e.text = v
 
