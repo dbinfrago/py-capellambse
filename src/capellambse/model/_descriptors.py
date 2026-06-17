@@ -50,7 +50,7 @@ import typing_extensions as te
 from lxml import etree
 
 import capellambse
-from capellambse import helpers
+from capellambse import helpers, loader
 
 from . import T, T_co, U, U_co
 
@@ -394,8 +394,16 @@ class Single(Accessor[T_co | None], t.Generic[T_co]):
 
     Examples
     --------
-    >>> class Foo(capellacore.CapellaElement):
-    ...     bar = Single["Bar"](Containment("bar", (NS, "Bar")))
+    This example creates two classes Foo and Bar, where Bar may contain
+    a single Foo object:
+
+    >>> import capellambse.model as m
+    >>> from capellambse.metamodel import capellacore
+    >>> TEST_NS = m.Namespace(m.VIRTUAL_NAMESPACE_PREFIX + "/test", "test")
+    >>>
+    >>> class Foo(capellacore.CapellaElement, ns=TEST_NS): ...
+    >>> class Bar(capellacore.CapellaElement, ns=TEST_NS):
+    ...     foo = Single["Foo"](Containment("ownedFoo", (TEST_NS, "Foo")))
     """
 
     def __init__(
@@ -1155,6 +1163,10 @@ class DirectProxyAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
     def _delete(
         self, model: capellambse.MelodyModel, elements: list[etree._Element]
     ) -> None:
+        if not isinstance(model._loader, loader.MelodyLoader):
+            raise TypeError(
+                f"{type(self).__name__} can only be used with the legacy lxml backend"
+            )
         all_elements = (
             list(
                 itertools.chain.from_iterable(
@@ -1188,7 +1200,7 @@ class DirectProxyAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
     ) -> etree._Element:
         if self.follow_abstract:
             if abstype := elem.get("abstractType"):
-                elem = obj._model._loader[abstype]
+                elem = obj._model._loader.follow_link(elem, abstype)
             else:
                 raise RuntimeError("Broken XML: No abstractType defined?")
         return elem
@@ -1196,12 +1208,20 @@ class DirectProxyAccessor(WritableAccessor[T_co], PhysicalAccessor[T_co]):
     def _getsubelems(
         self, obj: _obj.ModelObject
     ) -> cabc.Iterator[etree._Element]:
+        if not isinstance(obj._model._loader, loader.MelodyLoader):
+            raise TypeError(
+                f"{type(self).__name__} can only be used with the legacy lxml backend"
+            )
         return itertools.chain.from_iterable(
             obj._model._loader.iterchildren_xt(i, *iter(self.xtypes))
             for i in self._findroots(obj)
         )
 
     def _findroots(self, obj: _obj.ModelObject) -> list[etree._Element]:
+        if not isinstance(obj._model._loader, loader.MelodyLoader):
+            raise TypeError(
+                f"{type(self).__name__} can only be used with the legacy lxml backend"
+            )
         roots = [obj._element]
         for xtype in self.rootelem:
             roots = list(
@@ -1353,6 +1373,10 @@ class DeepProxyAccessor(PhysicalAccessor[T_co]):
         self, obj: _obj.ModelObject
     ) -> cabc.Iterator[etree._Element]:
         ldr = obj._model._loader
+        if not isinstance(ldr, loader.MelodyLoader):
+            raise TypeError(
+                f"{type(self).__name__} can only be used with the legacy lxml backend"
+            )
         roots = [obj._element]
         for xtype in self.rootelem:
             roots = list(
@@ -3176,7 +3200,7 @@ class Containment(Relationship[T_co]):
         assert obj._model is elmlist._model
         model = obj._model
         all_elements = [
-            *list(model._loader.iterdescendants_xt(obj._element)),
+            *list(model._loader.iterdescendants(obj._element)),
             obj._element,
         ]
         with contextlib.ExitStack() as stack:
