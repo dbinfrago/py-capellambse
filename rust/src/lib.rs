@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 
 mod exs;
 
-#[pymodule(name = "_compiled")]
+#[pymodule(name = "_compiled", gil_used = false)]
 fn setup_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(exs::serialize, m)?)?;
 
