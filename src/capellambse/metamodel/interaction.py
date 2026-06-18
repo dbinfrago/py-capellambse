@@ -83,9 +83,11 @@ class SequenceMessage(capellacore.NamedElement):
     exchange_context = m.Association["capellacore.Constraint"](
         (ns.CAPELLACORE, "Constraint"), "exchangeContext"
     )
-    sending_end = m.Association["MessageEnd"]((NS, "MessageEnd"), "sendingEnd")
-    receiving_end = m.Association["MessageEnd"](
-        (NS, "MessageEnd"), "receivingEnd"
+    sending_end = m.Single(
+        m.Association["MessageEnd"]((NS, "MessageEnd"), "sendingEnd")
+    )
+    receiving_end = m.Single(
+        m.Association["MessageEnd"]((NS, "MessageEnd"), "receivingEnd")
     )
     exchanged_items = m.Association["information.ExchangeItem"](
         (ns.INFORMATION, "ExchangeItem"), "exchangedItems"
@@ -218,14 +220,13 @@ class _EventOperation(Event):
 
 
 class EventReceiptOperation(_EventOperation):
-    operation = m.Association["information.AbstractEventOperation"](
-        (ns.INFORMATION, "AbstractEventOperation"), "operation"
+    operation = m.Single(
+        m.Association["information.AbstractEventOperation"]((ns.INFORMATION, "AbstractEventOperation"), "operation")
     )
 
-
 class EventSentOperation(_EventOperation):
-    operation = m.Association["information.AbstractEventOperation"](
-        (ns.INFORMATION, "AbstractEventOperation"), "operation"
+    operation = m.Single(
+        m.Association["information.AbstractEventOperation"]((ns.INFORMATION, "AbstractEventOperation"), "operation")
     )
 
 

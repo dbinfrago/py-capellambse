@@ -28,8 +28,8 @@ class SystemAnalysis(cs.ComponentArchitecture):
     component_pkg = m.Single["SystemComponentPkg"](
         m.Containment("ownedSystemComponentPkg", (NS, "SystemComponentPkg"))
     )
-    mission_pkg = m.Containment["MissionPkg"](
-        "ownedMissionPkg", (NS, "MissionPkg")
+    mission_pkg = m.Single["MissionPkg"](
+        m.Containment["MissionPkg"]("ownedMissionPkg", (NS, "MissionPkg"))
     )
     operational_analysis_realizations = m.Containment[
         "OperationalAnalysisRealization"
