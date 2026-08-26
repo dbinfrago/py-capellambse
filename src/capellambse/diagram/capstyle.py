@@ -267,6 +267,14 @@ STYLES: dict[str, dict[str, dict[str, CSSdef]]] = {
             "stroke": COLORS["black"],
             "stroke-width": 1,
         },
+        "Box.FunctionalChain": {
+            "fill": COLORS["_CAP_FCD"],
+            "stroke": COLORS["_CAP_FCinFCD_Green"],
+        },
+        "Box.FunctionalChainReference": {
+            "fill": COLORS["_CAP_FCD"],
+            "stroke": COLORS["_CAP_FCinFCD_Green"],
+        },
         "Box.Annotation": {
             "fill": None,
             "stroke": None,

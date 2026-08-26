@@ -41,6 +41,23 @@ def tmp_json_fixture(
 
 
 class TestSVG:
+    @pytest.mark.parametrize(
+        "styleclass", ["FunctionalChain", "FunctionalChainReference"]
+    )
+    def test_functional_chain_icons_and_styles(self, styleclass: str) -> None:
+        assert capellambse.diagram.has_icon(styleclass)
+        symbol, _ = capellambse.diagram.get_svg_symbol(styleclass)
+        assert symbol.get_id() == f"{styleclass}Symbol"
+        assert "image" not in symbol.tostring()
+        assert symbol.tostring().count("<circle") == 2
+        assert "linearGradient" in symbol.tostring()
+        assert 'd="M5 5 11 11"' in symbol.tostring()
+        assert capellambse.diagram.get_style(None, f"Box.{styleclass}") == {
+            "fill": capellambse.diagram.COLORS["_CAP_FCD"],
+            "stroke": capellambse.diagram.COLORS["_CAP_FCinFCD_Green"],
+            "stroke-width": 1,
+        }
+
     def test_diagram_meta_data_attributes(
         self, tmp_json: pathlib.Path
     ) -> None:
