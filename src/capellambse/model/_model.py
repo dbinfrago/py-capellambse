@@ -171,6 +171,7 @@ class MelodyModel:
             | None
         ) = None,
         fallback_render_aird: bool = False,
+        loader_backend: t.Literal["lxml"] = "lxml",
         **kwargs: t.Any,
     ) -> None:
         """Load a project.
@@ -281,10 +282,16 @@ class MelodyModel:
             AIRD diagrams, and only used during cache misses
             (``FileNotFoundError`` from the underlying file handler) for
             all other types of diagrams.
+        loader_backend
+            Choose which Loader backend to use. Currently the only
+            supported option is "lxml", which uses the traditional
+            :class:`~capellambse.loader.core.MelodyLoader`, based on
+            modifying in-memory XML trees loaded with the `lxml`
+            library.
         **kwargs
-            Additional arguments are passed on to the underlying
-            :class:`~capellambse.loader.core.MelodyLoader`, which in
-            turn passes it on to the primary resource's FileHandler.
+            Additional arguments are passed on to the underlying Loader
+            instance, which in turn passes it on to the primary
+            resource's FileHandler.
 
         See Also
         --------
@@ -301,13 +308,20 @@ class MelodyModel:
         """
         capellambse.load_model_extensions()
 
-        self._loader = loader.MelodyLoader(path, **kwargs)
+        if loader_backend == "lxml":
+            self._loader: loader.Loader = loader.MelodyLoader(path, **kwargs)
+        else:
+            raise ValueError(
+                f"Unsupported loader backend {loader_backend!r},"
+                " currently only 'lxml' is supported"
+            )
         self.__viewpoints = dict(self._loader.referenced_viewpoints())
+
         self._fallback_render_aird = fallback_render_aird
 
         if diagram_cache:
             if diagram_cache == path:
-                self.diagram_cache = self._loader.filehandler
+                self.diagram_cache = self._loader.resources["\x00"]
             elif isinstance(diagram_cache, filehandler.FileHandler):
                 self.diagram_cache = diagram_cache
             elif isinstance(diagram_cache, cabc.Mapping):
@@ -320,7 +334,7 @@ class MelodyModel:
             self.diagram_cache = None
 
     @property
-    def resources(self) -> dict[str, filehandler.FileHandler]:
+    def resources(self) -> cabc.MutableMapping[str, filehandler.FileHandler]:
         return self._loader.resources
 
     def save(self, **kw: t.Any) -> None:
@@ -411,10 +425,11 @@ class MelodyModel:
         The following calls are functionally identical, and will all
         return a list of every Logical Component in the model:
 
-        >>> model.search("LogicalComponent")
-        >>> model.search("org.polarsys.capella.core.data.la:LogicalComponent")
-        >>> model.search( (capellambse.metamodel.la.NS, "LogicalComponent") )
-        >>> model.search( ("org.polarsys.capella.core.data.la", "LogicalComponent") )
+        >>> a = model.search("LogicalComponent")
+        >>> b = model.search("org.polarsys.capella.core.data.la:LogicalComponent")
+        >>> c = model.search( (capellambse.metamodel.la.NS, "LogicalComponent") )
+        >>> d = model.search( ("org.polarsys.capella.core.data.la", "LogicalComponent") )
+        >>> assert a == b == c == d
         """
         classes: set[type[_obj.ModelObject]] = set()
         for clsname in clsnames:
@@ -505,7 +520,7 @@ class MelodyModel:
 
     def by_uuid(self, uuid: str) -> t.Any:
         """Search the entire model for an element with the given UUID."""
-        return _obj.wrap_xml(self, self._loader[uuid])
+        return _obj.wrap_xml(self, self._loader.follow_link(None, uuid))
 
     def find_references(
         self, target: _obj.ModelObject | str, /
@@ -541,14 +556,7 @@ class MelodyModel:
             if not capellambse.helpers.is_uuid_string(uuid):
                 raise ValueError(f"Malformed or missing UUID for {target!r}")
 
-        for elem in self._loader.xpath(
-            f"//*[@*[contains(., '#{uuid}')] | */@*[contains(., '#{uuid}')]]",
-            roots=[
-                i.root
-                for i in self._loader.trees.values()
-                if i.fragment_type != loader.FragmentType.VISUAL
-            ],
-        ):
+        for elem in self._loader.find_references(uuid):
             obj = _obj.wrap_xml(self, elem)
             for attr in _reference_attributes(type(obj)):
                 if attr.startswith("_"):
@@ -667,18 +675,18 @@ class MelodyModel:
         Passing a bare filename looks up the executable in the PATH,
         after replacing a possible '{VERSION}' field:
 
-        >>> model.update_diagram_cache("capella", "png")
-        >>> model.update_diagram_cache("capella{VERSION}", "png")
+        >>> model.update_diagram_cache("capella", "png")                        # doctest: +SKIP
+        >>> model.update_diagram_cache("capella{VERSION}", "png")               # doctest: +SKIP
 
         Passing an absolute path to a local installation of Capella that
         contains the Capella version will use that executable:
 
-        >>> model.update_diagram_cache("/opt/capella{VERSION}/capella", "png")
+        >>> model.update_diagram_cache("/opt/capella{VERSION}/capella", "png")  # doctest: +SKIP
 
         Passing a docker image name will launch a docker container, using the
         Capella binary at the image's ENTRYPOINT:
 
-        >>> model.update_diagram_cache(
+        >>> model.update_diagram_cache(                                         # doctest: +SKIP
         ...     "ghcr.io/dbinfrago/capella-dockerimages/capella/base:{VERSION}-selected-dropins-main",
         ...     "png",
         ... )
