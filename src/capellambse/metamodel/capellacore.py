@@ -77,6 +77,9 @@ class CapellaElement(
     features = m.Association["EnumerationPropertyLiteral"](
         (NS, "EnumerationPropertyLiteral"), "features"
     )
+    owned_traces = m.Containment["capellacommon.TransfoLink"](
+        "ownedTraces", (ns.CAPELLACOMMON, "TransfoLink")
+    )
 
 
 class NamedElement(

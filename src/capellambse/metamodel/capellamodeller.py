@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import capellambse.model as m
+from capellambse.metamodel import re
 
 from . import capellacore
 from . import namespaces as ns
