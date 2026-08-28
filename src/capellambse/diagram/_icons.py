@@ -125,6 +125,57 @@ def _factory(
     return decorator
 
 
+def _functional_chain_icon(id_: str) -> container.Symbol:
+    """Return a vector rendering of the Capella FunctionalChain icon."""
+    symbol = container.Symbol(id=id_, viewBox="0 0 16 16")
+    gradient_id = f"{id_}_green"
+    symbol.add(
+        _make_lgradient(
+            gradient_id,
+            start=(0, 0),
+            end=(1, 1),
+            stop_colors=("#d5f3bc", "#5b9d47"),
+        )
+    )
+    symbol.add(
+        path.Path(
+            d="M5 5 11 11",
+            fill="none",
+            stroke="#000000",
+            stroke_width=1.25,
+        )
+    )
+    symbol.add(
+        shapes.Circle(
+            center=(4, 4),
+            r=3,
+            fill=f"url(#{gradient_id})",
+            stroke="#3c6e32",
+            stroke_width=0.75,
+        )
+    )
+    symbol.add(
+        shapes.Circle(
+            center=(12, 12),
+            r=3,
+            fill=f"url(#{gradient_id})",
+            stroke="#3c6e32",
+            stroke_width=0.75,
+        )
+    )
+    return symbol
+
+
+@_factory()
+def _functional_chain_symbol() -> container.Symbol:
+    return _functional_chain_icon("FunctionalChainSymbol")
+
+
+@_factory()
+def _functional_chain_reference_symbol() -> container.Symbol:
+    return _functional_chain_icon("FunctionalChainReferenceSymbol")
+
+
 @_factory()
 def _error_symbol() -> container.Symbol:
     symb = container.Symbol(id="ErrorSymbol", viewBox="0 0 10 10")
