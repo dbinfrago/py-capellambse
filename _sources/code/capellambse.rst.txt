@@ -1,0 +1,58 @@
+capellambse package
+===================
+
+.. automodule:: capellambse
+   :no-index:
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   capellambse.aird
+   capellambse.diagram
+   capellambse.extensions
+   capellambse.filehandler
+   capellambse.loader
+   capellambse.metamodel
+   capellambse.model
+   capellambse.svg
+
+Submodules
+----------
+
+capellambse.cli\_helpers module
+-------------------------------
+
+.. automodule:: capellambse.cli_helpers
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.decl module
+-----------------------
+
+.. automodule:: capellambse.decl
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.diagram\_cache module
+---------------------------------
+
+.. automodule:: capellambse.diagram_cache
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.helpers module
+--------------------------
+
+.. automodule:: capellambse.helpers
+   :members:
+   :show-inheritance:
+   :undoc-members:

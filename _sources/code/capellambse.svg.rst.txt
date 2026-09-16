@@ -1,0 +1,58 @@
+capellambse.svg package
+=======================
+
+.. automodule:: capellambse.svg
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+capellambse.svg.decorations module
+----------------------------------
+
+.. automodule:: capellambse.svg.decorations
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.svg.drawing module
+------------------------------
+
+.. automodule:: capellambse.svg.drawing
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.svg.generate module
+-------------------------------
+
+.. automodule:: capellambse.svg.generate
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.svg.helpers module
+------------------------------
+
+.. automodule:: capellambse.svg.helpers
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.svg.style module
+----------------------------
+
+.. automodule:: capellambse.svg.style
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.svg.symbols module
+------------------------------
+
+.. automodule:: capellambse.svg.symbols
+   :members:
+   :show-inheritance:
+   :undoc-members:

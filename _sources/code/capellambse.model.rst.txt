@@ -1,0 +1,18 @@
+capellambse.model package
+=========================
+
+.. automodule:: capellambse.model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+capellambse.model.diagram module
+--------------------------------
+
+.. automodule:: capellambse.model.diagram
+   :members:
+   :show-inheritance:
+   :undoc-members:

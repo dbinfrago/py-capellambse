@@ -1,0 +1,163 @@
+capellambse.metamodel package
+=============================
+
+.. automodule:: capellambse.metamodel
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   capellambse.metamodel.information
+   capellambse.metamodel.pa
+
+Submodules
+----------
+
+capellambse.metamodel.activity module
+-------------------------------------
+
+.. automodule:: capellambse.metamodel.activity
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.behavior module
+-------------------------------------
+
+.. automodule:: capellambse.metamodel.behavior
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.capellacommon module
+------------------------------------------
+
+.. automodule:: capellambse.metamodel.capellacommon
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.capellacore module
+----------------------------------------
+
+.. automodule:: capellambse.metamodel.capellacore
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.capellamodeller module
+--------------------------------------------
+
+.. automodule:: capellambse.metamodel.capellamodeller
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.cs module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.cs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.epbs module
+---------------------------------
+
+.. automodule:: capellambse.metamodel.epbs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.fa module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.fa
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.interaction module
+----------------------------------------
+
+.. automodule:: capellambse.metamodel.interaction
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.la module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.la
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.libraries module
+--------------------------------------
+
+.. automodule:: capellambse.metamodel.libraries
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.modellingcore module
+------------------------------------------
+
+.. automodule:: capellambse.metamodel.modellingcore
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.modeltypes module
+---------------------------------------
+
+.. automodule:: capellambse.metamodel.modeltypes
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.namespaces module
+---------------------------------------
+
+.. automodule:: capellambse.metamodel.namespaces
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.oa module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.oa
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.re module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.re
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.sa module
+-------------------------------
+
+.. automodule:: capellambse.metamodel.sa
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.metamodel.sharedmodel module
+----------------------------------------
+
+.. automodule:: capellambse.metamodel.sharedmodel
+   :members:
+   :show-inheritance:
+   :undoc-members:

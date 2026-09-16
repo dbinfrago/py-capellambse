@@ -1,0 +1,34 @@
+capellambse.loader package
+==========================
+
+.. automodule:: capellambse.loader
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+capellambse.loader.core module
+------------------------------
+
+.. automodule:: capellambse.loader.core
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.loader.exs module
+-----------------------------
+
+.. automodule:: capellambse.loader.exs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+capellambse.loader.modelinfo module
+-----------------------------------
+
+.. automodule:: capellambse.loader.modelinfo
+   :members:
+   :show-inheritance:
+   :undoc-members:

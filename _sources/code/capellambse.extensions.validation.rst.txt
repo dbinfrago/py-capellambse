@@ -1,0 +1,18 @@
+capellambse.extensions.validation package
+=========================================
+
+.. automodule:: capellambse.extensions.validation
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Submodules
+----------
+
+capellambse.extensions.validation.rules module
+----------------------------------------------
+
+.. automodule:: capellambse.extensions.validation.rules
+   :members:
+   :show-inheritance:
+   :undoc-members:
