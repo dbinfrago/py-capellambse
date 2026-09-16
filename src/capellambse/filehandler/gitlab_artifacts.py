@@ -336,7 +336,7 @@ class GitlabArtifactsFiles(abc.FileHandler):
             Maximum number of entries to yield. If 0, yield everything.
         """
         sep = ("?", "&")["?" in path]
-        next_url = (
+        next_url: str | None = (
             f"{self.__path}/api/v4{path}{sep}pagination=keyset&per_page="
             + str(min(100, max or 100))
         )

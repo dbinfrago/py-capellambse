@@ -246,7 +246,7 @@ def write_class(
         elif isinstance(member, RelationshipMember):
             write_relationship(f, member, nsmodule=nsmodule)
         else:
-            raise AssertionError(
+            raise NotImplementedError(
                 f"Unhandled member type {type(member).__name__}"
             )
         if docstrings and member.docstring:

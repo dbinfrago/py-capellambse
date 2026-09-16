@@ -422,7 +422,7 @@ class Single(Accessor[T_co | None], t.Generic[T_co]):
 
         objs: t.Any = self.wrapped.__get__(obj, type(obj))
         if not isinstance(objs, _obj.ElementList):
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY004 # internal error
                 f"Expected a list from wrapped accessor on {self._qualname},"
                 f" got {type(objs).__name__}"
             )
@@ -1859,7 +1859,7 @@ class Association(Relationship[T_co]):
 
     def __init__(
         self,
-        class_: type[T_co] | None | _obj.UnresolvedClassName,
+        class_: type[T_co] | _obj.UnresolvedClassName | None,
         attr: str | None,
         *,
         aslist: t.Any = _NOT_SPECIFIED,
@@ -2143,7 +2143,7 @@ class Association(Relationship[T_co]):
 class PhysicalLinkEndsAccessor(Association[T_co]):
     def __init__(
         self,
-        class_: type[T_co] | None | _obj.UnresolvedClassName,
+        class_: type[T_co] | _obj.UnresolvedClassName | None,
         attr: str,
         *,
         aslist: t.Any = _NOT_SPECIFIED,
@@ -2185,7 +2185,7 @@ class IndexAccessor(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             return self
         container = getattr(obj, self.wrapped)
         if not isinstance(container, _obj.ElementList):
-            raise RuntimeError(
+            raise RuntimeError(  # noqa: TRY004 # internal error
                 f"Cannot get {self._qualname}: {self.wrapped} is not a list"
             )
         if len(container) <= self.index:
@@ -2710,7 +2710,7 @@ class Filter(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             )
 
         if not isinstance(self.wrapped, Relationship):
-            raise AttributeError(f"Cannot delete from {self._qualname}")
+            raise AttributeError(f"Cannot delete from {self._qualname}")  # noqa: TRY004
 
         children = self.__get__(obj, type(obj))
         assert isinstance(children, _obj.ElementListCouplingMixin)
@@ -2777,7 +2777,7 @@ class Filter(Accessor["_obj.ElementList[T_co]"], t.Generic[T_co]):
             )
 
         if not isinstance(self.wrapped, Relationship):
-            raise AttributeError(f"Cannot delete from {self._qualname}")
+            raise AttributeError(f"Cannot delete from {self._qualname}")  # noqa: TRY004
 
         unfiltered = self.wrapped.__get__(
             elmlist._parent, type(elmlist._parent)
