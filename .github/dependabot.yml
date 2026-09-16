@@ -22,6 +22,8 @@ updates:
       - dependency-type: development
     ignore:
       - dependency-name: mypy
+      - dependency-name: docformatter
+        versions: ["1.7.8"]
     groups:
       python-packages:
         patterns: ["*"]
