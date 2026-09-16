@@ -1,7 +1,0 @@
-SPDX-FileCopyrightText: Copyright DB InfraGO AG
-SPDX-License-Identifier: CC0-1.0
-
-node: $Format:%H$
-node-date: $Format:%cI$
-describe-name: $Format:%(describe:tags=true)$
-ref-names: $Format:%D$
