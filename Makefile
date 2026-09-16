@@ -19,8 +19,11 @@ help: #: Show this help
 .PHONY: dev
 dev: .venv  #: Set up development environment
 .venv: pyproject.toml
+	find src -type f \( -name '*.so' -o -name '*.pyd' \) -delete || true
 	uv sync --inexact
+	uv run --no-sync python -m maturin_import_hook site install
 	touch -c .venv
+	if [[ -d .jj ]]; then touch .jj/.maturin_hook_ignore; fi
 
 .PHONY: install-hooks
 install-hooks: dev .venv #: Install pre-commit hooks
@@ -28,13 +31,16 @@ install-hooks: dev .venv #: Install pre-commit hooks
 	uv run --no-sync pre-commit install-hooks
 
 .PHONY: rebuild
-rebuild: #: Rebuild native Rust module
+rebuild: clean dev #: Rebuild native Rust module
 	uv sync --inexact --reinstall-package capellambse
 
 .PHONY: clean
-clean: docs-clean #: Clean all build artifacts
+clean: #: Clean built library files
+	find src -type f \( -name '*.so' -o -name '*.pyd' \) -delete || true
+
+.PHONY: dist-clean
+dist-clean: clean docs-clean #: Clean all build artifacts, tools and data
 	find . -type d \( -name __pycache__ -o -name target \) -execdir rm -rf {} \; 2>/dev/null || true
-	find src \( -type f -name '*.so' -o -name '*.pyd' \) -delete || true
 	rm -rf .*cache .coverage .venv build dist htmlcov src/*.egg-info
 
 # Testing {{{1
