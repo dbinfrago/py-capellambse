@@ -584,7 +584,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             except FileNotFoundError:
                 LOGGER.debug("No index found")
                 index = None
-            except Exception as err:  # noqa: BLE001
+            except Exception as err:
                 err.__suppress_context__ = True
                 LOGGER.debug("Invalid or old index, ignoring", exc_info=err)
                 index = None

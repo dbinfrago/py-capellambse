@@ -591,8 +591,7 @@ class ModelElement(metaclass=_ModelElementMeta):
 
     diagrams: _descriptors.Accessor[
         ElementList[capellambse.model.diagram.Diagram]
-    ]
-    diagrams = property(  # type: ignore[assignment]
+    ] = property(  # type: ignore[assignment]
         lambda self: self._model.diagrams.by_target(self)
     )
     visible_on_diagrams = property(
@@ -1353,7 +1352,7 @@ class ElementList(cabc.MutableSequence[T], t.Generic[T]):
             for obj in self:
                 try:
                     obj_attrs = dir(obj)
-                except Exception:  # noqa: BLE001
+                except Exception:  # noqa: BLE001, S112
                     continue
                 for attr in obj_attrs:
                     if no_dir_attr.search(attr):

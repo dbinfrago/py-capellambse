@@ -409,7 +409,7 @@ def _operate_delete(
             )
         for obj in objs:
             if isinstance(obj, Promise):
-                raise ValueError("Cannot use !promise in `delete:*:`")
+                raise TypeError("Cannot use !promise in `delete:*:`")
             if isinstance(obj, str):
                 obj = UUIDReference(helpers.UUIDString(obj))
             obj = _resolve({}, parent, obj)

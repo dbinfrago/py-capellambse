@@ -56,6 +56,14 @@ nitpick_ignore = [
     # Private type hinting helpers
     ("py:class", "_MapFunction"),
     ("py:class", "_NotSpecifiedType"),
+    ("py:class", "_ListFilterClass"),
+    ("py:class", "_ListFilterSingle"),
+    # Aliases used by the generated Capella metamodel and dependencies
+    ("py:class", "mm.capellacore.Constraint"),
+    ("py:class", "mm.capellacore.PropertyValueGroup"),
+    ("py:class", "av.AwesomeVersion"),
+    # ``type`` is used as an attribute name throughout the API.
+    ("py:class", "type"),
     ("py:class", "capellambse.model._descriptors._Specification"),
     # Deprecated ABC
     ("py:class", "capellambse.metamodel.fa._AbstractExchange"),
@@ -162,7 +170,7 @@ html_static_path = ["_static"]
 # documented on the members already anyways.
 def skip_dunder_new(app, what, name, obj, skip, options) -> bool:
     del app, obj, options
-    return skip or (what == "class" and name == "__new__")
+    return skip or (what == "class" and name == "__new__") or name == "type"
 
 
 def setup(app):

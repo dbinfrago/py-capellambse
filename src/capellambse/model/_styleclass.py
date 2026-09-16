@@ -135,9 +135,9 @@ _STYLECLASSES: dict[str, cabc.Callable[..., str]] = {
     "Class": lambda o: "Primitive" * o.is_primitive + "Class",
     "ComponentPort": lambda o: f"CP_{o.orientation or 'UNSET'}",
     "ControlNode": lambda o: o.kind.name.capitalize() + _default(o),
-    "Entity": lambda o: (
-        ("Entity", "OperationalActor")[o.is_actor and o.is_human]
-    ),
+    "Entity": lambda o: ("Entity", "OperationalActor")[
+        o.is_actor and o.is_human
+    ],
     "FunctionalChainInvolvementFunction": _functional_chain_involvement,
     "FunctionalChainInvolvementLink": _functional_chain_involvement,
     "FunctionalExchange": _functional_exchange,

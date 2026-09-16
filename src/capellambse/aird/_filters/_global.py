@@ -11,7 +11,7 @@ import lxml.etree
 import capellambse.loader
 from capellambse import diagram, helpers
 
-from . import FilterArguments, composite, global_filter
+from . import FilterArguments, _composite, global_filter
 
 XT_CEX_FEX_ALLOCATION = (
     "org.polarsys.capella.core.data.fa"
@@ -159,8 +159,8 @@ def hide_all_empty_ports(
     del flt
     for dgobj in args.target_diagram:
         if isinstance(dgobj, diagram.Box) and dgobj.children:
-            composite.hide_empty_ports(
-                None, dgobj, classes=composite.PORT_CL_COMPONENT
+            _composite.hide_empty_ports(
+                None, dgobj, classes=_composite.PORT_CL_COMPONENT
             )
 
 
