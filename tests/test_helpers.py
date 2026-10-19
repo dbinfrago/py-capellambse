@@ -183,6 +183,19 @@ def test_process_html_fragments_callback_visits_nodes_in_order() -> None:
     assert actual == expected
 
 
+def test_extent_func_measures_multi_line_text_line_by_line() -> None:
+    lines = ["Short", "A much longer line of text", "Mid length"]
+    line_extents = [helpers.extent_func(i) for i in lines]
+    expected = (
+        max(w for w, _ in line_extents),
+        max(h for _, h in line_extents),
+    )
+
+    actual = helpers.extent_func("\n".join(lines))
+
+    assert actual == expected
+
+
 if sys.platform.startswith("win"):
     import msvcrt
 
