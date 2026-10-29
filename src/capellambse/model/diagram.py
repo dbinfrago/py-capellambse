@@ -22,6 +22,7 @@ __all__ = [
     "UnknownOutputFormat",
     "convert_format",
     "convert_svgdiagram",
+    "render_error",
 ]
 
 import abc
@@ -268,19 +269,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
             except UnknownOutputFormat:
                 raise
             except Exception as err:  # noqa: BLE001
-                if hasattr(self, "_error") and err is self._error:
-                    err_img = self._render
-                else:
-                    err_img = self.__create_error_image("render", err)
-                assert err_img is not None
-                converter = _find_format_converter(fmt)
-                data: t.Any = err_img
-                for cv in reversed(list(_walk_converters(converter))):
-                    if isinstance(cv, DiagramFormat):
-                        data = cv.convert(data)
-                    else:
-                        data = cv(data)
-                return data
+                return render_error(err, fmt, name=self.name)
         return getattr(super(), attr)
 
     def __repr__(self) -> str:
@@ -518,54 +507,6 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
         :meta public:
         """
 
-    def __create_error_image(
-        self, stage: str, error: Exception
-    ) -> diagram.Diagram:
-        err_name = (
-            "An error occured while rendering diagram\n"
-            f"{self.name!r}\n"
-            f"(in stage {stage!r})"
-        )
-        err_msg = (
-            "Please report this error to your tools and methods team,"
-            " and attach the following information:"
-        )
-        err_trace = "".join(
-            traceback.format_exception(None, error, error.__traceback__)
-        )
-
-        diag = diagram.Diagram("An error occured! :(")
-        err_box = diagram.Box(
-            (200, 0),
-            (350, 0),
-            label=err_name,
-            uuid="error",
-            styleclass="Note",
-            styleoverrides={
-                "fill": diagram.RGB(255, 0, 0),
-                "text_fill": diagram.RGB(255, 255, 255),
-            },
-        )
-        diag.add_element(err_box, extend_viewport=False)
-        info_box = diagram.Box(
-            (200, err_box.pos.y + err_box.size.y + 10),
-            (350, 0),
-            label=err_msg,
-            uuid="info",
-            styleclass="Note",
-        )
-        diag.add_element(info_box, extend_viewport=False)
-        trace_box = diagram.Box(
-            (0, info_box.pos.y + info_box.size.y + 10),
-            (750, 0),
-            label=err_trace,
-            uuid="trace",
-            styleclass="Note",
-        )
-        diag.add_element(trace_box, extend_viewport=False)
-        diag.calculate_viewport()
-        return diag
-
     def __load_cache(self, chain: list[DiagramConverter]) -> t.Any:
         cache_handler = self._model.diagram_cache
         if cache_handler is None:
@@ -642,7 +583,7 @@ class AbstractDiagram(metaclass=abc.ABCMeta):
                 self._render = self._create_diagram(params)
             except Exception as err:  # noqa: BLE001
                 self._error = err
-                self._render = self.__create_error_image("parse", self._error)
+                self._render = render_error(err, None, name=self.name)
 
         if hasattr(self, "_error"):
             raise self._error
@@ -985,6 +926,97 @@ class TerminalGraphicsFormat:
             all(os.isatty(i) for i in range(3))
             and os.getenv("TERM") == "xterm-kitty"
         )
+
+
+def render_error(
+    err: BaseException | str,
+    fmt: str | None,
+    /,
+    *,
+    name: str | None = None,
+) -> t.Any:
+    """Render an image that describes an error.
+
+    This can be used to display a placeholder image in place of a
+    diagram that failed to render, for example:
+
+    .. code-block:: python
+
+       try:
+           payload = dg.render("svg")
+       except Exception as err:
+           payload = capellambse.model.diagram.render_error(
+               err, "svg", name=dg.name
+           )
+
+    Parameters
+    ----------
+    err
+        The error to display. If this is an exception, its formatted
+        traceback is shown. Otherwise it is taken as a preformatted,
+        possibly multi-line string of error details.
+    fmt
+        The output format, as accepted by :meth:`AbstractDiagram.render`.
+        If None, the :class:`capellambse.diagram.Diagram` object is
+        returned without any conversion.
+    name
+        The name of the diagram that failed to render, which is shown
+        in the image's header.
+
+    Returns
+    -------
+    ~typing.Any
+        The error image in the requested format.
+    """
+    if isinstance(err, BaseException):
+        details = "".join(traceback.format_exception(err))
+    else:
+        details = err
+
+    if name is not None:
+        err_name = f"An error occured while rendering diagram\n{name!r}"
+    else:
+        err_name = "An error occured while rendering a diagram"
+    err_msg = (
+        "Please report this error to your tools and methods team,"
+        " and attach the following information:"
+    )
+
+    diag = diagram.Diagram("An error occured! :(")
+    err_box = diagram.Box(
+        (200, 0),
+        (350, 0),
+        label=err_name,
+        uuid="error",
+        styleclass="Note",
+        styleoverrides={
+            "fill": diagram.RGB(255, 0, 0),
+            "text_fill": diagram.RGB(255, 255, 255),
+        },
+    )
+    diag.add_element(err_box, extend_viewport=False)
+    info_box = diagram.Box(
+        (200, err_box.pos.y + err_box.size.y + 10),
+        (350, 0),
+        label=err_msg,
+        uuid="info",
+        styleclass="Note",
+    )
+    diag.add_element(info_box, extend_viewport=False)
+    trace_box = diagram.Box(
+        (0, info_box.pos.y + info_box.size.y + 10),
+        (750, 0),
+        label=details,
+        uuid="trace",
+        styleclass="Note",
+    )
+    diag.add_element(trace_box, extend_viewport=False)
+    diag.calculate_viewport()
+
+    if fmt is None:
+        return diag
+    chain = list(_walk_converters(_find_format_converter(fmt)))
+    return _run_converter_chain(chain, diag)
 
 
 def convert_format(

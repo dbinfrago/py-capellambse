@@ -51,3 +51,20 @@ def test_convert_format_converts_diagram_object_to_svg() -> None:
     assert bg.get("width") == "30"
     assert bg.get("height") == "30"
     assert bg.get("fill") == "#fff"
+
+
+def test_render_error_supports_multi_line_error_details() -> None:
+    svg = capellambse.model.diagram.render_error(
+        "Render failure\nspanning\nmultiple lines", "svg"
+    )
+
+    tree = etree.fromstring(svg)
+    assert tree.tag == SVG("svg")
+    assert "Render failure" in "".join(tree.itertext())
+
+
+def test_render_error_shows_the_traceback_of_an_exception() -> None:
+    svg = capellambse.model.diagram.render_error(RuntimeError("boom"), "svg")
+
+    tree = etree.fromstring(svg)
+    assert "RuntimeError: boom" in "".join(tree.itertext())

@@ -183,6 +183,15 @@ def test_process_html_fragments_callback_visits_nodes_in_order() -> None:
     assert actual == expected
 
 
+def test_extent_func_supports_multi_line_text() -> None:
+    text = "Line 1\nLine 2"
+
+    w, h = helpers.extent_func(text)
+
+    assert w > 0
+    assert h > 0
+
+
 if sys.platform.startswith("win"):
     import msvcrt
 

@@ -337,9 +337,13 @@ def extent_func(
     height
         The calculated height of the text (px).
     """
-    width = height = 0
     font = load_font(fonttype, size)
-    (width, height), _ = font.font.getsize(text)  # type: ignore[call-arg] # broken type stubs
+    sizes = [
+        font.font.getsize(line)[0]  # type: ignore[call-arg] # broken type stubs
+        for line in text.splitlines() or [""]
+    ]
+    width = max(w for w, _ in sizes)
+    height = max(h for _, h in sizes)
     return (
         width * LABEL_WIDTH_PADDING_FACTOR,
         height * LABEL_HEIGHT_PADDING_FACTOR,
