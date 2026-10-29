@@ -338,8 +338,6 @@ def extent_func(
         The calculated height of the text (px).
     """
     font = load_font(fonttype, size)
-    # Measure each line separately, as newer Pillow / libraqm versions fail
-    # with "raqm_layout() failed" when the text contains line breaks.
     sizes = [
         font.font.getsize(line)[0]  # type: ignore[call-arg] # broken type stubs
         for line in text.splitlines() or [""]
