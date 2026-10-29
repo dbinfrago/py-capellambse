@@ -2,9 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import functools
-import typing as t
 
-import pytest
 from lxml import etree
 
 import capellambse
@@ -55,22 +53,18 @@ def test_convert_format_converts_diagram_object_to_svg() -> None:
     assert bg.get("fill") == "#fff"
 
 
-def test_as_format_falls_back_to_an_error_image_if_rendering_fails(
-    model: capellambse.MelodyModel, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    diagram = model.diagrams.by_name(
-        "[LAB] Wizard Education (hidden functions)"
+def test_render_error_supports_multi_line_error_details() -> None:
+    svg = capellambse.model.diagram.render_error(
+        "Render failure\nspanning\nmultiple lines", "svg"
     )
-
-    def fail(*_: t.Any, **__: t.Any) -> t.NoReturn:
-        raise RuntimeError("Render failure\nspanning\nmultiple lines")
-
-    monkeypatch.setattr(type(diagram), "_create_diagram", fail)
-    diagram.invalidate_cache()
-
-    with pytest.warns(DeprecationWarning, match=r"diagram\.as_<format>"):
-        svg = diagram.as_svg
 
     tree = etree.fromstring(svg)
     assert tree.tag == SVG("svg")
     assert "Render failure" in "".join(tree.itertext())
+
+
+def test_render_error_shows_the_traceback_of_an_exception() -> None:
+    svg = capellambse.model.diagram.render_error(RuntimeError("boom"), "svg")
+
+    tree = etree.fromstring(svg)
+    assert "RuntimeError: boom" in "".join(tree.itertext())
